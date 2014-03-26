@@ -1,0 +1,190 @@
+#Draft schema, does not really make sense. I have over engineered it to play with syntax more than anything
+
+#Key concepts:
+
+#CHANGE OF RULES SYNTAX
+#=======================
+
+#variable name changes
+#data             --> prev          //as in: what was in the database
+#newData          --> next          //as in: what is going into the database
+
+#data.child(blah) --> prev[blah]    //ruleSnapshot is now an array as it's less verbose
+
+#Reusable predicates
+#isLoggedin(auth): auth.exists()
+#isManager(auth):  prev_root["users"][auth.id]["manger_id"].exists() && isLoggedin(auth)
+
+
+#Schema
+#============
+
+#TYPES
+#how data in the firebase should look like, required fields (called properties) etc. using JSON schema
+#the type is string/object/number if using default types
+#or type can be used to lookup a custom ADT (like Queue) in the meta-schema
+
+#REQUIRED FIELDS
+#a schema says which fields/properties are required
+#the type says how to turn those statements into database constraints
+
+#CONSTRAINTS
+#============
+#the user can add their own constraints too in the schema
+#constraints are just rule syntax to ensure data integrity
+#constraints are hierarchical, a write can only go through if all constraints are satisfied all the way down
+#by using reused predicates which use scoped variables, you can get leaf behaviour affected by higher up
+
+#constraints can be added by the user in a schema
+#are added by the type (including dealing with required fields)
+#or defined in the ACL
+
+#ACL
+#===========
+#The acl provides another method for setting the read write permissions by regex syntax
+#the write permissions are a bit redundant as this is covered by the constraints
+#but its the only way to grant read access to certain portions of the tree
+#hopefully its syntax is familiar to web server people
+
+#Meta Schema
+#============
+
+#The database schema is built from typed building blocks
+#You extend the types in the meta-schema
+#meta schemas get the opportunity to generate their own custom constraints based on their custom fields
+#you can set what fields are required for an instanciation of that type in the metaschema's validator
+#the parser should call the preprocess_js function bottom up, which gives the typedef full programatic
+#control to generate its custom constraints
+#it should be easy to write the inbuilt types and crazy extentions using the meta schema system
+
+
+schema:
+  type: object
+  definitions: #standard JSON schema for defining reusable schema, model objects that can be denormalised
+    Message:
+      type: Queueable #single inheritance, alternatively we could support duck typing but might be hard for ORMing
+      required: [to, from, msg] #I don't think we should need to explicitly state the queue fields are required, it should not pass validation without those due to type validation
+      properties:
+        to:     {type: string}
+        from:   {type: string}
+        msg:    {type: string}
+
+        id:     {type: string} #the fields are required by the typedef
+        before: {type: string}
+        after:  {type: string}
+
+    User:
+      type: object
+      required: [name, id, brownie_points] #so these can be enforced with rules
+      properties:
+        name: {type: string} #switch to JSON syntax for small inline definitions
+        id:   {type: string}
+        brownie_points:
+          type: integer      #todo is an integer type possible??
+          minimum: 0
+
+    Manager: #manager extends user
+      required: [name, id, brownie_points, mid, brownie_points_reserve]
+      allOf:  #allOf
+        - $ref: "#/definitions/User"
+        - properties:
+            mid: {type: string}
+            brownie_points_reserve:
+              type: integer
+              minimum: 0
+            messages:
+              type: Queue   #user defined ADT in the meta-schema
+              put_condition: isManager(auth) #referencing predicates defined elsewhere, $user resolves to first parent bound to $user
+              get_condition: isSelf(auth, $user)      #referencing predicates defined elsewhere
+              properties:
+                - head: $ref: "#/definitions/Message"
+                - tail: $ref: "#/definitions/Message"
+                - items:
+                    type: object
+                    properties:
+                      $user: $ref: "#/definitions/Message"
+
+
+  properties: #actual schema
+    users:
+       type: object
+       properties:
+          $user: #todo is this the best way to array-like schema? Maybe we should use SchemaArray, regardless $user has to now enter the symbol table so it can be used in predicates
+            anyOf: #a union type
+              - $ref: "#/definitions/User"    # GOTCHA: the # turns into a comment without quotes
+              - $ref: "#/definitions/Manager" # todo is the equivalent to {$ref:"..."}
+
+            #extra constrains are && with constraints added by the type
+            constraint: $user == next["id"].val() #custom constraint added inline with schema, for ensuring key and id field match
+
+#these are boolean functions inserted into the top level of the symbol table
+predicates:
+  isLoggedIn(auth):    auth !== null
+  isUser(auth):        root["users"][auth.id].exists() && isLoggedIn(auth)
+  isSelf(auth, $user): $user == auth.id
+  isManager(auth):     root["users"][auth.id]['mid'].exists() && isUser(auth)
+
+#read/write permissions can reuse (or not) predicates
+#note write access means respecting all sub constraints too
+access:
+  - location:   users/$user/*               #I think all locations have to end in * to indicate the rule is applied to leaves
+    permission: rw
+    constraint: isUser(auth)                #resolved_constraint = (constraint) && (child.constraints) && (grandchildren.constraints) ...
+
+  - location:   users/$user/*
+    permission: r
+    constraint: isManager(auth)
+
+  - location:   users/$user/brownie_points/* #really I would like to transfer the brownie points from the manager to the user, but see Firesafe send_item.xml
+    permission: w
+    constraint: isManager &&               #Hmmm, role is also constraints
+                $user != auth.id &&
+                root["users"][auth.id]['brownie_points_reserve'] > (next["users"][auth.id]['mid'] - root["users"][auth.id]['mid']) #maybe next for future root?
+    trigger:    "TRIGGERS HERE? How to avoid it getting confused with other rules??"
+
+  - location:   /*
+    permission: rw
+    constraint: auth.username == 'tom' #super user, you should be able to use literals here instead of functions
+
+
+#most metaschemas will be defined by Firebase and cover mundane types like string or object
+#however it gives the advanced user an oppertunity to stuff ADTs in the Firebase like FSMs or whatnot
+#for our example I defined a Queue
+metaschema:
+  - name: Queue #this queue copies by value to the head and the tail, really we just need the ids so this could be implemented better
+    validator: #a meta schema for testing a type looks correct
+      required: [put_condition, get_condition, properties/items/$item, properties/head, properties/tail] #don;t think the properties/&items syntax is right
+
+    #constraints must be respected higher up in the hierarchy
+    #here we are dereferencing put_condition, which won't work as is, because its not in the predicate symbol table
+    constraint(auth, prev, next): >
+      (
+        put_condition(auth, prev, next) &&
+        next['tail']['infront'].val() === prev['tail']['id'].val() &&                               #check the user connected the new tail to the old tail via an id
+        next['items'][next['tail']['infront'].val()]['behind'].val() === prev['tail']['id'].val() #check the new reprentation of the old tail, points backwards to the new tail
+        #etc.
+      )||(
+        get_condition(auth, prev, next) &&
+        #etc. take off the head and rewire
+      )
+
+    preprocess_js: >
+      //preprocess should be called bottom up, with the api allowing the node
+      //to programatically add other nodes etc. define its constraints using local information etc.
+      //should be careful that new children added also get parsed top down
+      function(address, schema_node, api){
+        var parent_schema = api.get(address.parent()); //something like this
+        api.setConstraint(address, "...")
+
+        //we have to carry the user defined predicates into the (scoped?) symbol table
+        api.setPredicate("put_condition(auth, prev, next)", api.get(address, schema_node["put_condition"]))
+        api.setPredicate("get_condition(auth, prev, next)", api.get(address, schema_node["get_condition"]))
+      }
+
+  - name: Queueable #a queueable sets up link list like pointers
+      validator:
+        required: [properties/id, properties/infront, properties/behind]
+
+      constraint(auth, prev, next): >
+        next['id'].exsts() && next['infront'].exsts() && next['behind'].exsts()
+
