@@ -1,0 +1,20 @@
+{
+  "name": "experimental_rules",
+  "version": "0.0.1",
+  "description": "Spam a firebase with a custom harness",
+  "main": "loadtest.js",
+  "author": "Tom Larkworthy",
+  "dependencies": {
+    "firebase": "~1.0.5",
+    "optimist": "~0.6.1",
+    "async": "~0.2.10",
+    "request": "~2.34.0",
+    "sprintf": "~0.1.3",
+    "firebase-token-generator":"0.1.4",
+    "js-yaml":"",
+    "tv4":"1.0.16"
+  },
+  "optionalDependencies" :{
+    "posix-clock":"0.2.2"
+  }
+}

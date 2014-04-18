@@ -1,0 +1,12 @@
+defs:
+  Shape:
+    type: object
+    properties:
+      postion: {$ref: "#/defs/Point"}
+       
+  Polygon:
+    allOf:
+      - $ref: "#/defs/Shape"
+      - points:
+          type: array
+          items: {$ref: "#/defs/Point"}

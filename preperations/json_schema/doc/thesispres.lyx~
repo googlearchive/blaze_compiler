@@ -1,0 +1,1514 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass beamer
+\begin_preamble
+\usepackage{listings}
+\usetheme{Warsaw}
+% or ...
+%\usetheme{Antibes}	% tree outline, neat
+%\usetheme{JuanLesPins}	% like Antibes, with shading
+%\usetheme{Bergen}	% outline on side
+%\usetheme{Luebeck}	% like Warsaw, square sides
+%\usetheme{Berkeley}	% interesting left bar outline
+%\usetheme{Madrid}	% clean, nice.  7/12 page numbers
+%\usetheme{Berlin}	% dots show slide number
+%\usetheme{Malmoe}	% OK, plain, unshaded
+%\usetheme{Boadilla}	% nice, white bg, no top bar
+%\usetheme{Marburg}	% nice, outline on right
+%\usetheme{boxes}	% ???
+%\usetheme{Montpellier}	% tree outline on top, plainish white
+%\usetheme{Copenhagen}	% like Warsaw
+%\usetheme{PaloAlto}	% looks good
+%\usetheme{Darmstadt}	% like Warsaw with circle outline
+%\usetheme{Pittsburgh}
+%\usetheme{default}
+%\usetheme{Rochester}	% like boxy, unshaded warsaw
+%\usetheme{Dresden}	% circle outline on top
+%\usetheme{Singapore}	% purple gradient top
+%\usetheme{Frankfurt}	% like Warsaw with circle outline on top
+%\usetheme{Szeged}
+%\usetheme{Goettingen}	% light purple right bar outline
+%\usetheme{Warsaw}
+%\usetheme{Hannover}	% like Goett with bar on left
+%\usetheme{compatibility}
+%\usetheme{Ilmenau}
+
+\setbeamercovered{transparent}
+% or whatever (possibly just delete it)
+
+%\usecolortheme{seahorse}
+%\usecolortheme{rose}
+
+% seems to fix typewriter font in outline header:
+\usepackage{ae,aecompl}
+\end_preamble
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 1
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 2
+\tocdepth 2
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+Brainlab:
+\begin_inset OptArg
+collapsed true
+
+\layout Standard
+
+Brainlab
+\begin_inset Note
+collapsed false
+
+\layout Standard
+
+optional, use only with long paper titles
+\end_inset 
+
+
+\end_inset 
+
+
+\layout Subtitle
+
+A toolkit to aid in the design, simulation, and analysis of spiking neural
+ networks with the NCS environment
+\layout Author
+
+Rich Drewes
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+
+\backslash 
+
+\end_inset 
+
+University of Nevada, Reno
+\begin_inset OptArg
+collapsed true
+
+\layout Standard
+
+Rich Drewes
+\end_inset 
+
+
+\layout Date
+
+April 26, 2005
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+
+\backslash 
+
+\end_inset 
+
+Thesis defense
+\begin_inset Note
+collapsed true
+
+\layout Standard
+
+
+\begin_inset OptArg
+collapsed false
+
+\layout Standard
+
+Thesis defense
+\end_inset 
+
+
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Note
+collapsed false
+
+\layout Standard
+
+place handout in layout->document->layout->options to suppress overlays
+ for printing
+\layout Standard
+
+now, how to eliminate color printing etc.
+ for handout printing? need to do pstricks
+\layout Standard
+
+why aren't my Lyx Notes or style NoteItems appearing in handout?
+\layout Standard
+
+place draft in there to (somewhat) reduce amount of stuff printed, like
+ top and bottom border
+\end_inset 
+
+
+\layout TitleGraphic
+
+
+\begin_inset Note
+collapsed false
+
+\layout Standard
+
+
+\begin_inset Graphics
+	filename unr.png
+
+\end_inset 
+
+
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Note
+collapsed true
+
+\layout Standard
+
+If you have a file called "institution-logo-filename.xxx", where xxx is a
+ graphic format that can be processed by latex or pdflatex, resp., then you
+ can add a logo by uncommenting the following:
+\end_inset 
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+pgfdeclareimage[height=0.5cm]{institution-logo}{institution-logo-filenameO}
+\layout Standard
+
+\backslash 
+logo{
+\backslash 
+pgfuseimage{institution-logo}}
+\layout Standard
+% RPD:  can't get this to work on any template.  not present in Warsaw any way, it seems
+\layout Standard
+% hmm, problem seems to be that it isn't copied to the tmp dir, probably becuase it doesn't have the
+\layout Standard
+% filename extension (which is tacked on by pgf it seems)
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Note
+collapsed true
+
+\layout Standard
+
+The following causes the table of contents to be shown at the beginning
+ of every subsection.
+ Delete this, if you do not want it.
+\end_inset 
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+%
+\backslash 
+AtBeginSubsection[]{
+\layout Standard
+%  
+\backslash 
+frame<beamer>{ 
+\layout Standard
+%    
+\backslash 
+frametitle{Outline}   
+\layout Standard
+%    
+\backslash 
+tableofcontents[currentsection,currentsubsection] 
+\layout Standard
+%  }
+\layout Standard
+%}
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Note
+collapsed true
+
+\layout Standard
+
+If you wish to uncover everything in a step-wise fashion, uncomment the
+ following command:
+\end_inset 
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+%
+\backslash 
+beamerdefaultoverlayspecification{<+->}
+\end_inset 
+
+
+\layout BeginFrame
+
+Outline
+\layout Standard
+
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
+\layout EndFrame
+
+\layout Section
+
+NCS, the NeoCortical Simulator
+\layout BeginFrame
+
+NCS, the NeoCortical Simulator
+\layout Block
+
+
+\begin_inset ERT
+status Open
+
+\layout Standard
+{}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+Powerful batch processing spiking neural network simulator
+\layout Itemize
+
+Parallel (MPI)
+\layout Itemize
+
+Biologically realistic neuron and synapse models
+\layout Itemize
+
+Accepts model and simulation parameters in text file
+\begin_inset Note
+collapsed false
+
+\layout Itemize
+
+Some hierarchy
+\end_inset 
+
+
+\end_deeper 
+\layout EndFrame
+
+\layout Subsection
+
+NCS 
+\family typewriter 
+.in
+\family default 
+ input file format
+\layout BeginFrame
+
+
+\family typewriter 
+.in
+\family default 
+ file: the BRAIN block
+\layout Standard
+
+
+\size scriptsize 
+
+\begin_inset Include \verbatiminput{thesispres-infile1.txt}
+preview false
+
+\end_inset 
+
+
+\layout EndFrame
+
+\layout BeginFrame
+
+
+\family typewriter 
+.in
+\family default 
+ file: a COLUMN block
+\layout Standard
+
+
+\size scriptsize 
+
+\begin_inset Include \verbatiminput{thesis-infile2.txt}
+preview false
+
+\end_inset 
+
+
+\layout EndFrame
+
+\layout Subsection
+
+Problems with the current methods of using NCS
+\layout BeginFrame
+
+Typical MATLAB-NCS usage
+\layout Standard
+
+
+\size footnotesize 
+
+\begin_inset Include \verbatiminput{thesispres-matlabexample.txt}
+preview false
+
+\end_inset 
+
+
+\layout EndFrame
+
+\layout BeginFrame
+
+My MATLAB-NCS experience
+\layout NoteItem
+
+talk about my work on Maciokas' visual cortex model in MATLAB
+\begin_inset Note
+collapsed true
+
+\layout Standard
+
+My first serious experiment with NCS was an extension of Maciokas' visual
+ cortex model with a GA search for model parameters.
+ I found a number of problems with the MATLAB-NCS development model
+\end_inset 
+
+
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+printf
+\begin_inset Quotes erd
+\end_inset 
+
+ style model building is limited
+\begin_deeper 
+\layout Itemize
+
+Easy to make errors
+\layout Itemize
+
+Small changes to model can require many changes
+\end_deeper 
+\layout Itemize
+
+Saving models and then executing them is limiting
+\begin_deeper 
+\layout Itemize
+
+Prevents strategies like GA search for models
+\layout Itemize
+
+Prevents encapsulation of an 
+\begin_inset Quotes eld
+\end_inset 
+
+experiment as a script
+\begin_inset Quotes erd
+\end_inset 
+
+
+\end_deeper 
+\layout Itemize
+
+There is typically very little code reuse
+\layout Itemize
+
+MATLAB is not a particularly elegant text processing language
+\layout Itemize
+
+MATLAB support for general purpose libraries is weak
+\begin_inset Note
+collapsed false
+
+\layout Itemize
+
+No convenient place for library
+\end_inset 
+
+
+\end_deeper 
+\layout EndFrame
+
+\layout Subsection
+
+Design goals for a new approach to using NCS
+\begin_inset Note
+collapsed true
+
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{
+\end_inset 
+
+Design goals
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\end_inset 
+
+
+\layout BeginFrame
+
+Design goals for a new approach to using NCS
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<1->
+\end_inset 
+
+Allow very complex experiments with maximum clarity and minimum effort
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<2->
+\end_inset 
+
+Allow very simple experiments with minimum overhead
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<3->
+\end_inset 
+
+A model is a script (there is no other reasonable way)
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<4->
+\end_inset 
+
+Object oriented neural model design
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<5->
+\end_inset 
+
+Integrated modeling, experimentation, analysis
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<6->
+\end_inset 
+
+Container for standard, reusable component libraries.
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<7->
+\end_inset 
+
+Free, and open source, from top to bottom
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<8->
+\end_inset 
+
+Based on a language that is clean, good at text processing as well as math,
+ with extensive general purpose libraries
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<9->
+\end_inset 
+
+Remote or local operation; make remote operation transparent
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<10->
+\end_inset 
+
+Possible interactive use
+\end_deeper 
+\layout EndFrame
+
+\layout Section
+
+Introduction to Brainlab
+\layout Subsection
+
+Simple examples
+\layout BeginFrame
+
+Hello, world
+\layout Standard
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+
+\backslash 
+lstinputlisting[language=python,breaklines]{thesispres-LJ1.py}
+\end_inset 
+
+
+\layout EndFrame
+
+\layout BeginFrame
+
+Paramaterized experiments
+\layout Standard
+
+
+\size scriptsize 
+
+\begin_inset ERT
+status Open
+
+\layout Standard
+
+\backslash 
+lstinputlisting[language=python,breaklines]{thesispres-LJ2.py}
+\end_inset 
+
+
+\layout EndFrame
+
+\layout BeginFrame
+
+Algorithmic model building
+\layout Standard
+
+
+\size scriptsize 
+
+\begin_inset ERT
+status Open
+
+\layout Standard
+
+\backslash 
+lstinputlisting[language=python,breaklines]{thesispres-algo.py}
+\end_inset 
+
+
+\layout EndFrame
+
+\layout Subsection
+
+Design issues
+\layout BeginFrame
+
+Why Python?
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+Open source, free
+\layout Itemize
+
+Widely used and growing, active scientific community
+\layout Itemize
+
+Competitive array math package and plotting packages
+\layout Itemize
+
+Clean language design
+\layout Itemize
+
+Object oriented, dynamically typed, garbage collected, bytecode compiled
+\layout Itemize
+
+Efficient
+\layout Itemize
+
+Enforced indentation!
+\end_deeper 
+\layout EndFrame
+
+\layout BeginFrame
+
+Brainlab implementation
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<1->
+\end_inset 
+
+
+\family typewriter 
+COLUMN
+\family default 
+, 
+\family typewriter 
+LAYER
+\family default 
+, 
+\family typewriter 
+CELL
+\family default 
+, 
+\family typewriter 
+SYNAPSE
+\family default 
+ are Python object classes
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<2->
+\end_inset 
+
+These are 
+\emph on 
+nested
+\emph default 
+ classes of 
+\family typewriter 
+BRAIN
+\family default 
+ class
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<3->
+\end_inset 
+
+
+\family typewriter 
+__repr__()
+\family default 
+ is overridden to output the 
+\family typewriter 
+.in
+\family default 
+ file representation
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<4->
+\end_inset 
+
+NCS parameter names are dictionary keys
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<5->
+\end_inset 
+
+Three modules:
+\begin_deeper 
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<5->
+\end_inset 
+
+brainlab.py: simulation environment, data analysis, graphing
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<5->
+\end_inset 
+
+brain.py: model construction
+\layout Itemize
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<5->
+\end_inset 
+
+netplot.py: three dimensional display
+\end_deeper 
+\end_deeper 
+\layout EndFrame
+
+\layout BeginFrame
+
+netplot 3D module
+\layout Standard
+\align center 
+
+\begin_inset Graphics
+	filename snapLJ9-reduced.png
+	display none
+	height 2.5in
+	keepAspectRatio
+
+\end_inset 
+
+
+\layout EndFrame
+
+
+\begin_inset Note
+collapsed true
+
+\layout BeginFrame
+
+Data access and report generation functions
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{This is the title of another block}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+one
+\layout Itemize
+
+two
+\layout Itemize
+
+three
+\end_inset 
+
+
+\layout Section
+
+More complex examples
+\layout Subsection
+
+My Ph.D.
+ research
+\layout BeginFrame
+
+My Ph.D.
+ research
+\begin_inset Note
+collapsed true
+
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<1->
+\end_inset 
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{
+\end_inset 
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+Untitled block.
+\layout Itemize
+
+Shown on all slides.
+\end_deeper 
+\layout ExampleBlock
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+<2->
+\end_inset 
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{
+\end_inset 
+
+Some Example Block Title
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+
+\begin_inset Formula $e^{i\pi}=-1$
+\end_inset 
+
+.
+\layout Itemize
+
+
+\begin_inset Formula $e^{i\pi/2}=i$
+\end_inset 
+
+.
+\end_inset 
+
+
+\layout FrameSubtitle
+
+Could a cortical microcircuit act as a functional unit for the memorization
+ of correlations of spatio-temporal spike trains?
+\begin_inset Note
+collapsed true
+
+\layout Standard
+\align center 
+
+\begin_inset Graphics
+	filename connect.eps
+	display none
+	width 2.5in
+	clip
+
+\end_inset 
+
+need to fix triangle direction at least!
+\end_inset 
+
+
+\layout ColumnsCenterAligned
+
+\begin_deeper 
+\layout Column
+
+6cm
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+Layer structured cortical microcircuit model
+\layout Itemize
+
+Two input cell groups
+\begin_deeper 
+\layout Itemize
+
+Key
+\layout Itemize
+
+Data
+\end_deeper 
+\layout Itemize
+
+Output cell group
+\layout Itemize
+
+Spatio-temporal spike trains as fundamental unit of information
+\end_deeper 
+\layout Column
+
+6cm
+\layout Standard
+\align center 
+
+\begin_inset Graphics
+	filename connect.eps
+	display none
+	scale 35
+
+\end_inset 
+
+
+\end_deeper 
+\layout EndFrame
+
+\layout BeginFrame
+
+Stimulus patterns
+\layout Standard
+
+
+\begin_inset Note
+collapsed true
+
+\layout Standard
+
+\end_inset 
+
+
+\layout Standard
+\align center 
+
+\begin_inset Graphics
+	filename stimsample.ps
+	display none
+	width 3in
+	keepAspectRatio
+	BoundingBox 18bp 18bp 594bp 612bp
+	clip
+
+\end_inset 
+
+
+\layout EndFrame
+
+\layout BeginFrame
+
+My Ph.D.
+ research: genetic model search
+\layout Standard
+
+
+\family typewriter 
+\size tiny 
+
+\begin_inset Include \verbatiminput{bigdemoga1.py}
+preview false
+
+\end_inset 
+
+
+\layout EndFrame
+
+\layout BeginFrame
+
+My Ph.D.
+ research: genetic model search
+\layout Standard
+
+
+\family typewriter 
+\size footnotesize 
+
+\begin_inset Include \verbatiminput{bigdemoga2.py}
+preview false
+
+\end_inset 
+
+
+\layout EndFrame
+
+\layout BeginFrame
+
+My Ph.D.
+ research: automated pattern matching
+\layout Standard
+
+
+\begin_inset Minipage
+position 1
+inner_position 0
+height "0pt"
+width "100col%"
+collapsed false
+
+\layout Standard
+\align center 
+
+\begin_inset Graphics
+	filename E0462EMRepmatchresults1.ps
+	display none
+	width 3.75in
+	keepAspectRatio
+	BoundingBox 18bp 18bp 594bp 612bp
+	clip
+
+\end_inset 
+
+
+\end_inset 
+
+
+\layout EndFrame
+
+\layout Subsection
+
+An investigation into self-sustaining firing
+\layout BeginFrame
+
+Phase space transitions in a recurrent network
+\layout Standard
+
+
+\begin_inset Note
+collapsed true
+
+\layout Standard
+
+Dr.
+ Doursat had done some runs with a manually edited .in file.
+ He was looking for a quick way to automate the creation of many .in files
+ with varying parameters and examine the results.
+ 
+\end_inset 
+
+
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{
+\end_inset 
+
+Dr.
+ Doursat:
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\begin_deeper 
+\layout Standard
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+My goal is to explore bistability and other firing modes of the network
+ through a survey of parameter space (especially E/I to E/I connections)
+ and, from there, reveal what difference synaptic augmentation (SA) and/or
+ reciprocal connections can make (changes in phase space landscape; easiness
+ of phase transitions) when they are added to the model.
+\begin_inset Quotes erd
+\end_inset 
+
+
+\end_deeper 
+\layout EndFrame
+
+\layout BeginFrame
+
+Setting up the experiment in Brainlab
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{
+\end_inset 
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+Convert plain .in file into a script
+\layout Itemize
+
+Create experiment script
+\layout Itemize
+
+Create data analysis/graphing
+\end_deeper 
+\layout Standard
+
+
+\begin_inset Note
+collapsed false
+
+\layout Standard
+
+This is something that could have been done in (for example) MATLAB, but
+ as the experiment grows in complexity it would become less and less convenient.
+\end_inset 
+
+
+\layout EndFrame
+
+\layout Section
+
+Prospects
+\layout BeginFrame
+
+Tighter integration with NCS
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{
+\end_inset 
+
+Idea: eliminate NCS parsing module, and most of NCS' biological knowledge
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+Simpler code; just a 
+\begin_inset Quotes eld
+\end_inset 
+
+flat
+\begin_inset Quotes erd
+\end_inset 
+
+ simulation engine that accepts GCList
+\layout Itemize
+
+Less redundancy of code and documentation
+\layout Itemize
+
+NCS would be more easily used with unstructured networks
+\layout Itemize
+
+Easier to add new features
+\end_deeper 
+\layout EndFrame
+
+\layout BeginFrame
+
+Short-term enhancements to Brainlab
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{
+\end_inset 
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+Some BRAIN.methods become brainlab functions
+\layout Itemize
+
+Data loading and report plotting standardized, expanded
+\layout Itemize
+
+Subdirectories for job execution (at least as an option)
+\layout Itemize
+
+Support for new queueing environments
+\begin_inset Note
+collapsed true
+
+\layout Itemize
+
+Retest AREA and enumerated column features
+\end_inset 
+
+
+\layout Itemize
+
+Convenience functions for executing multiple jobs
+\layout Itemize
+
+Automated installation, configuration, testing
+\layout Itemize
+
+Expanded examples library
+\end_deeper 
+\layout EndFrame
+
+\layout BeginFrame
+
+Use, so far
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{
+\end_inset 
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+A colleague in our lab used an earlier version of Brainlab
+\layout Itemize
+
+I have made very extensive use of Brainlab in my own experiments
+\layout Itemize
+
+A colleague in our lab has recently begun using Brainlab in his experiments
+\layout Itemize
+
+Another lab is beginning to use NCS, and expressed interest in Brainlab
+\end_deeper 
+\layout EndFrame
+
+\layout BeginFrame
+
+Acknowledgements
+\layout Block
+
+
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+{
+\end_inset 
+
+Thanks to:
+\begin_inset ERT
+status Collapsed
+
+\layout Standard
+}
+\end_inset 
+
+
+\begin_deeper 
+\layout Itemize
+
+My committee
+\layout Itemize
+
+Dr.
+ Harris, chair
+\layout Itemize
+
+Dr.
+ Goodman, for the Brain Lab
+\layout Itemize
+
+Brain Lab colleagues
+\end_deeper 
+\layout EndFrame
+
+\the_end

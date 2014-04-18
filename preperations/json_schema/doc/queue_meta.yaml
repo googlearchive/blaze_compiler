@@ -1,0 +1,17 @@
+metaschema:
+  - name: Queue 
+    validator: #JSON Schema def.
+      required: [put_condition, ...]
+
+    constraint: >
+      ( local_put_condition() &&
+        next.tail.infront.val() === prev.tail.id.val() && 
+      )||(
+        local_get_condition() && ...
+      )
+    #the queue's constraint needs access to custom predicates      
+    preprocess_js(address, schema_node, api): > 
+        api.setPredicate("local_put_condition()", 
+          api.get(address, schema_node["put_condition"]));
+        api.setPredicate("local_get_condition()", 
+          api.get(address, schema_node["get_condition"]));

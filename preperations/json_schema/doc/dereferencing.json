@@ -1,0 +1,14 @@
+[
+  {
+    "read": "data.child(\"notifications\").val()"
+  },
+  {
+    "read": "data[\"notifications\"].val()"
+  },
+  {
+    "read": "data.notifications.val()"
+  },
+  {
+    "read": "data->\"notifications\".val()"
+  }
+]

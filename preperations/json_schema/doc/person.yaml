@@ -1,0 +1,9 @@
+Person:
+  type: object
+  properties:
+    name: {type: string}
+    age:  {type: integer}
+    sex:  {enum: [male, female]}
+    employer: {$ref: "#/definitions/Company"}
+  required: [name, sex]
+  additionalProperties: false

@@ -1,0 +1,13 @@
+predicates:
+  isLoggedIn(): auth.id != null
+
+schema:
+  definitions: {}
+
+  type: object
+  properties: {}
+  
+access:
+  - location: /*
+    read: true
+    write: true #&& isLoggedIn()

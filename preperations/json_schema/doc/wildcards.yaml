@@ -1,0 +1,9 @@
+users:
+  type: object
+  #regex match the allowed properties
+  patternProperties:
+    ^[\[\]$\.]: {$ref: "#/defs/User"}
+    
+  #But it loses the $variable name
+  #so I suggest we:
+  $userid: {$ref: "#/defs/User"}

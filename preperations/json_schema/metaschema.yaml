@@ -1,0 +1,46 @@
+
+name: string
+constraint(auth, prev, next): next.isString()
+
+
+validator:
+  required: [type]
+  additionalProperties: false
+  properties:
+    type: {type: string}
+
+examples:
+  - type: string
+
+negative_examples:
+  - type: string
+    minimum: 40
+
+---
+
+name: object
+constraint(auth, prev, next): next.isString()
+
+validator:
+  required: [type]
+  additionalProperties: false
+  properties:
+    type:       {type: string}
+    properties: {}
+
+
+examples:
+  - type: object
+
+  - type: object
+    properties: {}
+
+  - type: object
+    properties:
+      a_key: {type: string}
+
+negative_examples:
+  - type: object
+    not_valid_key: blah
+
+...

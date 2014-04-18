@@ -1,0 +1,210 @@
+predicates:
+  isLoggedIn():     auth != null
+  isMod():          prev_root.child('moderators').hasChild(auth.id)
+  isUser(id):       auth.id === id && isLoggedIn()
+  isSuspended():    root.child('suspensions').hasChild(auth.id) && root.child('suspensions').child(auth.id).val() > now
+
+schema:
+
+  definitions:
+    Room:
+      properties:
+        id:
+          type: string
+          write: next.val() === $roomId
+
+        createdByUserId:
+          type: string
+          write: next.val() === auth.id
+
+        numUsers:
+          type: number
+
+        type:
+          type: string
+          enum: [public, official, private]
+
+      required: [id, createdByUserId, numUsers, type]
+      write: "isLoggedIn() && (!prev.exists() || isMod() || next['createdByUserId'].val() === auth.id)"
+
+      examples:
+        - {id: "534", createdByUserId: j43, numUsers: 10, type: private}
+
+      nonexamples:
+        - {id: 534,   createdByUserId: j43, numUsers: 10, type: private}
+        - {id: "534", createdByUserId: j43, numUsers: s, type: private}
+        - {id: "534", numUsers: s, type: private}
+
+    String: #this is just to test definitions works ok
+      type: string
+      additionalProperties: false
+
+
+  additionalProperties: false #don't allow additional fields in the db, an improvement over existing CBS chat rules
+  properties:
+
+    moderators:
+      write: "false"      #we need quotes because with no quotes "false" gets cast to a boolean
+      read:  isLoggedIn()
+
+    room-metadata:
+      additionalProperties: false
+      type: object #note, this is required otherwise the non-example [] validates
+      patternProperties:
+        .*:
+          #todo we don't have a variable binding to the matched pattern
+          #patternGroup: $room
+          $ref:  "#/definitions/Room"
+
+      examples:
+        - {"534": {id: "534", createdByUserId: j43, numUsers: 10, type: private}}
+        - {}
+
+      nonexamples:
+        #- {id: 534, createdByUserId: j43, numUsers: 10, type: private} #todo why does this work?
+        - {"534": {id: 534, createdByUserId: j43, numUsers: 10, type: private}}
+        - []
+        - {"534": {id: "534", createdByUserId: j43, numUsers: 10, type: private, authorizedUsers: {"fred": "fred"}}}
+
+
+    room-metadata-private: #private rooms are interesting because they extend public rooms with a list of authorized users
+      additionalProperties: false
+      type: object
+      patternProperties:
+        .*:
+          #patternGroup: $room
+          allOf: #we use allOf to make an extension
+            - $ref:  "#/definitions/Room"
+            - type: object
+              required: [authorizedUsers]
+              properties:
+                authorizedUsers:
+                  patternProperties:
+                    .*: {} #we can leave what goes in here, like CBS chat did
+                  write: "isLoggedIn() && (!prev.exists() || isMod() || prev.hasChild(auth.id)))"
+
+      examples:
+        - {"534": {id: "534", createdByUserId: j43, numUsers: 10, type: private, authorizedUsers: {"fred": "fred"}}}
+
+      nonexamples:
+        - {"534": {id: "534", createdByUserId: j43, numUsers: 10, type: private}}
+
+#BUGGY VERSION TRANSLATED FROM CBS
+    #next we skip to users because its an interesting case of hierarchical rules
+    users:
+      additionalProperties: false
+      type: object
+      patternProperties:
+        .*:
+          #patternGroup: $userId
+          type: object
+          read:  isUser($userId) || isMod()
+          write: isUser($userId) || isMod()
+
+          properties:
+            invites: #A list of chat invitations from other users, append-only by anyone. readable by the invite sender & user
+              patternProperties:
+                .*:
+                  #patternGroup: $inviteId
+                  type: object
+                  required: [fromUserId, fromUserName, toRoomId, toRoomName]
+                  write: "next['id'].val() === $inviteId"
+
+            #todo, is this a bug in CBS, the moderator can overwrite this?? But should be append only
+            notifications: #A list of notifications, which can only be appended to by moderators.
+              patternProperties:
+                .*:
+                  #patternGroup: $notificationId
+                  type: object
+                  required: [fromUserId, timestamp, notificationType]
+                  write: "next['fromUserId'].val() === auth.id"
+
+  #mike didn;t like that read and write rules are only sometimes overridden, and the read and write are overloaded in tree
+
+#  access: #access controls act like new root of firebase, bypassing higher level read/write constraints
+#          #these could be put inline too without the location
+#    - location: users/$user/invites/*
+#      read:    "prev[fromUserId].val() == auth.id"
+#      write:   "(!prev.exists() || next['fromUserId'].val() === auth.id) && !isSuspended()"
+#
+#    - location: users/$user/notifications/*
+#      write:    isMod() && prev.val() === null
+
+    #FIXED VERSION
+    users:
+      additionalProperties: false
+      type: object
+      patternProperties:
+        .*:
+          #patternGroup: $userId
+          type: object
+          read:  isUser($userId) || isMod()
+          write: isUser($userId) || isMod()
+
+          properties:
+            invites: #A list of chat invitations from other users, append-only by anyone. readable by the invite sender & user
+              patternProperties:
+                .*:
+                  #patternGroup: $inviteId
+                  type: object
+                  required: [id, fromUserId, fromUserName, toRoomId, toRoomName]
+                  properties:
+                    id:
+                      type:  string
+                      write: next.val() === $inviteId
+
+                  access: #inline access control gives a new read/write context
+                    read:    "isLoggedIn() && prev[fromUserId].val() == auth.id"
+                    write: "(!prev.exists() || next['fromUserId'].val() === auth.id) && !isSuspended() && next['fromUserId'] == auth.id"
+
+
+            #todo, is this a bug in CBS, the moderator can overwrite this?? But should be append only
+            notifications: #A list of notifications, which can only be appended to by moderators.
+              patternProperties:
+                .*:
+                  #patternGroup: $notificationId
+                  type: object
+                  required: [fromUserId, timestamp, notificationType]
+                  write: "next['fromUserId'].val() === auth.id && isMod() && prev.val() === null"
+
+    #3rd attempt, clean seperation between access control and functional constraints
+    users:
+      additionalProperties: false
+      type: object
+      patternProperties:
+        .*:
+          #patternGroup: $userId
+          type: object
+          properties:
+            invites: #A list of chat invitations from other users, append-only by anyone. readable by the invite sender & user
+              patternProperties:
+                .*:
+                  #patternGroup: $inviteId
+                  type: object
+                  required: [id, fromUserId, fromUserName, toRoomId, toRoomName]
+                  constraint: "next[id].val() === $inviteId"
+
+
+            #todo, is this a bug in CBS, the moderator can overwrite this?? But should be append only
+            notifications: #A list of notifications, which can only be appended to by moderators.
+              patternProperties:
+                .*:
+                  #patternGroup: $notificationId
+                  type: object
+                  required: [fromUserId, timestamp, notificationType]
+                  constraint: "next['fromUserId'].val() === auth.id"
+
+  access: #access controls act like new root of firebase, bypassing higher level read/write constraints
+    #users can read anything but not change their notification
+    - location: users/$user/*
+      read:    $user == auth.id
+      write:   ($user == auth.id) || (isMod()) && prev['notifications'].val() === next['notifications'].val()
+
+    #any non-suspended user can write a new notification (respecting DB constraints) and read previously submitted invites
+    - location: users/$user/invites/$inviteId/*
+      read:    "prev['fromUserId'] == auth.id"
+      write:   "!prev.exists() && !isSuspended()"
+
+    #admins can append notifications
+    - location: users/$user/notifications/$notificationId/*
+      write:    isMod() && !prev.exists()
