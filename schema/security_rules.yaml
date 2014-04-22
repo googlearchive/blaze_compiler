@@ -1,0 +1,35 @@
+definitions:
+  predicate:
+    type: object
+    patternProperties:
+      ".*\\(.*\\)": {type: string}
+    additionalProperties: false
+    minProperties: 1
+    maxProperties: 1
+
+
+  predicates:
+    type: array
+    items: {$ref: "#/definitions/predicate"}
+
+
+  access_entry:
+      type: object
+      properties:
+        location: {type: string}
+        read:     {type: string}
+        write:    {type: string}
+      required: [location]
+      additionalProperties: false
+
+  access:
+    type: array
+    items: {$ref: "#/definitions/access_entry"}
+
+properties:
+  predicates: {$ref: "#/definitions/predicates"}
+  schema: {$ref: "http://firebase.com/schema#"}
+  access: {$ref: "#/definitions/access"}
+
+
+additionalProperties: false

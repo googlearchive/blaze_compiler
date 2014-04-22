@@ -1,0 +1,13 @@
+id: "http://firebase.com/schema#"
+$schema: "http://firebase.com/schema#"
+description: "Core meta-schema for validating Firebase schema types"
+
+anyOf:
+  - {$ref: "http://firebase.com/schema/types/object#"}
+
+  - properties:
+      type: {type: string}
+      constraint: {type: string}
+
+
+#can't make additionalProperties false as this does not include properties inherited from anyOf, or allOf

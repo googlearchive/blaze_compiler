@@ -1,0 +1,7 @@
+id: "http://firebase.com/schema/types/object#"
+$schema: "http://firebase.com/schema/types/object#"
+
+properties:
+  properties: {$ref: "http://firebase.com/schema#"}
+
+additionalProperties: false
