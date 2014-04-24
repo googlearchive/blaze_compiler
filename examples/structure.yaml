@@ -1,5 +1,5 @@
 predicates:
-  - isLoggedIn(): auth.id !== null
+  - isLoggedIn( ): auth.id !== null
 
 schema:
   type: object
