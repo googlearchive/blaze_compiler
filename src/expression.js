@@ -35,6 +35,8 @@ var Expression = (function () {
                     node.expr_type = "rule";
                 } else if (node.name == "root") {
                     node.expr_type = "rule";
+                } else if (node.name.indexOf("$") == 0) {
+                    node.expr_type = "rule";
                 } else if (node.name == "auth") {
                     node.expr_type = "map";
                 }
@@ -63,13 +65,21 @@ var Expression = (function () {
                             node.expr_type = "fun(array):rule";
                         } else if (node.property.name == 'contains') {
                             node.expr_type = "fun(value):value";
+                        } else if (node.property.expr_type == 'rule') {
+                            //cooertion from rule to value
+                            node.update(node.object.source() + ".child(" + node.property.source() + ".val())");
+                            node.expr_type = "rule";
                         } else {
-                            //not recognised member, so it must be an implicit child relation (without quotes in child)
+                            //not recognised member, so it must be an implicit child relation (with quotes in child)
                             node.update(node.object.source() + ".child('" + node.property.source() + "')");
                             node.expr_type = "rule";
                         }
+                    } else if (node.property.expr_type == 'rule') {
+                        //cooertion from rule to value
+                        node.update(node.object.source() + ".child(" + node.property.source() + ".val())");
+                        node.expr_type = "rule";
                     } else if (node.property.expr_type == 'value') {
-                        //not recognised member, so it must be an implicit child relation (with quotes in child)
+                        //not recognised member, so it must be an implicit child relation (without quotes in child)
                         node.update(node.object.source() + ".child(" + node.property.source() + ")");
                         node.expr_type = "rule";
                     }

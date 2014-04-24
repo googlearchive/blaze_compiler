@@ -28,6 +28,24 @@ function testArrayLookup3(test) {
 }
 exports.testArrayLookup3 = testArrayLookup3;
 
+function testArrayLookup4(test) {
+    translationTestCase("next[prev].val()", "newData.child(data.val()).val()", new expressions.SymbolTable(), test);
+    test.done();
+}
+exports.testArrayLookup4 = testArrayLookup4;
+
+function testArrayLookup5(test) {
+    translationTestCase("next[prev.child].val()", "newData.child(data.child('child').val()).val()", new expressions.SymbolTable(), test);
+    test.done();
+}
+exports.testArrayLookup5 = testArrayLookup5;
+
+function testArrayLookup6(test) {
+    translationTestCase("next[prev[child]].val()", "newData.child(data.child('child').val()).val()", new expressions.SymbolTable(), test);
+    test.done();
+}
+exports.testArrayLookup6 = testArrayLookup6;
+
 function testParent1(test) {
     translationTestCase("next.parent()", "newData.parent()", new expressions.SymbolTable(), test);
     test.done();
@@ -81,4 +99,35 @@ function testCoercion1(test) {
     test.done();
 }
 exports.testCoercion1 = testCoercion1;
+
+function testCoercion2(test) {
+    translationTestCase("auth.id == root[next]", "auth.id == root.child(newData.val()).val()", new expressions.SymbolTable(), test);
+    test.done();
+}
+exports.testCoercion2 = testCoercion2;
+
+function test$var1(test) {
+    translationTestCase("auth.id == $userid.val()", "auth.id == $userid.val()", new expressions.SymbolTable(), test);
+    test.done();
+}
+exports.test$var1 = test$var1;
+
+function test$var2(test) {
+    translationTestCase("auth.id == $userid", "auth.id == $userid.val()", new expressions.SymbolTable(), test);
+    test.done();
+}
+exports.test$var2 = test$var2;
+
+function test$var2(test) {
+    translationTestCase("prev[$userid].val()", "data.child($userid.val()).val()", new expressions.SymbolTable(), test);
+    test.done();
+}
+exports.test$var2 = test$var2;
+
+function test$var3(test) {
+    //bit weird this works
+    translationTestCase("prev.$userid.val()", "data.child($userid.val()).val()", new expressions.SymbolTable(), test);
+    test.done();
+}
+exports.test$var3 = test$var3;
 //# sourceMappingURL=expressions.js.map

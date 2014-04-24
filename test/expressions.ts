@@ -41,6 +41,36 @@ export function testArrayLookup3(test:nodeunit.Test):void{
     test.done();
 }
 
+export function testArrayLookup4(test:nodeunit.Test):void{
+    translationTestCase(
+        "next[prev].val()",
+        "newData.child(data.val()).val()",
+        new expressions.SymbolTable(),
+        test
+    );
+    test.done();
+}
+
+export function testArrayLookup5(test:nodeunit.Test):void{
+    translationTestCase(
+        "next[prev.child].val()",
+        "newData.child(data.child('child').val()).val()",
+        new expressions.SymbolTable(),
+        test
+    );
+    test.done();
+}
+
+export function testArrayLookup6(test:nodeunit.Test):void{
+    translationTestCase(
+        "next[prev[child]].val()",
+        "newData.child(data.child('child').val()).val()",
+        new expressions.SymbolTable(),
+        test
+    );
+    test.done();
+}
+
 export function testParent1(test:nodeunit.Test):void{
     translationTestCase(
         "next.parent()",
@@ -127,6 +157,57 @@ export function testCoercion1(test:nodeunit.Test):void{
     translationTestCase(
         "root.superuser == auth.id",
         "root.child('superuser').val() == auth.id",
+        new expressions.SymbolTable(),
+        test
+    );
+    test.done();
+}
+
+export function testCoercion2(test:nodeunit.Test):void{
+    translationTestCase(
+        "auth.id == root[next]",
+        "auth.id == root.child(newData.val()).val()",
+        new expressions.SymbolTable(),
+        test
+    );
+    test.done();
+}
+
+export function test$var1(test:nodeunit.Test):void{
+    translationTestCase(
+        "auth.id == $userid.val()",
+        "auth.id == $userid.val()",
+        new expressions.SymbolTable(),
+        test
+    );
+    test.done();
+}
+
+export function test$var2(test:nodeunit.Test):void{
+    translationTestCase(
+        "auth.id == $userid",
+        "auth.id == $userid.val()",
+        new expressions.SymbolTable(),
+        test
+    );
+    test.done();
+}
+
+export function test$var2(test:nodeunit.Test):void{
+    translationTestCase(
+        "prev[$userid].val()",
+        "data.child($userid.val()).val()",
+        new expressions.SymbolTable(),
+        test
+    );
+    test.done();
+}
+
+export function test$var3(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "prev.$userid.val()",
+        "data.child($userid.val()).val()",
         new expressions.SymbolTable(),
         test
     );
