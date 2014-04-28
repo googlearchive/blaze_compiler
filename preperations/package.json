@@ -1,8 +1,8 @@
 {
-  "name": "experimental_rules",
+  "name": "blaze",
   "version": "0.0.1",
-  "description": "Spam a firebase with a custom harness",
-  "main": "loadtest.js",
+  "description": "Transpiles a schmema into Firebase secrity rules",
+  "main": "blaze.js",
   "author": "Tom Larkworthy",
   "dependencies": {
     "firebase": "~1.0.5",

@@ -1,10 +1,11 @@
 var fs = require("fs");
-var schema = require("../src/schema.js");
+var rules = require("../src/rules.js");
+var expression = require("../src/expression.js");
 var tv4 = require("tv4");
 
 
 exports.testValidSchema = function(test){
-    var firebase_schema     = schema.load_yaml("schema/schema.yaml");
+    var firebase_schema     = rules.load_yaml("schema/schema.yaml");
     var metaschema = fs.readFileSync("schema/jsonschema", {encoding: 'utf8'});
 
     var valid = tv4.validate(firebase_schema, metaschema, false);
@@ -16,16 +17,35 @@ exports.testValidSchema = function(test){
 };
 
 exports.testStructureValidation = function(test){
-    structure_example = schema.load_yaml("examples/structure.yaml");
-    test.ok(schema.validate_rules(structure_example));
+    structure_example = rules.load_yaml("examples/structure.yaml");
+    test.ok(rules.validate_rules(structure_example));
     test.done();
 };
 
 exports.testStructureParsing = function(test){
-    structure_example = schema.load_yaml("examples/structure.yaml");
-    rules = schema.Rules.parse(structure_example);
-    console.log(rules);
-    test.ok(rules.schema != null);
-    test.ok(rules.predicates["isLoggedIn()"] != null);
+    structure_example = rules.load_yaml("examples/structure.yaml");
+    var rule = rules.Rules.parse(structure_example);
+    console.log(rule);
+    test.ok(rule.schema != null);
+    test.ok(rule.predicates["isLoggedIn"] != null);
+    test.done();
+};
+
+exports.testPredicateParsing1 = function(test){
+    var predicate = new expression.Predicate("f(x)", "true");
+
+    test.ok(predicate.signature == "f(1)");
+    test.done();
+};
+exports.testPredicateParsing2 = function(test){
+    var predicate = new expression.Predicate("f()", "true");
+
+    test.ok(predicate.signature == "f(0)");
+    test.done();
+};
+exports.testPredicateParsing3 = function(test){
+    var predicate = new expression.Predicate("f(x, y)", "true");
+    test.equals(predicate.signature, "f(2)");
+    test.deepEqual(predicate.parameter_map, ['x', 'y']);
     test.done();
 };

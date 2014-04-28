@@ -1,27 +1,25 @@
 {
-  "name": "security_compiler",
-  "version": "0.0.0",
-  "description": "security rule compiler for Firebase",
-  "main": "index.js",
-  "scripts": {
-      "test": "grunt test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "/home/tom/Dropbox/FSM/fireproof.git/"
-  },
+  "name": "blaze",
+  "version": "0.0.1",
+  "description": "Transpiles extendable, schema orientated definitions into Firebase security rules",
   "author": "Tom Larkworthy",
   "license": "private",
+
+
+  "main": "blaze.js",
+  "bin" : { "blaze" : "./src/blaze.js" },
   "devDependencies": {
       "grunt": "~0.4.2",
       "grunt-contrib-jshint": "~0.6.3",
       "grunt-contrib-nodeunit": "~0.2.0",
       "grunt-contrib-uglify": "~0.2.2",
       "grunt-pandoc":"0.2.3",
+      "optimist": "~0.6.1",
       "underscore": "~1.4.2",
       "handlebars": "1.3.0",
       "sprintf": "~0.1.3",
       "js-yaml": "3.0.2",
+      "xregexp": "2.0.0",
       "async": "0.7.0",
       "tv4": "1.0.16",
       "falafel": "0.3.1",

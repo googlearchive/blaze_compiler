@@ -1,0 +1,9 @@
+predicates:
+  - isLoggedIn( ): auth.id !== null
+
+schema: {}
+
+access:
+  - location: "/*"
+    read:  "true"
+    write: "true" #& isLoggedIn()" //remove comments and allow boolean true in
