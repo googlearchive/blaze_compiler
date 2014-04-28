@@ -17,7 +17,7 @@ import schema = require('../src/schema');
  * synchronously loads a file resource, converting from YAML to JSON
  * @param filepath location on filesystem
  */
-export function load_yaml(filepath:string):string{
+export function load_yaml(filepath:string):any{
     var json = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
     return js_yaml.load(json, 'utf8');
 }

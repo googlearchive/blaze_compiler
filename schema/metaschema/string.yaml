@@ -1,0 +1,2 @@
+name: string
+validator: {$ref: "http://firebase.com/schema/types/string#"}

@@ -3,5 +3,8 @@ $schema: "http://firebase.com/schema/types/object#"
 
 properties:
   properties: {$ref: "http://firebase.com/schema#"}
+  type: {}
+  constraint: {}
+  additionalProperties: {type: boolean}
 
 additionalProperties: false
