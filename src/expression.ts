@@ -32,13 +32,11 @@ export class Predicate{
         //now build up positional information of params
         this.parameter_map = params;
 
-        console.log("this.parameter_map", this.parameter_map)
-
         this.expression = Expression.parse(expression);
     }
 
     static parse(json:any):Predicate{
-        console.log("Predicate.parse:", json);
+        //console.log("Predicate.parse:", json);
 
         for(var key in json){//there should only be one entry
             var predicate = new Predicate(key, json[key]);
@@ -55,7 +53,7 @@ export class Predicates{
     [index: string]: Predicate;
 
     static parse(json:any):Predicates{
-        console.log("Predicates.parse:", json);
+        //console.log("Predicates.parse:", json);
         var predicates = new Predicates();
 
         for(var predicate_def in json){
@@ -93,10 +91,10 @@ export class Expression{
         //the falafel visitor function replaces source with a different construction
         var falafel_visitor = function(node){
 
-            console.log("type:", node.type);
+            //console.log("type:", node.type);
 
             if(node.type == "Identifier"){
-                console.log("identifier: ", node.name);
+                //console.log("identifier: ", node.name);
 
                 if(node.name == "next"){
                     node.update("newData");
@@ -118,7 +116,7 @@ export class Expression{
                 }
 
             }else if(node.type == "Literal"){
-                console.log("literal: ", node.value);
+                //console.log("literal: ", node.value);
 
                 node.expr_type = "value";
             }else if(node.type == "ArrayExpression"){
@@ -144,6 +142,9 @@ export class Expression{
 
                         }else if(node.property.name == 'contains'){
                             node.expr_type = "fun(value):value"
+
+                        }else if(node.property.name == 'isString'){
+                            node.expr_type = "fun():value"
 
                         }else if(node.property.expr_type == 'rule'){ //not a recognised
                             //cooertion from rule to value

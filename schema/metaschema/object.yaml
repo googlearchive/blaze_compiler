@@ -1,2 +1,4 @@
 name: object
 validator: {$ref: "http://firebase.com/schema/types/object#"}
+compile:
+  console.log("compile object")

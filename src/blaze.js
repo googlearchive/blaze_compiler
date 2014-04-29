@@ -3,6 +3,7 @@
 var optimist = require('optimist');
 var schema = require('../src/schema');
 var rules = require('../src/rules');
+var expression = require('../src/expression');
 
 var argv = optimist.usage('blaze <file>').argv;
 
@@ -19,5 +20,13 @@ var model = rules.Rules.parse(json);
 
 schema.annotate(model);
 
-console.log(model);
+console.log("\nannotated model:");
+console.log(model.schema.root);
+
+var buffer = [];
+
+model.schema.root.generate(new expression.Symbols(), "", buffer);
+
+console.log("\ngenerated code:");
+console.log(buffer.join(""));
 //# sourceMappingURL=blaze.js.map

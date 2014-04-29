@@ -66,7 +66,7 @@ visit("#", doc.schema, function(subschema, path){
     //BUG?
     //#/definitions is not brought into the subschema namespace properly
     //so we deep copy the object and copy the definitions over
-    //we can;t jsut copy the definitions over because it messes up the calling visitor
+    //we can't jsut copy the definitions over because it messes up the calling visitor
     var subschema = JSON.parse(JSON.stringify(subschema));
     subschema.definitions = doc.schema.definitions;
 

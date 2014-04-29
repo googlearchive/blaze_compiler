@@ -1,2 +1,5 @@
 name: string
 validator: {$ref: "http://firebase.com/schema/types/string#"}
+compile:
+  console.log("compile string");
+  api.addConstraint("next.isString()")

@@ -1,4 +1,5 @@
 var rules = require('../src/rules');
+var expression = require('../src/expression');
 
 var tv4 = require('tv4');
 var fs = require('fs');
@@ -17,6 +18,21 @@ var SchemaNode = (function () {
     function SchemaNode() {
         this.properties = {};
     }
+    SchemaNode.prototype.generate = function (symbols, prefix, buffer) {
+        buffer.push("{\n");
+
+        buffer.push(prefix + "  '.write':");
+        buffer.push(this.constraint.generate(symbols));
+        buffer.push("\n");
+
+        for (var property in this.properties) {
+            buffer.push(prefix + "  '" + property + "': ");
+            this.properties[property].generate(symbols, prefix + "  ", buffer);
+        }
+
+        buffer.push(prefix);
+        buffer.push("}\n");
+    };
     return SchemaNode;
 })();
 exports.SchemaNode = SchemaNode;
@@ -42,6 +58,7 @@ var MetaSchema = (function () {
     MetaSchema.parse = function (json) {
         var result = new MetaSchema();
         result.validator = json.validator;
+        result.compile = new Function("api", json.compile);
 
         return result;
     };
@@ -50,20 +67,20 @@ var MetaSchema = (function () {
 exports.MetaSchema = MetaSchema;
 
 function annotate_schema(node, parent, api) {
-    console.log("annotate_schema", node);
+    //console.log("annotate_schema", node);
+    var annotation = new SchemaNode();
 
     for (var key in node.properties) {
-        console.log("child", key);
-        node.properties[key] = annotate_schema(node.properties[key], node, api);
+        annotation.properties[key] = annotate_schema(node.properties[key], node, api);
     }
-
-    var annotation = new SchemaNode();
 
     annotation.type = node.type ? node.type : null;
 
     if (annotation.type != null) {
         if (api.metaschema[annotation.type] != undefined) {
             if (api.metaschema[annotation.type].validate(node)) {
+                api.setContext(node, parent);
+                api.metaschema[annotation.type].compile(api);
             } else {
                 console.error(node, "is not a valid", annotation.type);
             }
@@ -71,6 +88,8 @@ function annotate_schema(node, parent, api) {
             console.error("unknown schema type:", annotation.type);
         }
     }
+
+    annotation.constraint = expression.Expression.parse(node.constraint);
 
     return annotation;
 }
@@ -94,6 +113,23 @@ var SchemaAPI = (function () {
             this.metaschema[metaschema_def.name] = MetaSchema.parse(metaschema_def);
         }
     }
+    /**
+    * before the metaschema is given a hook for adding constraints, this method is called to
+    * point the api at the right schema instances
+    * @param node
+    * @param parent
+    */
+    SchemaAPI.prototype.setContext = function (node, parent) {
+        this.node = node;
+        this.parent = parent;
+    };
+
+    /**
+    * User method for adding a type specific constraint, the constraint is &&ed to the current constraints
+    */
+    SchemaAPI.prototype.addConstraint = function (expression) {
+        this.node.constraint = "(" + this.node.constraint + ") && (" + expression + ")";
+    };
     return SchemaAPI;
 })();
 exports.SchemaAPI = SchemaAPI;

@@ -57,8 +57,7 @@ var AccessEntry = (function () {
     function AccessEntry() {
     }
     AccessEntry.parse = function (json) {
-        console.log("AccessEntry.parse:", json);
-
+        //console.log("AccessEntry.parse:", json);
         var accessEntry = new AccessEntry();
         accessEntry.location = json.location;
         accessEntry.read = expression.Expression.parse(json.read);
@@ -73,7 +72,7 @@ var Access = (function () {
     function Access() {
     }
     Access.parse = function (json) {
-        console.log("Access.parse:", json);
+        //console.log("Access.parse:", json);
         var access = new Access();
 
         for (var index in json) {

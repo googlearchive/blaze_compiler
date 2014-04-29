@@ -20,13 +20,9 @@ var Predicate = (function () {
         //now build up positional information of params
         this.parameter_map = params;
 
-        console.log("this.parameter_map", this.parameter_map);
-
         this.expression = Expression.parse(expression);
     }
     Predicate.parse = function (json) {
-        console.log("Predicate.parse:", json);
-
         for (var key in json) {
             var predicate = new Predicate(key, json[key]);
         }
@@ -44,7 +40,7 @@ var Predicates = (function () {
     function Predicates() {
     }
     Predicates.parse = function (json) {
-        console.log("Predicates.parse:", json);
+        //console.log("Predicates.parse:", json);
         var predicates = new Predicates();
 
         for (var predicate_def in json) {
@@ -88,11 +84,9 @@ var Expression = (function () {
 
         //the falafel visitor function replaces source with a different construction
         var falafel_visitor = function (node) {
-            console.log("type:", node.type);
-
+            //console.log("type:", node.type);
             if (node.type == "Identifier") {
-                console.log("identifier: ", node.name);
-
+                //console.log("identifier: ", node.name);
                 if (node.name == "next") {
                     node.update("newData");
                     node.expr_type = "rule";
@@ -112,8 +106,7 @@ var Expression = (function () {
                     node.expr_type = symbols.variables[node.name].expr_type;
                 }
             } else if (node.type == "Literal") {
-                console.log("literal: ", node.value);
-
+                //console.log("literal: ", node.value);
                 node.expr_type = "value";
             } else if (node.type == "ArrayExpression") {
                 node.expr_type = "value";
@@ -133,6 +126,8 @@ var Expression = (function () {
                             node.expr_type = "fun(array):rule";
                         } else if (node.property.name == 'contains') {
                             node.expr_type = "fun(value):value";
+                        } else if (node.property.name == 'isString') {
+                            node.expr_type = "fun():value";
                         } else if (node.property.expr_type == 'rule') {
                             //cooertion from rule to value
                             node.update(node.object.source() + ".child(" + node.property.source() + ".val())");

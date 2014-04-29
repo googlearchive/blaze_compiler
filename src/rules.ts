@@ -62,7 +62,7 @@ export class AccessEntry{
     write:    expression.Expression;
 
     static parse(json:any):AccessEntry{
-        console.log("AccessEntry.parse:", json);
+        //console.log("AccessEntry.parse:", json);
 
         var accessEntry = new AccessEntry();
         accessEntry.location = json.location;
@@ -77,7 +77,7 @@ export class Access{
 
     static parse(json:any):Access{
 
-        console.log("Access.parse:", json);
+        //console.log("Access.parse:", json);
         var access = new Access();
 
         for(var index in json){
