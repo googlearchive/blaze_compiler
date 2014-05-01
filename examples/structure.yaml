@@ -9,6 +9,7 @@ schema:
     child_object:
       type: object
       additionalProperties: false
+  required: [child_object]
 
 access:
   - location: "/*"

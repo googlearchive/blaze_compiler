@@ -5,28 +5,53 @@ import expression = require('../src/expression');
 import tv4 = require('tv4');
 import fs = require('fs');
 
+
+//todo
+//refactor out traversals
+
 /**
- * performs a bottom up traversal of a schema definition
+ * performs a bottom up traversal of a schema definition, allowing each metaschema processor
+ * to generate constraints
  */
 export function annotate(model:rules.Rules){
     var api = new SchemaAPI();
 
     model.schema.root = annotate_schema(model.schema.json, null, api)
 }
+/**
+* moves ancestors schema constraints to being explicitly being represented in leaf nodes
+* this is done by leaves being the && concatenation of all ancestors
+* next in a parent's context is next.parent() in the child context
+*/
+export function flattenConstraints(model:rules.Rules){
+    model.schema.root.flattenConstraints(null);
+}
+/**
+* intergrates the ACL constraints into the schema
+*/
+export function combineACL(model:rules.Rules){
+    model.schema.root.combineACL(model.access, []);
+}
 
 export class SchemaNode{
     type: string;
     properties:{[name:string]:SchemaNode} = {};
-    constraint:expression.Expression
+    constraint:expression.Expression;
+    write:expression.Expression;
+    read: expression.Expression;
 
 
-    generate(symbols:expression.Symbols, prefix:string, buffer:string[]):void{
+    generate(symbols:expression.Symbols, prefix:string, buffer:string[]):string[]{
         buffer.push("{\n");
 
         buffer.push(prefix + "  '.write':");
-        buffer.push(this.constraint.generate(symbols));
+        buffer.push(this.write.generate(symbols));
+        buffer.push("\n");
+        buffer.push(prefix + "  '.read':");
+        buffer.push(this.read.generate(symbols));
         buffer.push("\n");
 
+        //recurse
         for(var property in this.properties){
             buffer.push(prefix + "  '" + property + "': ");
             this.properties[property].generate(symbols, prefix + "  ", buffer)
@@ -35,6 +60,51 @@ export class SchemaNode{
         buffer.push(prefix);
         buffer.push("}\n");
 
+        return buffer;
+    }
+
+    /**
+     * moves ancestors constraints to being explicitly being represented in leaf nodes
+     * this is done by leaves being the && concatenation of all ancestors
+     * next in a parent's context is next.parent() in the child context
+     */
+    flattenConstraints(inherited_clause:expression.Expression){
+        if(inherited_clause != null){
+            this.constraint = expression.Expression.parse("(" + inherited_clause.rewriteForChild()  + ")&&(" + this.constraint.raw + ")");
+        }
+
+        //recurse
+        for(var property in this.properties){
+            this.properties[property].flattenConstraints(this.constraint)
+        }
+    }
+
+    combineACL(acl:rules.Access, location:string[]){
+        console.log("combineACL", location);
+
+        var write:string = "false";
+        var read: string = "false";
+
+        //work out what ACL entries are active for this node by ORing active entries clauses together
+        for(var idx in acl){
+            var entry:rules.AccessEntry = acl[idx];
+
+            console.log("entry", entry.location);
+            if(entry.match(location)){
+                write = "(" + write + ")||(" + entry.write.raw + ")";
+                read  = "(" + read  + ")||(" + entry.read.raw  + ")";
+            }
+        }
+
+        //combine the write rules with the schema constraints
+        this.write = expression.Expression.parse("(" + this.constraint.raw + ")&&(" + write + ")");
+        this.read  = expression.Expression.parse(read);
+
+        //recurse
+        for(var property in this.properties){
+            var child_location: string[] = location.concat(<string>property);
+            this.properties[property].combineACL(acl, child_location);
+        }
     }
 }
 
@@ -73,12 +143,13 @@ function annotate_schema(node:any, parent:any, api:SchemaAPI):SchemaNode{
     //console.log("annotate_schema", node);
     var annotation = new SchemaNode();
 
-    //traverse to children first
+    //recurse to children first in bottom up
     for(var key in node.properties){
         annotation.properties[key] = annotate_schema(node.properties[key], node, api);
     }
 
     annotation.type = node.type ? node.type:null;
+    node.constraint = node.constraint ? node.constraint:"true"; //default to true for constraint
 
     if(annotation.type != null){
         if(api.metaschema[annotation.type] != undefined){
@@ -92,6 +163,7 @@ function annotate_schema(node:any, parent:any, api:SchemaAPI):SchemaNode{
             console.error("unknown schema type:", annotation.type)
         }
     }
+
 
     annotation.constraint = expression.Expression.parse(node.constraint);
 
@@ -138,5 +210,12 @@ export class SchemaAPI{
      */
     addConstraint(expression:string):void{
         this.node.constraint = "("+ this.node.constraint + ") && (" + expression + ")";
+    }
+
+    /**
+     * User method for read access to schema fields
+     */
+    getField(name:string):any{
+        return this.node[name];
     }
 }

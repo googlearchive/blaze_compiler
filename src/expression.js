@@ -3,6 +3,8 @@ var falafel = require("falafel");
 
 var XRegExp = require('xregexp').XRegExp;
 
+//todo
+//implement explicit types ratehr than ad hoc string
 var Predicate = (function () {
     function Predicate(declaration, expression) {
         //break the function declaration into its parts
@@ -79,9 +81,24 @@ var Expression = (function () {
         return expr;
     };
 
-    Expression.prototype.generate = function (symbols) {
-        var expression = [];
+    /**
+    * changes next and prev references for next.parent() and prev.parent()
+    */
+    Expression.prototype.rewriteForChild = function () {
+        var falafel_visitor = function (node) {
+            if (node.type == "Identifier") {
+                if (node.name == "next") {
+                    node.update("next.parent()");
+                } else if (node.name == "prev") {
+                    node.update("prev.parent()");
+                }
+            }
+        };
 
+        return falafel(this.raw, {}, falafel_visitor);
+    };
+
+    Expression.prototype.generate = function (symbols) {
         //the falafel visitor function replaces source with a different construction
         var falafel_visitor = function (node) {
             //console.log("type:", node.type);
@@ -127,6 +144,8 @@ var Expression = (function () {
                         } else if (node.property.name == 'contains') {
                             node.expr_type = "fun(value):value";
                         } else if (node.property.name == 'isString') {
+                            node.expr_type = "fun():value";
+                        } else if (node.property.name == 'exists') {
                             node.expr_type = "fun():value";
                         } else if (node.property.expr_type == 'rule') {
                             //cooertion from rule to value

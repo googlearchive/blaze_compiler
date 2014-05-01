@@ -4,8 +4,11 @@ var expression = require('../src/expression');
 var tv4 = require('tv4');
 var fs = require('fs');
 
+//todo
+//refactor out traversals
 /**
-* performs a bottom up traversal of a schema definition
+* performs a bottom up traversal of a schema definition, allowing each metaschema processor
+* to generate constraints
 */
 function annotate(model) {
     var api = new SchemaAPI();
@@ -13,6 +16,24 @@ function annotate(model) {
     model.schema.root = annotate_schema(model.schema.json, null, api);
 }
 exports.annotate = annotate;
+
+/**
+* moves ancestors schema constraints to being explicitly being represented in leaf nodes
+* this is done by leaves being the && concatenation of all ancestors
+* next in a parent's context is next.parent() in the child context
+*/
+function flattenConstraints(model) {
+    model.schema.root.flattenConstraints(null);
+}
+exports.flattenConstraints = flattenConstraints;
+
+/**
+* intergrates the ACL constraints into the schema
+*/
+function combineACL(model) {
+    model.schema.root.combineACL(model.access, []);
+}
+exports.combineACL = combineACL;
 
 var SchemaNode = (function () {
     function SchemaNode() {
@@ -22,7 +43,10 @@ var SchemaNode = (function () {
         buffer.push("{\n");
 
         buffer.push(prefix + "  '.write':");
-        buffer.push(this.constraint.generate(symbols));
+        buffer.push(this.write.generate(symbols));
+        buffer.push("\n");
+        buffer.push(prefix + "  '.read':");
+        buffer.push(this.read.generate(symbols));
         buffer.push("\n");
 
         for (var property in this.properties) {
@@ -32,6 +56,49 @@ var SchemaNode = (function () {
 
         buffer.push(prefix);
         buffer.push("}\n");
+
+        return buffer;
+    };
+
+    /**
+    * moves ancestors constraints to being explicitly being represented in leaf nodes
+    * this is done by leaves being the && concatenation of all ancestors
+    * next in a parent's context is next.parent() in the child context
+    */
+    SchemaNode.prototype.flattenConstraints = function (inherited_clause) {
+        if (inherited_clause != null) {
+            this.constraint = expression.Expression.parse("(" + inherited_clause.rewriteForChild() + ")&&(" + this.constraint.raw + ")");
+        }
+
+        for (var property in this.properties) {
+            this.properties[property].flattenConstraints(this.constraint);
+        }
+    };
+
+    SchemaNode.prototype.combineACL = function (acl, location) {
+        console.log("combineACL", location);
+
+        var write = "false";
+        var read = "false";
+
+        for (var idx in acl) {
+            var entry = acl[idx];
+
+            console.log("entry", entry.location);
+            if (entry.match(location)) {
+                write = "(" + write + ")||(" + entry.write.raw + ")";
+                read = "(" + read + ")||(" + entry.read.raw + ")";
+            }
+        }
+
+        //combine the write rules with the schema constraints
+        this.write = expression.Expression.parse("(" + this.constraint.raw + ")&&(" + write + ")");
+        this.read = expression.Expression.parse(read);
+
+        for (var property in this.properties) {
+            var child_location = location.concat(property);
+            this.properties[property].combineACL(acl, child_location);
+        }
     };
     return SchemaNode;
 })();
@@ -75,6 +142,7 @@ function annotate_schema(node, parent, api) {
     }
 
     annotation.type = node.type ? node.type : null;
+    node.constraint = node.constraint ? node.constraint : "true"; //default to true for constraint
 
     if (annotation.type != null) {
         if (api.metaschema[annotation.type] != undefined) {
@@ -129,6 +197,13 @@ var SchemaAPI = (function () {
     */
     SchemaAPI.prototype.addConstraint = function (expression) {
         this.node.constraint = "(" + this.node.constraint + ") && (" + expression + ")";
+    };
+
+    /**
+    * User method for read access to schema fields
+    */
+    SchemaAPI.prototype.getField = function (name) {
+        return this.node[name];
     };
     return SchemaAPI;
 })();

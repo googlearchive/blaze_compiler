@@ -23,18 +23,38 @@ console.log("transpiling", file);
 //convert to JSON
 var json:string = rules.load_yaml(file);
 
-rules.validate_rules(json);
+//check user's JSON meets JSON schema spec of rule file
+var ok = rules.validate_rules(json);
 
-var model:rules.Rules = rules.Rules.parse(json);
+if(ok){
+    //convert users rule file into a model
+    var model:rules.Rules = rules.Rules.parse(json);
 
-schema.annotate(model);
+    //first pass of compiler,
+    //metaschema generate constraints for schema
+    schema.annotate(model);
 
-console.log("\nannotated model:");
-console.log(model.schema.root);
+    console.log("\nannotated model:");
+    console.log(model.schema.root);
 
-var buffer = [];
+    //second pass of compiler
+    //constraints pushed into leaves
+    schema.flattenConstraints(model);
+    console.log("\nflattened model:");
+    console.log(model.schema.root);
 
-model.schema.root.generate(new expression.Symbols(), "", buffer);
 
-console.log("\ngenerated code:");
-console.log(buffer.join(""));
+    //3rd pass pass of compiler, unifying ACL and the schema
+    //constraints pushed into leaves
+    schema.combineACL(model);
+    console.log("\n ACL and schema:");
+    console.log(model.schema.root);
+
+    //generate output in security rules 1.0 syntax into a buffer
+    var buffer:string[] = model.schema.root.generate(new expression.Symbols(), "", []);
+
+    //print generate code out
+    console.log("\ngenerated code:");
+    console.log(buffer.join(""));
+}
+

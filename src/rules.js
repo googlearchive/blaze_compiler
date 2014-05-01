@@ -59,10 +59,34 @@ var AccessEntry = (function () {
     AccessEntry.parse = function (json) {
         //console.log("AccessEntry.parse:", json);
         var accessEntry = new AccessEntry();
-        accessEntry.location = json.location;
+        accessEntry.location = json.location.split("/");
+
+        if (accessEntry.location[accessEntry.location.length - 1] !== '*') {
+            throw new Error("AccessEntry.location must end in /*");
+        } else {
+            accessEntry.location.pop();
+        }
+
+        //deal with issue of "/*" being split to "['', '*']" by removing first element
+        if (accessEntry.location.length == 1 && accessEntry.location[0] === '') {
+            accessEntry.location = [];
+        }
+
         accessEntry.read = expression.Expression.parse(json.read);
         accessEntry.write = expression.Expression.parse(json.write);
         return accessEntry;
+    };
+
+    AccessEntry.prototype.match = function (location) {
+        //candidate location must be at least as specific as this location
+        if (this.location.length > location.length)
+            return false;
+
+        for (var idx in this.location) {
+            if (this.location[idx] !== location[idx])
+                return false;
+        }
+        return true;
     };
     return AccessEntry;
 })();

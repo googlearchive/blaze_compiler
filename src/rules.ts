@@ -57,7 +57,7 @@ export class SchemaRoot{
 
 
 export class AccessEntry{
-    location: string;
+    location: string[]; //components of address, e.g. users/$userid/* is mapped to ['users', '$userid']
     read:     expression.Expression;
     write:    expression.Expression;
 
@@ -65,10 +65,32 @@ export class AccessEntry{
         //console.log("AccessEntry.parse:", json);
 
         var accessEntry = new AccessEntry();
-        accessEntry.location = json.location;
+        accessEntry.location = json.location.split("/");
+
+        if(accessEntry.location[accessEntry.location.length-1] !== '*'){
+            throw new Error("AccessEntry.location must end in /*")
+        }else{
+            accessEntry.location.pop();
+        }
+
+        //deal with issue of "/*" being split to "['', '*']" by removing first element
+        if(accessEntry.location.length == 1 && accessEntry.location[0] === ''){
+            accessEntry.location = [];
+        }
+
         accessEntry.read     = expression.Expression.parse(<string>json.read);
         accessEntry.write    = expression.Expression.parse(<string>json.write);
         return accessEntry
+    }
+
+    match(location:string[]):boolean{
+        //candidate location must be at least as specific as this location
+        if(this.location.length > location.length) return false;
+
+        for(var idx in this.location){
+            if(this.location[idx] !== location[idx]) return false
+        }
+        return true;
     }
 }
 

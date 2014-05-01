@@ -4,6 +4,9 @@ var falafel = require("falafel");
 
 var XRegExp = require('xregexp').XRegExp;
 
+//todo
+//implement explicit types ratehr than ad hoc string
+
 export class Predicate{
     identifier: string; //the function name
     signature: string; //the function name, and the number of params, e.g. f(x) signature is f(0)
@@ -85,9 +88,24 @@ export class Expression{
         return expr;
     }
 
-    generate(symbols:Symbols):string {
-        var expression:string[] = [];
+    /**
+     * changes next and prev references for next.parent() and prev.parent()
+     */
+    rewriteForChild():string{
+        var falafel_visitor = function(node){
+            if(node.type == "Identifier"){
+                if(node.name == "next"){
+                    node.update("next.parent()");
+                }else if(node.name == "prev"){
+                    node.update("prev.parent()");
+                }
+            }
+        }
 
+        return <string>falafel(this.raw, {}, falafel_visitor);
+    }
+
+    generate(symbols:Symbols):string {
         //the falafel visitor function replaces source with a different construction
         var falafel_visitor = function(node){
 
@@ -144,6 +162,9 @@ export class Expression{
                             node.expr_type = "fun(value):value"
 
                         }else if(node.property.name == 'isString'){
+                            node.expr_type = "fun():value"
+
+                        }else if(node.property.name == 'exists'){
                             node.expr_type = "fun():value"
 
                         }else if(node.property.expr_type == 'rule'){ //not a recognised
