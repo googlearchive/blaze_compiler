@@ -18,14 +18,23 @@ function annotate(model) {
 exports.annotate = annotate;
 
 /**
-* moves ancestors schema constraints to being explicitly being represented in leaf nodes
+* pushes ancestors schema constraints to being explicitly being represented in leaf nodes
 * this is done by leaves being the && concatenation of all ancestors
 * next in a parent's context is next.parent() in the child context
 */
-function flattenConstraints(model) {
-    model.schema.root.flattenConstraints(null);
+function pushDownConstraints(model) {
+    model.schema.root.pushDownConstraints(null);
 }
-exports.flattenConstraints = flattenConstraints;
+exports.pushDownConstraints = pushDownConstraints;
+
+/**
+* pulls full leaf schema constraints upwards. ancestors constraints are overwritten
+* by the && concatenation of all children
+*/
+function pullUpConstraints(model) {
+    model.schema.root.pullUpConstraints();
+}
+exports.pullUpConstraints = pullUpConstraints;
 
 /**
 * intergrates the ACL constraints into the schema
@@ -65,17 +74,17 @@ var SchemaNode = (function () {
     SchemaNode.prototype.generate = function (symbols, prefix, buffer) {
         buffer.push('{\n');
 
-        var comma_in_read_write = false;
-        if (this.isLeaf()) {
-            buffer.push(prefix + '  ".write":"');
-            buffer.push(this.write.generate(symbols));
-            buffer.push('",\n');
-            buffer.push(prefix + '  ".read":"');
-            buffer.push(this.read.generate(symbols));
-            buffer.push('",\n');
-            comma_in_read_write = true;
-        }
+        //var comma_in_read_write = false;
+        //if(this.isLeaf()){
+        buffer.push(prefix + '  ".write":"');
+        buffer.push(this.write.generate(symbols));
+        buffer.push('",\n');
+        buffer.push(prefix + '  ".read":"');
+        buffer.push(this.read.generate(symbols));
+        buffer.push('",\n');
 
+        //comma_in_read_write = true;
+        //}
         var comma_in_properties = false;
 
         for (var property in this.properties) {
@@ -91,7 +100,7 @@ var SchemaNode = (function () {
         if (comma_in_properties) {
             buffer.pop();
             buffer.push("}\n");
-        } else if (comma_in_read_write) {
+        } else {
             //else the comma was placed last at the ".read" statement
             buffer.pop();
             buffer.push('"\n');
@@ -108,14 +117,30 @@ var SchemaNode = (function () {
     * this is done by leaves being the && concatenation of all ancestors
     * next in a parent's context is next.parent() in the child context
     */
-    SchemaNode.prototype.flattenConstraints = function (inherited_clause) {
+    SchemaNode.prototype.pushDownConstraints = function (inherited_clause) {
         if (inherited_clause != null) {
             this.constraint = expression.Expression.parse("(" + inherited_clause.rewriteForChild() + ")&&(" + this.constraint.raw + ")");
         }
 
         for (var property in this.properties) {
-            this.properties[property].flattenConstraints(this.constraint);
+            this.properties[property].pushDownConstraints(this.constraint);
         }
+    };
+
+    SchemaNode.prototype.pullUpConstraints = function () {
+        if (this.isLeaf())
+            return this.constraint.raw;
+
+        //recurse first for bottom up
+        var children_clauses = "true";
+
+        for (var property in this.properties) {
+            children_clauses = "(" + children_clauses + ") && (" + this.properties[property].pullUpConstraints() + ")";
+        }
+
+        this.constraint = expression.Expression.parse(children_clauses);
+
+        return this.constraint.raw;
     };
 
     SchemaNode.prototype.combineACL = function (acl, location) {

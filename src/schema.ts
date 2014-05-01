@@ -19,13 +19,22 @@ export function annotate(model:rules.Rules){
     model.schema.root = annotate_schema(model.schema.json, null, api)
 }
 /**
-* moves ancestors schema constraints to being explicitly being represented in leaf nodes
+* pushes ancestors schema constraints to being explicitly being represented in leaf nodes
 * this is done by leaves being the && concatenation of all ancestors
 * next in a parent's context is next.parent() in the child context
 */
-export function flattenConstraints(model:rules.Rules){
-    model.schema.root.flattenConstraints(null);
+export function pushDownConstraints(model:rules.Rules){
+    model.schema.root.pushDownConstraints(null);
 }
+
+/**
+* pulls full leaf schema constraints upwards. ancestors constraints are overwritten
+* by the && concatenation of all children
+*/
+export function pullUpConstraints(model:rules.Rules){
+    model.schema.root.pullUpConstraints();
+}
+
 /**
 * intergrates the ACL constraints into the schema
 */
@@ -64,16 +73,16 @@ export class SchemaNode{
     generate(symbols:expression.Symbols, prefix:string, buffer:string[]):string[]{
         buffer.push('{\n');
 
-        var comma_in_read_write = false;
-        if(this.isLeaf()){
+        //var comma_in_read_write = false;
+        //if(this.isLeaf()){
             buffer.push(prefix + '  ".write":"');
             buffer.push(this.write.generate(symbols));
             buffer.push('",\n');
             buffer.push(prefix + '  ".read":"');
             buffer.push(this.read.generate(symbols));
             buffer.push('",\n');
-            comma_in_read_write = true;
-        }
+            //comma_in_read_write = true;
+        //}
 
         var comma_in_properties = false;
         //recurse
@@ -89,7 +98,7 @@ export class SchemaNode{
         if(comma_in_properties){
             buffer.pop();
             buffer.push("}\n");
-        }else if(comma_in_read_write){
+        }else{
             //else the comma was placed last at the ".read" statement
             buffer.pop();
             buffer.push('"\n');
@@ -106,15 +115,36 @@ export class SchemaNode{
      * this is done by leaves being the && concatenation of all ancestors
      * next in a parent's context is next.parent() in the child context
      */
-    flattenConstraints(inherited_clause:expression.Expression){
+    pushDownConstraints(inherited_clause:expression.Expression){
         if(inherited_clause != null){
-            this.constraint = expression.Expression.parse("(" + inherited_clause.rewriteForChild()  + ")&&(" + this.constraint.raw + ")");
+            this.constraint = expression.Expression.parse(
+                "(" + inherited_clause.rewriteForChild()  +
+                ")&&(" +
+                this.constraint.raw + ")");
         }
 
-        //recurse
+        //recurse last for top down
         for(var property in this.properties){
-            this.properties[property].flattenConstraints(this.constraint)
+            this.properties[property].pushDownConstraints(this.constraint)
         }
+    }
+
+    pullUpConstraints():string{
+        if(this.isLeaf()) return this.constraint.raw;
+
+        //recurse first for bottom up
+        var children_clauses:string = "true";
+
+        for(var property in this.properties){
+            children_clauses =
+                "(" +children_clauses+
+                ") && (" +
+                this.properties[property].pullUpConstraints() + ")"
+        }
+
+        this.constraint = expression.Expression.parse(children_clauses);
+
+        return this.constraint.raw;
     }
 
     combineACL(acl:rules.Access, location:string[]){

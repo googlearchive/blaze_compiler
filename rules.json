@@ -1,6 +1,10 @@
 {
   "rules":{
+    ".write":"(((true) && (((true) && (((true)&&((auth.username == 'red')))&&((auth.username == 'red') || (auth.username == 'black')))) && (((true)&&((auth.username == 'red')))&&(true)))) && (((true) && (((true)&&(true))&&((auth.username == 'black')))) && (((true)&&(true))&&((auth.username == 'red') || (auth.username == 'black')))))&&((false)||((auth.username == 'black')))",
+    ".read":"(false)||(false)",
     "chld1": {
+      ".write":"(((true) && (((true)&&((auth.username == 'red')))&&((auth.username == 'red') || (auth.username == 'black')))) && (((true)&&((auth.username == 'red')))&&(true)))&&(((false)||((auth.username == 'red')))||((auth.username == 'black')))",
+      ".read":"((false)||(false))||(false)",
       "grnd1": {
         ".write":"(((true)&&((auth.username == 'red')))&&((auth.username == 'red') || (auth.username == 'black')))&&(((false)||((auth.username == 'red')))||((auth.username == 'black')))",
         ".read":"((false)||(false))||(false)"
@@ -11,6 +15,8 @@
       }
     },
     "chld2": {
+      ".write":"(((true) && (((true)&&(true))&&((auth.username == 'black')))) && (((true)&&(true))&&((auth.username == 'red') || (auth.username == 'black'))))&&((false)||((auth.username == 'black')))",
+      ".read":"(false)||(false)",
       "grnd3": {
         ".write":"(((true)&&(true))&&((auth.username == 'black')))&&((false)||((auth.username == 'black')))",
         ".read":"(false)||(false)"

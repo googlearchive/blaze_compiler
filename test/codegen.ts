@@ -7,7 +7,7 @@ import compile = require('../src/compile');
 import rules = require('../src/rules');
 import async = require('async');
 
-/*
+
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml")),
@@ -26,7 +26,7 @@ export function testPredicate_access(test:nodeunit.Test):void{
         test_utils.assert_can_read.bind  (null,  "tom", "/", "string", test)
     ], test.done.bind(null));
 }
-*/
+
 
 export function testAccess(test:nodeunit.Test):void{
     async.series([
@@ -48,6 +48,8 @@ export function testAccess(test:nodeunit.Test):void{
 
         test_utils.assert_can_write_mock.bind(null, "red",  "/chld1", "string", test),
         test_utils.assert_can_write_mock.bind(null, "black","/chld2", "string", test),
+        test_utils.assert_cant_write.bind(null,     "black","/chld1", "string", test),
+        test_utils.assert_cant_write.bind(null,      "red", "/chld2", "string", test),
 
     ], test.done.bind(null));
 }

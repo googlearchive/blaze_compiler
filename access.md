@@ -29,6 +29,19 @@ root.chld1.grnd1  write: (auth=black|red) && (auth=red)
           
 ```
 
+then we need to push the constraints back up the tree from the leaves upwards, so that every point in the tree
+contains the whole tree of constraints, and ancestors are stictly more restrictive
+a parent is the && of its child constraints
+
+```
+ansestor schemas:
+root       write: (((auth=black|red) && (auth=red))&&((true) && (auth=red))) && ((auth=black) && (auth=red|black))
+root.chld1 write: ((auth=black|red) && (auth=red))&&((true) && (auth=red))
+    .chld2 write: (auth=black) && (auth=red|black)
+
+
+```
+
 Given the ACL:
 
 ```
@@ -48,10 +61,12 @@ root.chld1.grnd1  write: (auth=black|red) && (auth=red) && (auth:red || auth:bla
           .grnd2  write: (true) && (auth=red)           && (auth:red || auth:black)
     .chld2.grnd3  write: (auth=black)                   && (auth:black)
           .grnd4  write: (auth=red|black)               && (auth:black)
+
+etc. for ancestors
 ```  
 
-So if auth is red, root.chld1.\* is writable
-So if auth is black, \* is not writable, but root.chldX.grnd(1|3|4) are
+So if auth is red, root.chld1.\* is writable and so should root.chld1 be writable without children
+So if auth is black, \* is not writable, but root.chldX.grnd(3|4) are and so should root.chld2 be writable without children too
     
 
 Note firebase 1.0 rules really only operate on leaves so we jsut have to carry the rules forward on the leaves.

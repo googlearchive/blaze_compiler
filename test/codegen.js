@@ -4,25 +4,27 @@ var compile = require('../src/compile');
 
 var async = require('async');
 
-/*
-export function testString(test:nodeunit.Test):void{
-async.series([
-firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml")),
-test_utils.assert_can_write.bind (null, "any", "/", "string", test),
-test_utils.assert_cant_write.bind(null, "any", "/", {"child":"string"}, test),
-test_utils.assert_can_read.bind  (null, "any", "/", "string", test)
-], test.done.bind(null));
+function testString(test) {
+    async.series([
+        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml")),
+        test_utils.assert_can_write.bind(null, "any", "/", "string", test),
+        test_utils.assert_cant_write.bind(null, "any", "/", { "child": "string" }, test),
+        test_utils.assert_can_read.bind(null, "any", "/", "string", test)
+    ], test.done.bind(null));
 }
-export function testPredicate_access(test:nodeunit.Test):void{
-async.series([
-firebase_io.setValidationRules.bind(null, compile.compile("test/cases/predicate_access.yaml")),
-test_utils.assert_cant_write.bind(null,  "tom", "/", "string", test),
-test_utils.assert_can_write.bind (null,  "not", "/", "string", test),
-test_utils.assert_cant_read.bind (null,  "not", "/", test),
-test_utils.assert_can_read.bind  (null,  "tom", "/", "string", test)
-], test.done.bind(null));
+exports.testString = testString;
+
+function testPredicate_access(test) {
+    async.series([
+        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/predicate_access.yaml")),
+        test_utils.assert_cant_write.bind(null, "tom", "/", "string", test),
+        test_utils.assert_can_write.bind(null, "not", "/", "string", test),
+        test_utils.assert_cant_read.bind(null, "not", "/", test),
+        test_utils.assert_can_read.bind(null, "tom", "/", "string", test)
+    ], test.done.bind(null));
 }
-*/
+exports.testPredicate_access = testPredicate_access;
+
 function testAccess(test) {
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/access.yaml")),
@@ -37,7 +39,9 @@ function testAccess(test) {
         test_utils.assert_can_write_mock.bind(null, "black", "/chld2/grnd3", "string", test),
         test_utils.assert_can_write_mock.bind(null, "black", "/chld2/grnd4", "string", test),
         test_utils.assert_can_write_mock.bind(null, "red", "/chld1", "string", test),
-        test_utils.assert_can_write_mock.bind(null, "black", "/chld2", "string", test)
+        test_utils.assert_can_write_mock.bind(null, "black", "/chld2", "string", test),
+        test_utils.assert_cant_write.bind(null, "black", "/chld1", "string", test),
+        test_utils.assert_cant_write.bind(null, "red", "/chld2", "string", test)
     ], test.done.bind(null));
 }
 exports.testAccess = testAccess;
