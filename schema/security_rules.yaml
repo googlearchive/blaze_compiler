@@ -17,8 +17,14 @@ definitions:
       type: object
       properties:
         location: {type: string}
-        read:     {type: string}
-        write:    {type: string}
+        read:
+          anyOf:
+            - {type: string}
+            - {type: boolean}
+        write:
+          anyOf:
+            - {type: string}
+            - {type: boolean}
       required: [location]
       additionalProperties: false
 

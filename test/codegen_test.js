@@ -47,4 +47,17 @@ function testAccess(test) {
     ], test.done.bind(null));
 }
 exports.testAccess = testAccess;
+
+function testCascade(test) {
+    async.series([
+        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/cascade.yaml")),
+        test_utils.assert_admin_can_write.bind(null, "/", {}, test),
+        test_utils.assert_cant_write.bind(null, "any", "/chld1/grnd1", "string", test),
+        test_utils.assert_cant_write.bind(null, "any", "/chld1/grnd2", "string", test),
+        test_utils.assert_cant_write.bind(null, "any", "/chld2/grnd3", "string", test),
+        test_utils.assert_cant_write.bind(null, "any", "/chld2/grnd4", "string", test),
+        test_utils.assert_can_write.bind(null, "any", "/", { chld1: { grnd1: "1", grnd2: "2" }, chld2: { grnd3: "3", grnd4: "4" } }, test)
+    ], test.done.bind(null));
+}
+exports.testCascade = testCascade;
 //# sourceMappingURL=codegen_test.js.map

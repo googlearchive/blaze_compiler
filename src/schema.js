@@ -32,7 +32,7 @@ exports.pushDownConstraints = pushDownConstraints;
 * by the && concatenation of all children
 */
 function pullUpConstraints(model) {
-    model.schema.root.pullUpConstraints();
+    model.schema.root.pullUpConstraints("");
 }
 exports.pullUpConstraints = pullUpConstraints;
 
@@ -127,20 +127,20 @@ var SchemaNode = (function () {
         }
     };
 
-    SchemaNode.prototype.pullUpConstraints = function () {
+    SchemaNode.prototype.pullUpConstraints = function (child_name) {
         if (this.isLeaf())
-            return this.constraint.raw;
+            return this.constraint.rewriteForParent(child_name);
 
         //recurse first for bottom up
         var children_clauses = "true";
 
         for (var property in this.properties) {
-            children_clauses = "(" + children_clauses + ") && (" + this.properties[property].pullUpConstraints() + ")";
+            children_clauses = "(" + children_clauses + ") && (" + this.properties[property].pullUpConstraints(property) + ")";
         }
 
         this.constraint = expression.Expression.parse(children_clauses);
 
-        return this.constraint.rewriteForParent();
+        return this.constraint.rewriteForParent(child_name);
     };
 
     SchemaNode.prototype.combineACL = function (acl, location) {

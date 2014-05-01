@@ -32,7 +32,7 @@ export function pushDownConstraints(model:rules.Rules){
 * by the && concatenation of all children
 */
 export function pullUpConstraints(model:rules.Rules){
-    model.schema.root.pullUpConstraints();
+    model.schema.root.pullUpConstraints("");
 }
 
 /**
@@ -129,8 +129,8 @@ export class SchemaNode{
         }
     }
 
-    pullUpConstraints():string{
-        if(this.isLeaf()) return this.constraint.raw;
+    pullUpConstraints(child_name):string{
+        if(this.isLeaf()) return this.constraint.rewriteForParent(child_name);
 
         //recurse first for bottom up
         var children_clauses:string = "true";
@@ -139,12 +139,12 @@ export class SchemaNode{
             children_clauses =
                 "(" +children_clauses+
                 ") && (" +
-                this.properties[property].pullUpConstraints() + ")"
+                this.properties[property].pullUpConstraints(property) + ")"
         }
 
         this.constraint = expression.Expression.parse(children_clauses);
 
-        return this.constraint.rewriteForParent();
+        return this.constraint.rewriteForParent(child_name);
     }
 
     combineACL(acl:rules.Access, location:string[]){

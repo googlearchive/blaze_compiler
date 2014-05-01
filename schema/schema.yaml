@@ -8,7 +8,10 @@ anyOf:
 
   - properties:
       type: {type: string}
-      constraint: {type: string}
+      constraint:
+        anyOf:
+          - {type: string}
+          - {type: boolean}
 
 
 #can't make additionalProperties false as this does not include properties inherited from anyOf, or allOf

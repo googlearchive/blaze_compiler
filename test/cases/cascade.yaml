@@ -1,0 +1,27 @@
+#taken from access.md
+predicates:
+  - red():   auth.username == 'red'
+  - black(): auth.username == 'black'
+
+schema:
+  type: object
+  constraint: next.chld1.exists() && next.chld2.exists()
+  properties:
+    chld1:
+      constraint: next.grnd1.exists() && next.grnd2.exists()
+      properties:
+        grnd1:
+          type: string
+        grnd2:
+          type: string
+    chld2:
+      constraint: next.grnd3.exists() && next.grnd4.exists()
+      properties:
+        grnd3:
+          type: string
+        grnd4:
+          type: string
+
+access:
+  - location: "/*"
+    write: true
