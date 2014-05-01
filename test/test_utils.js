@@ -41,7 +41,7 @@ exports.assert_can_read = function(who, where, expected, test, cb){
             test.ok(false, "can't login");
             cb("can't login")
         }else{
-            firebase_io.sandbox.child(where).once(value, function(data){
+            firebase_io.sandbox.child(where).once("value", function(data){
                 test.deepEqual(data.val(), expected);
                 cb(null);
             }, function(error){
@@ -58,7 +58,7 @@ exports.assert_cant_read = function(who, where, test, cb){
             test.ok(false, "can't login");
             cb("can't login")
         }else{
-            firebase_io.sandbox.child(where).once(value, function(data){
+            firebase_io.sandbox.child(where).once("value", function(data){
                 test.ok(false, "should not be able to read");
                 cb("should not be able to read");
             }, function(error){
@@ -91,18 +91,18 @@ exports.assert_can_write = function(who, where, value, test, cb){
     });
 };
 
-exports.assert_cant_write = function(who, where, value, test){
+exports.assert_cant_write = function(who, where, value, test, cb){
     firebase_io.loginAs(who, false, function(err){
         if(err){
             test.ok(false, "can't login");
             cb("can't login")
         }else{
             firebase_io.sandbox.child(where).set(value, function(error){
-                test.ok(error==null, "there should not be an error but there was");
+                test.ok(error!=null, "there should be an error but there wasn't");
                 if(error){
                     cb(null);
                 }else{
-                    cb("there should not be an error but there was");
+                    cb("there should be an error but there wasn't");
                 }
             });
         }
