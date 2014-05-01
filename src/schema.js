@@ -35,23 +35,55 @@ function combineACL(model) {
 }
 exports.combineACL = combineACL;
 
+/**
+* intergrates the ACL constraints into the schema
+*/
+function generateRules(model) {
+    var buffer = [];
+    buffer.push('{\n');
+    buffer.push('  "rules":');
+    model.schema.root.generate(new expression.Symbols(), "  ", buffer);
+    buffer.push('}\n');
+
+    //convert buffer into big string
+    var code = buffer.join('');
+    return code;
+}
+exports.generateRules = generateRules;
+
 var SchemaNode = (function () {
     function SchemaNode() {
         this.properties = {};
     }
     SchemaNode.prototype.generate = function (symbols, prefix, buffer) {
-        buffer.push("{\n");
+        buffer.push('{\n');
 
-        buffer.push(prefix + "  '.write':");
+        buffer.push(prefix + '  ".write":"');
         buffer.push(this.write.generate(symbols));
-        buffer.push("\n");
-        buffer.push(prefix + "  '.read':");
+        buffer.push('",\n');
+        buffer.push(prefix + '  ".read":"');
         buffer.push(this.read.generate(symbols));
-        buffer.push("\n");
+        buffer.push('",\n');
+
+        var comma_in_properties = false;
 
         for (var property in this.properties) {
-            buffer.push(prefix + "  '" + property + "': ");
+            buffer.push(prefix + '  "' + property + '": ');
             this.properties[property].generate(symbols, prefix + "  ", buffer);
+
+            buffer.pop(); //pop closing brace and continue with comma
+            buffer.push('},\n');
+            comma_in_properties = true;
+        }
+
+        //remove last trailing comma
+        if (comma_in_properties) {
+            buffer.pop();
+            buffer.push("}\n");
+        } else {
+            //else the comma was placed last at the ".read" statement
+            buffer.pop();
+            buffer.push('"\n');
         }
 
         buffer.push(prefix);

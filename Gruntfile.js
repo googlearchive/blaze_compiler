@@ -8,6 +8,7 @@ module.exports = function(grunt) {
 		nodeunit: {
 			all: ['test/**/*.js'],
             validation : ['test/validation.js'],
+            codegen : ['test/codegen.js'],
             expressions: ['test/expressions.js']
 		}
 	});

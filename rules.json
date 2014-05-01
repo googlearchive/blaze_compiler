@@ -1,0 +1,6 @@
+{
+  "rules":{
+    ".write":"((true) && (newData.isString()))&&((false)||(true))",
+    ".read":"(false)||(true)"
+  }
+}

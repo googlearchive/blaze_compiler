@@ -1,0 +1,7 @@
+schema:
+  type: string
+
+access:
+  - location: "/*"
+    read:  "true"
+    write: "true"
