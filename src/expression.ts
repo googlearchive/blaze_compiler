@@ -106,7 +106,24 @@ export class Expression{
                     node.update("prev.parent()");
                 }
             }
-        }
+        };
+
+        return <string>falafel(this.raw, {}, falafel_visitor);
+    }
+
+    /**
+     * changes next and prev references for next['child_name'] and prev['child_name']
+     */
+    rewriteForParent(child_name):string{
+        var falafel_visitor = function(node){
+            if(node.type == "Identifier"){
+                if(node.name == "next"){
+                    node.update("next['" + child_name +"']");
+                }else if(node.name == "prev"){
+                    node.update("prev['" + child_name +"']");
+                }
+            }
+        };
 
         return <string>falafel(this.raw, {}, falafel_visitor);
     }

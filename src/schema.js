@@ -140,7 +140,7 @@ var SchemaNode = (function () {
 
         this.constraint = expression.Expression.parse(children_clauses);
 
-        return this.constraint.raw;
+        return this.constraint.rewriteForParent();
     };
 
     SchemaNode.prototype.combineACL = function (acl, location) {

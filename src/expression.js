@@ -104,6 +104,23 @@ var Expression = (function () {
         return falafel(this.raw, {}, falafel_visitor);
     };
 
+    /**
+    * changes next and prev references for next['child_name'] and prev['child_name']
+    */
+    Expression.prototype.rewriteForParent = function (child_name) {
+        var falafel_visitor = function (node) {
+            if (node.type == "Identifier") {
+                if (node.name == "next") {
+                    node.update("next['" + child_name + "']");
+                } else if (node.name == "prev") {
+                    node.update("prev['" + child_name + "']");
+                }
+            }
+        };
+
+        return falafel(this.raw, {}, falafel_visitor);
+    };
+
     Expression.prototype.generate = function (symbols) {
         //the falafel visitor function replaces source with a different construction
         var falafel_visitor = function (node) {

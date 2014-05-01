@@ -6,10 +6,10 @@ module.exports = function(grunt) {
 		//see https://github.com/gruntjs/grunt-contrib-nodeunit
 		//only files ending in _test.js in directory and subdirectories of test are run
 		nodeunit: {
-			all: ['test/**/*.js'],
-            validation : ['test/validation.js'],
-            codegen : ['test/codegen.js'],
-            expressions: ['test/expressions.js']
+			all: ['test/**/*_test.js'],
+            validation : ['test/validation_test.js'],
+            codegen : ['test/codegen_test.js'],
+            expressions: ['test/expressions_test.js']
 		}
 	});
 

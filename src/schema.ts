@@ -144,7 +144,7 @@ export class SchemaNode{
 
         this.constraint = expression.Expression.parse(children_clauses);
 
-        return this.constraint.raw;
+        return this.constraint.rewriteForParent();
     }
 
     combineACL(acl:rules.Access, location:string[]){
