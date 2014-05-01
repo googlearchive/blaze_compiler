@@ -55,6 +55,8 @@ exports.SchemaRoot = SchemaRoot;
 
 var AccessEntry = (function () {
     function AccessEntry() {
+        this.read = expression.Expression.parse("false");
+        this.write = expression.Expression.parse("false");
     }
     AccessEntry.parse = function (json) {
         //console.log("AccessEntry.parse:", json);
@@ -68,12 +70,16 @@ var AccessEntry = (function () {
         }
 
         //deal with issue of "/*" being split to "['', '*']" by removing first element
-        if (accessEntry.location.length == 1 && accessEntry.location[0] === '') {
-            accessEntry.location = [];
+        if (accessEntry.location.length > 0 && accessEntry.location[0] === '') {
+            accessEntry.location.shift();
+        }
+        if (json.read) {
+            accessEntry.read = expression.Expression.parse(json.read);
+        }
+        if (json.write) {
+            accessEntry.write = expression.Expression.parse(json.write);
         }
 
-        accessEntry.read = expression.Expression.parse(json.read);
-        accessEntry.write = expression.Expression.parse(json.write);
         return accessEntry;
     };
 

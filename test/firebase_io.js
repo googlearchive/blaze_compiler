@@ -90,10 +90,10 @@ exports.getValidationRules = function(rules_str, cb){
 	});
 };
 
-exports.getAuthToken = function(username, admin){
+exports.getAuthToken = function(username, admin, simulate){
     var FBTokenGenMod = require('firebase-token-generator');
     var FBTokenGenerator = new FBTokenGenMod(exports.FIREBASE_SECRET);
-    return FBTokenGenerator.createToken({ username: username }, {admin: admin});
+    return FBTokenGenerator.createToken({ username: username }, {admin: admin, simulate:simulate});
 };
 
 exports.login = function(AUTH_TOKEN, cb){
@@ -108,4 +108,14 @@ exports.login = function(AUTH_TOKEN, cb){
  */
 exports.loginAs = function(username, admin, cb){
     exports.login(exports.getAuthToken(username, admin), cb);
+};
+
+/**
+ * login to sandbox with the given username, and boolean option to be an admin
+ * @param username
+ * @param admin boolean, should the login be granted blanket read and write access??
+ * @return {*}
+ */
+exports.simulateLoginAs = function(username, admin, cb){
+    exports.login(exports.getAuthToken(username, admin, true), cb);
 };

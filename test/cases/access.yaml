@@ -1,0 +1,30 @@
+#taken from access.md
+predicates:
+  - red():   auth.username == 'red'
+  - black(): auth.username == 'black'
+
+schema:
+  type: object
+  properties:
+    chld1:
+      type: object
+      constraint: red()
+      properties:
+        grnd1:
+          constraint: red() || black()
+        grnd2:
+          constraint: true
+    chld2:
+      type: object
+      properties:
+        grnd3:
+          constraint: black()
+        grnd4:
+          constraint: red() || black()
+
+access:
+  - location: "/chld1/*"
+    write: red()
+
+  - location: "/*"
+    write: black()

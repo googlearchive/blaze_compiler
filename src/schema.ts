@@ -40,7 +40,11 @@ export function generateRules(model:rules.Rules){
     var buffer:string[] = [];
     buffer.push('{\n');
     buffer.push('  "rules":');
-    model.schema.root.generate(new expression.Symbols(), "  ", buffer);
+
+    var symbols = new expression.Symbols();
+    symbols.loadPredicate(model.predicates);
+
+    model.schema.root.generate(symbols, "  ", buffer);
     buffer.push('}\n');
     //convert buffer into big string
     var code:string = buffer.join('');
@@ -54,16 +58,22 @@ export class SchemaNode{
     write:expression.Expression;
     read: expression.Expression;
 
-
+    isLeaf():boolean{
+        return Object.keys(this.properties).length == 0;
+    }
     generate(symbols:expression.Symbols, prefix:string, buffer:string[]):string[]{
         buffer.push('{\n');
 
-        buffer.push(prefix + '  ".write":"');
-        buffer.push(this.write.generate(symbols));
-        buffer.push('",\n');
-        buffer.push(prefix + '  ".read":"');
-        buffer.push(this.read.generate(symbols));
-        buffer.push('",\n');
+        var comma_in_read_write = false;
+        if(this.isLeaf()){
+            buffer.push(prefix + '  ".write":"');
+            buffer.push(this.write.generate(symbols));
+            buffer.push('",\n');
+            buffer.push(prefix + '  ".read":"');
+            buffer.push(this.read.generate(symbols));
+            buffer.push('",\n');
+            comma_in_read_write = true;
+        }
 
         var comma_in_properties = false;
         //recurse
@@ -79,7 +89,7 @@ export class SchemaNode{
         if(comma_in_properties){
             buffer.pop();
             buffer.push("}\n");
-        }else{
+        }else if(comma_in_read_write){
             //else the comma was placed last at the ".read" statement
             buffer.pop();
             buffer.push('"\n');

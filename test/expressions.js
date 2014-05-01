@@ -153,4 +153,11 @@ function testPredicate3(test) {
     test.done();
 }
 exports.testPredicate3 = testPredicate3;
+
+function testUnary(test) {
+    //bit weird this works
+    translationTestCase("!isLoggedIn(auth)", "!(auth.id == 'yo')", expressions.Predicates.parse([{ "isLoggedIn(q)": "q.id == 'yo'" }]), test);
+    test.done();
+}
+exports.testUnary = testUnary;
 //# sourceMappingURL=expressions.js.map

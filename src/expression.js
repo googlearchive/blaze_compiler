@@ -68,6 +68,12 @@ var Symbols = (function () {
             clone.variables[v] = this.variables[v];
         return clone;
     };
+
+    Symbols.prototype.loadPredicate = function (predicates) {
+        for (var identifier in predicates) {
+            this.predicates[identifier] = predicates[identifier];
+        }
+    };
     return Symbols;
 })();
 exports.Symbols = Symbols;
@@ -178,8 +184,7 @@ var Expression = (function () {
                 } else if (node.callee.expr_type === "fun(value):value") {
                     node.expr_type = "value";
                 } else if (node.callee.expr_type === "pred") {
-                    console.log(node);
-
+                    //console.log(node)
                     //we are calling a user defined predicate
                     var predicate = symbols.predicates[node.callee.name];
 
@@ -209,6 +214,8 @@ var Expression = (function () {
                 }
 
                 node.expr_type = "value";
+            } else if (node.type == "UnaryExpression") {
+                node.expr_type = node.argument.expr_type;
             } else if (node.type == "ExpressionStatement") {
             } else if (node.type == "Program") {
             } else {

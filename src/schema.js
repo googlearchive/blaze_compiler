@@ -42,7 +42,11 @@ function generateRules(model) {
     var buffer = [];
     buffer.push('{\n');
     buffer.push('  "rules":');
-    model.schema.root.generate(new expression.Symbols(), "  ", buffer);
+
+    var symbols = new expression.Symbols();
+    symbols.loadPredicate(model.predicates);
+
+    model.schema.root.generate(symbols, "  ", buffer);
     buffer.push('}\n');
 
     //convert buffer into big string
@@ -55,15 +59,22 @@ var SchemaNode = (function () {
     function SchemaNode() {
         this.properties = {};
     }
+    SchemaNode.prototype.isLeaf = function () {
+        return Object.keys(this.properties).length == 0;
+    };
     SchemaNode.prototype.generate = function (symbols, prefix, buffer) {
         buffer.push('{\n');
 
-        buffer.push(prefix + '  ".write":"');
-        buffer.push(this.write.generate(symbols));
-        buffer.push('",\n');
-        buffer.push(prefix + '  ".read":"');
-        buffer.push(this.read.generate(symbols));
-        buffer.push('",\n');
+        var comma_in_read_write = false;
+        if (this.isLeaf()) {
+            buffer.push(prefix + '  ".write":"');
+            buffer.push(this.write.generate(symbols));
+            buffer.push('",\n');
+            buffer.push(prefix + '  ".read":"');
+            buffer.push(this.read.generate(symbols));
+            buffer.push('",\n');
+            comma_in_read_write = true;
+        }
 
         var comma_in_properties = false;
 
@@ -80,7 +91,7 @@ var SchemaNode = (function () {
         if (comma_in_properties) {
             buffer.pop();
             buffer.push("}\n");
-        } else {
+        } else if (comma_in_read_write) {
             //else the comma was placed last at the ".read" statement
             buffer.pop();
             buffer.push('"\n');

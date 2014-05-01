@@ -58,8 +58,8 @@ export class SchemaRoot{
 
 export class AccessEntry{
     location: string[]; //components of address, e.g. users/$userid/* is mapped to ['users', '$userid']
-    read:     expression.Expression;
-    write:    expression.Expression;
+    read:     expression.Expression = expression.Expression.parse("false");
+    write:    expression.Expression = expression.Expression.parse("false");
 
     static parse(json:any):AccessEntry{
         //console.log("AccessEntry.parse:", json);
@@ -74,12 +74,16 @@ export class AccessEntry{
         }
 
         //deal with issue of "/*" being split to "['', '*']" by removing first element
-        if(accessEntry.location.length == 1 && accessEntry.location[0] === ''){
-            accessEntry.location = [];
+        if(accessEntry.location.length > 0 && accessEntry.location[0] === ''){
+            accessEntry.location.shift();
+        }
+        if(json.read){
+            accessEntry.read     = expression.Expression.parse(<string>json.read);
+        }
+        if(json.write){
+            accessEntry.write    = expression.Expression.parse(<string>json.write);
         }
 
-        accessEntry.read     = expression.Expression.parse(<string>json.read);
-        accessEntry.write    = expression.Expression.parse(<string>json.write);
         return accessEntry
     }
 

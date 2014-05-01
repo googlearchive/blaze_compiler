@@ -44,14 +44,14 @@ then the ACL options (||ed) are &&ed to the relevant portions of the leaf schema
 
 ```
 ACL & leaf_only_schema:
-root.chld1.grnd1  write: (auth=red|black) && (auth:red || auth:black)
-          .grnd2  write: (auth=red) && (auth:red || auth:black)
-    .chld2.grnd3  write: (auth=black) && (auth:black)
-          .grnd4  write: (auth=red|black) && (auth:black)
+root.chld1.grnd1  write: (auth=black|red) && (auth=red) && (auth:red || auth:black)
+          .grnd2  write: (true) && (auth=red)           && (auth:red || auth:black)
+    .chld2.grnd3  write: (auth=black)                   && (auth:black)
+          .grnd4  write: (auth=red|black)               && (auth:black)
 ```  
 
 So if auth is red, root.chld1.\* is writable
-So if auth is black, \* is not writable, but root.chld2.grnd(1|3|4) are 
+So if auth is black, \* is not writable, but root.chldX.grnd(1|3|4) are
     
 
 Note firebase 1.0 rules really only operate on leaves so we jsut have to carry the rules forward on the leaves.

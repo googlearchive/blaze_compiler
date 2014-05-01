@@ -255,3 +255,16 @@ export function testPredicate3(test:nodeunit.Test):void{
     test.done();
 }
 
+export function testUnary(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "!isLoggedIn(auth)",
+        "!(auth.id == 'yo')",
+        expressions.Predicates.parse(
+            [{"isLoggedIn(q)":"q.id == 'yo'"}]
+        ),
+        test
+    );
+    test.done();
+}
+

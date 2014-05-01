@@ -32,7 +32,9 @@ function compile(path) {
         console.log("\n ACL and schema:");
         console.log(model.schema.root);
 
-        //generate output in security rules 1.0 syntax into a buffer
+        //generate output in security rules 1.0
+        //only leaf nodes are used to avoid higher ups overwriting security
+        //just leaves might be an issue
         var code = schema.generateRules(model);
 
         //print generate code out

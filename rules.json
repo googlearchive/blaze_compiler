@@ -1,6 +1,24 @@
 {
   "rules":{
-    ".write":"((true) && (newData.isString()))&&((false)||(true))",
-    ".read":"(false)||(true)"
+    "chld1": {
+      "grnd1": {
+        ".write":"(((true)&&((auth.username == 'red')))&&((auth.username == 'red') || (auth.username == 'black')))&&(((false)||((auth.username == 'red')))||((auth.username == 'black')))",
+        ".read":"((false)||(false))||(false)"
+      },
+      "grnd2": {
+        ".write":"(((true)&&((auth.username == 'red')))&&(true))&&(((false)||((auth.username == 'red')))||((auth.username == 'black')))",
+        ".read":"((false)||(false))||(false)"
+      }
+    },
+    "chld2": {
+      "grnd3": {
+        ".write":"(((true)&&(true))&&((auth.username == 'black')))&&((false)||((auth.username == 'black')))",
+        ".read":"(false)||(false)"
+      },
+      "grnd4": {
+        ".write":"(((true)&&(true))&&((auth.username == 'red') || (auth.username == 'black')))&&((false)||((auth.username == 'black')))",
+        ".read":"(false)||(false)"
+      }
+    }
   }
 }
