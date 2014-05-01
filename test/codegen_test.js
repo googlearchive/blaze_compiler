@@ -41,7 +41,9 @@ function testAccess(test) {
         test_utils.assert_can_write_mock.bind(null, "red", "/chld1", "string", test),
         test_utils.assert_can_write_mock.bind(null, "black", "/chld2", "string", test),
         test_utils.assert_cant_write.bind(null, "black", "/chld1", "string", test),
-        test_utils.assert_cant_write.bind(null, "red", "/chld2", "string", test)
+        test_utils.assert_cant_write.bind(null, "red", "/chld2", "string", test),
+        test_utils.assert_cant_write.bind(null, "red", "/", "string", test),
+        test_utils.assert_cant_write.bind(null, "red", "/", "string", test)
     ], test.done.bind(null));
 }
 exports.testAccess = testAccess;
