@@ -7,17 +7,23 @@ schema:
   type: object
   properties:
     chld1:
+      type: object
       constraint: red()
       properties:
         grnd1:
+          type: string
           constraint: red() || black()
         grnd2:
+          type: string
           constraint: true
     chld2:
+      type: object
       properties:
         grnd3:
+          type: string
           constraint: black()
         grnd4:
+          type: string
           constraint: red() || black()
 
 access:

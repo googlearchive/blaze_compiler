@@ -7,7 +7,6 @@ import compile = require('../src/compile');
 import rules = require('../src/rules');
 import async = require('async');
 
-
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml")),
@@ -27,7 +26,6 @@ export function testPredicate_access(test:nodeunit.Test):void{
     ], test.done.bind(null));
 }
 
-
 export function testAccess(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/access.yaml")),
@@ -35,14 +33,14 @@ export function testAccess(test:nodeunit.Test):void{
         test_utils.assert_admin_can_write.bind(null, "/",
             {chld1:{grnd1:"1", grnd2:"2"}, chld2:{grnd3:"3", grnd4:"4"}}, test),
 
-        test_utils.assert_cant_write.bind(null, "red",  "/chld2",       "string", test),
-        test_utils.assert_cant_write.bind(null, "red",  "/chld2",       "string", test),
-        test_utils.assert_cant_write.bind(null, "black","/",            "string", test),
+        test_utils.assert_cant_write.bind(null, "red",  "/chld2",       {}, test),
+        test_utils.assert_cant_write.bind(null, "red",  "/chld2",       {}, test),
+        test_utils.assert_cant_write.bind(null, "black","/",            {}, test),
         test_utils.assert_cant_write.bind(null, "black","/chld1/grnd1", "string", test),
         test_utils.assert_cant_write.bind(null, "black","/chld1/grnd2", "string", test),
 
-        test_utils.assert_can_write_mock.bind(null, "red","/chld1/grnd1", "string", test),
-        test_utils.assert_can_write_mock.bind(null, "red","/chld1/grnd2", "string", test),
+        test_utils.assert_can_write_mock.bind(null, "red","/chld1/grnd1",   "string", test),
+        test_utils.assert_can_write_mock.bind(null, "red","/chld1/grnd2",   "string", test),
         test_utils.assert_can_write_mock.bind(null, "black","/chld2/grnd3", "string", test),
         test_utils.assert_can_write_mock.bind(null, "black","/chld2/grnd4", "string", test),
 
@@ -51,8 +49,8 @@ export function testAccess(test:nodeunit.Test):void{
         test_utils.assert_cant_write.bind(null,     "black","/chld1", "string", test),
         test_utils.assert_cant_write.bind(null,      "red", "/chld2", "string", test),
 
-        test_utils.assert_cant_write.bind(null,      "red", "/", "string", test),
-        test_utils.assert_cant_write.bind(null,      "red", "/", "string", test)
+        test_utils.assert_cant_write.bind(null,      "red", "/", {}, test),
+        test_utils.assert_cant_write.bind(null,      "red", "/", {}, test)
 
     ], test.done.bind(null));
 }
@@ -70,6 +68,33 @@ export function testCascade(test:nodeunit.Test):void{
 
         test_utils.assert_can_write.bind(null, "any","/",
             {chld1:{grnd1:"1", grnd2:"2"}, chld2:{grnd3:"3", grnd4:"4"}}, test),
+
+
+    ], test.done.bind(null));
+}
+
+export function testRequired(test:nodeunit.Test):void{
+    async.series([
+        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/required.yaml")),
+
+        test_utils.assert_admin_can_write.bind(null, "/",{}, test),
+
+        //should be able to write full try
+        test_utils.assert_can_write_mock.bind(null, "any","/",
+            {chld1:{grnd1:"1", grnd2:"2"}, chld2:{grnd3:"3", grnd4:"4"}},
+            test),
+        //or the subtree with both required grandchildren
+        test_utils.assert_can_write_mock.bind(null, "any","/chld1",
+            {grnd1:"1", grnd2:"2"},
+            test),
+        test_utils.assert_can_write_mock.bind(null, "any","/chld2",
+            {grnd3:"3", grnd4:"4"},
+            test),
+        //or jsut one grandchild of the unrequired tree
+        test_utils.assert_can_write_mock.bind(null, "any","/chld2/grnd3", "3", test),
+
+        //but not one grandchild of the required subtree
+        test_utils.assert_cant_write.bind(null, "any","/chld1/grnd1", "1", test),
 
 
     ], test.done.bind(null));

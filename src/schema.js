@@ -223,6 +223,8 @@ function annotate_schema(node, parent, api) {
         } else {
             console.error("unknown schema type:", annotation.type);
         }
+    } else {
+        throw new Error("no defined type, this is not supported yet");
     }
 
     annotation.constraint = expression.Expression.parse(node.constraint);
@@ -271,6 +273,7 @@ var SchemaAPI = (function () {
     * User method for read access to schema fields
     */
     SchemaAPI.prototype.getField = function (name) {
+        console.log(this.node);
         return this.node[name];
     };
     return SchemaAPI;

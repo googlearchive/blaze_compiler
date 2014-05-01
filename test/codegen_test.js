@@ -29,9 +29,9 @@ function testAccess(test) {
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/access.yaml")),
         test_utils.assert_admin_can_write.bind(null, "/", { chld1: { grnd1: "1", grnd2: "2" }, chld2: { grnd3: "3", grnd4: "4" } }, test),
-        test_utils.assert_cant_write.bind(null, "red", "/chld2", "string", test),
-        test_utils.assert_cant_write.bind(null, "red", "/chld2", "string", test),
-        test_utils.assert_cant_write.bind(null, "black", "/", "string", test),
+        test_utils.assert_cant_write.bind(null, "red", "/chld2", {}, test),
+        test_utils.assert_cant_write.bind(null, "red", "/chld2", {}, test),
+        test_utils.assert_cant_write.bind(null, "black", "/", {}, test),
         test_utils.assert_cant_write.bind(null, "black", "/chld1/grnd1", "string", test),
         test_utils.assert_cant_write.bind(null, "black", "/chld1/grnd2", "string", test),
         test_utils.assert_can_write_mock.bind(null, "red", "/chld1/grnd1", "string", test),
@@ -42,8 +42,8 @@ function testAccess(test) {
         test_utils.assert_can_write_mock.bind(null, "black", "/chld2", "string", test),
         test_utils.assert_cant_write.bind(null, "black", "/chld1", "string", test),
         test_utils.assert_cant_write.bind(null, "red", "/chld2", "string", test),
-        test_utils.assert_cant_write.bind(null, "red", "/", "string", test),
-        test_utils.assert_cant_write.bind(null, "red", "/", "string", test)
+        test_utils.assert_cant_write.bind(null, "red", "/", {}, test),
+        test_utils.assert_cant_write.bind(null, "red", "/", {}, test)
     ], test.done.bind(null));
 }
 exports.testAccess = testAccess;
@@ -60,4 +60,17 @@ function testCascade(test) {
     ], test.done.bind(null));
 }
 exports.testCascade = testCascade;
+
+function testRequired(test) {
+    async.series([
+        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/required.yaml")),
+        test_utils.assert_admin_can_write.bind(null, "/", {}, test),
+        test_utils.assert_can_write_mock.bind(null, "any", "/", { chld1: { grnd1: "1", grnd2: "2" }, chld2: { grnd3: "3", grnd4: "4" } }, test),
+        test_utils.assert_can_write_mock.bind(null, "any", "/chld1", { grnd1: "1", grnd2: "2" }, test),
+        test_utils.assert_can_write_mock.bind(null, "any", "/chld2", { grnd3: "3", grnd4: "4" }, test),
+        test_utils.assert_can_write_mock.bind(null, "any", "/chld2/grnd3", "3", test),
+        test_utils.assert_cant_write.bind(null, "any", "/chld1/grnd1", "1", test)
+    ], test.done.bind(null));
+}
+exports.testRequired = testRequired;
 //# sourceMappingURL=codegen_test.js.map

@@ -230,6 +230,9 @@ function annotate_schema(node:any, parent:any, api:SchemaAPI):SchemaNode{
         }else{
             console.error("unknown schema type:", annotation.type)
         }
+    }else{
+        //user has not defined type
+        throw new Error("no defined type, this is not supported yet")
     }
 
 
@@ -284,6 +287,7 @@ export class SchemaAPI{
      * User method for read access to schema fields
      */
     getField(name:string):any{
+        console.log(this.node)
         return this.node[name];
     }
 }
