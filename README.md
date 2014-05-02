@@ -9,6 +9,13 @@ node src/blaze.js examples/structure.yaml
 
 this will save a rules.json in the current directory
 
+Features
+=========
+
+language features implemented so far are tracked in proposal.md
+
+how access control is unified with schema is explained in access.md
+
 Tests
 =========
 
