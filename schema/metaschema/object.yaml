@@ -13,3 +13,10 @@ compile:
       api.addConstraint("next['"+required_property+"'].exists()");
     }
   }
+  /*
+  if(api.getField("additionalProperties")){
+    api.addProperty("$other", {
+      "type":"object",
+      "constraint":"false",
+    });
+  }*/

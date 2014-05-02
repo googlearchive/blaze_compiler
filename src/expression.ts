@@ -113,9 +113,11 @@ export class Expression{
 
     /**
      * changes next and prev references for next['child_name'] and prev['child_name']
+     * wildchild's can't be represented in their parents context, so wildchilds are conservatively
+     * represented as "false"
      */
     rewriteForParent(child_name):string{
-        if(child_name.indexOf("$") == 0) return "false"; //whildchilds can't be pushed up
+        if(child_name.indexOf("$") == 0) return "false"; //wildchilds can't be pushed up
 
         var falafel_visitor = function(node){
             if(node.type == "Identifier"){

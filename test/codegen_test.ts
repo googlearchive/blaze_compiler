@@ -137,6 +137,9 @@ export function testTypes(test:nodeunit.Test):void{
         test_utils.assert_cant_write.bind(null, "any","/string",  1        , test),
         test_utils.assert_cant_write.bind(null, "any","/number",  true     , test),
         test_utils.assert_cant_write.bind(null, "any","/boolean", {a:5}    , test),
+        test_utils.assert_cant_write.bind(null, "any","/boolean", "true"   , test),
+
+        //test_utils.assert_cant_write.bind(null, "any","/extra", true    , test),
 
     ], test.done.bind(null));
 }

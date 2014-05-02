@@ -106,6 +106,8 @@ var Expression = (function () {
 
     /**
     * changes next and prev references for next['child_name'] and prev['child_name']
+    * wildchild's can't be represented in their parents context, so wildchilds are conservatively
+    * represented as "false"
     */
     Expression.prototype.rewriteForParent = function (child_name) {
         if (child_name.indexOf("$") == 0)

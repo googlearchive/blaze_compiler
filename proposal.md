@@ -42,7 +42,7 @@ delay for later
 
 JSON schema keywords to implement initially, through the meta-schema 
 - DONE type: object, string
-- type: boolean, number
+- DONE type: boolean, number
 - DONE required
 - additionalProperties
 - definitions
