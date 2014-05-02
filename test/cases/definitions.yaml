@@ -1,0 +1,28 @@
+
+schema:
+  definitions:
+    object_def:
+      type: object
+      properties:
+        string:  {$ref: "#/definitions/string_def" }
+        boolean: {$ref: "#/definitions/boolean_def"}
+        number:  {$ref: "#/definitions/number_def" }
+      additionalProperties: false
+
+    string_def:  {type: string }
+    boolean_def: {type: boolean}
+    number_def:  {type: number }
+
+  type: object
+
+  properties:
+    object:  {$ref: "#/definitions/object_def" }
+    string:  {$ref: "#/definitions/string_def" }
+    boolean: {$ref: "#/definitions/boolean_def"}
+    number:  {$ref: "#/definitions/number_def" }
+  additionalProperties: false
+
+access:
+  - location: "/*"
+    read:  "true"
+    write: "true"

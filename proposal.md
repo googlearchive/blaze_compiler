@@ -6,10 +6,10 @@ Probably this should be integrated with firebase-cli at some point, so tools for
 ## Security Compiler
 - DONE YAML -> JSON via js-yaml
   - NO source maps at this stage
-- write a rule 2.0 JSON schema which describes what is a valid security 2.0 rule file. 
+- DONE write a rule 2.0 JSON schema which describes what is a valid security 2.0 rule file.
     - schema section is approximately JSON schema
     - access, predicate table have highly structured layout so we need to catch syntax errors
-- transform a valid security rule 2.0 file into a valid security rule 1.0 file.
+- DONE transform a valid security rule 2.0 file into a valid security rule 1.0 file.
   - convert new style rule expressions into old style
   - build up internal representation of security tree (note schema and access control are declared far apart but effect local parts of the final representation)
   - export internal representation to a firebase security file 1.0
@@ -45,8 +45,9 @@ JSON schema keywords to implement initially, through the meta-schema
 - DONE type: boolean, number
 - DONE required
 - DONE additionalProperties
-- definitions
+- DONE definitions
 - DONE properties
+- DONE $ref
 - enum
 - additionalItems
 

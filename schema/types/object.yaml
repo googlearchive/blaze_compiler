@@ -7,8 +7,8 @@ properties:
   constraint: {}
   required: {}
   additionalProperties: {type: boolean}
+  definitions: {}
 
 patternProperties: #wildchild support
   '\\$[A-z0-9_]+': {$ref: "http://firebase.com/schema#"}
 
-additionalProperties: false

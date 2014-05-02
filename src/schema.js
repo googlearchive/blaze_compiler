@@ -11,9 +11,7 @@ var fs = require('fs');
 * to generate constraints
 */
 function annotate(model) {
-    var api = new SchemaAPI();
-
-    model.schema.root = annotate_schema(model.schema.json, null, api);
+    model.schema.root = annotate_schema(model.schema.json, null, null, new SchemaAPI(), model);
 }
 exports.annotate = annotate;
 
@@ -65,8 +63,9 @@ function generateRules(model) {
 exports.generateRules = generateRules;
 
 var SchemaNode = (function () {
-    function SchemaNode() {
+    function SchemaNode(node) {
         this.properties = {};
+        this.node = node;
     }
     SchemaNode.prototype.isLeaf = function () {
         return Object.keys(this.properties).length == 0;
@@ -74,8 +73,6 @@ var SchemaNode = (function () {
     SchemaNode.prototype.generate = function (symbols, prefix, buffer) {
         buffer.push('{\n');
 
-        //var comma_in_read_write = false;
-        //if(this.isLeaf()){
         buffer.push(prefix + '  ".write":"');
         buffer.push(this.write.generate(symbols));
         buffer.push('",\n');
@@ -83,8 +80,6 @@ var SchemaNode = (function () {
         buffer.push(this.read.generate(symbols));
         buffer.push('",\n');
 
-        //comma_in_read_write = true;
-        //}
         var comma_in_properties = false;
 
         for (var property in this.properties) {
@@ -93,6 +88,12 @@ var SchemaNode = (function () {
 
             buffer.pop(); //pop closing brace and continue with comma
             buffer.push('},\n');
+            comma_in_properties = true;
+        }
+
+        if (!this.additionalProperties) {
+            buffer.push(prefix + '  "$other":{".validate":"false"');
+            buffer.push('GETS REMOVED');
             comma_in_properties = true;
         }
 
@@ -144,15 +145,13 @@ var SchemaNode = (function () {
     };
 
     SchemaNode.prototype.combineACL = function (acl, location) {
-        console.log("combineACL", location);
-
+        //console.log("combineACL", location);
         var write = "false";
         var read = "false";
 
         for (var idx in acl) {
             var entry = acl[idx];
 
-            console.log("entry", entry.location);
             if (entry.match(location)) {
                 write = "(" + write + ")||(" + entry.write.raw + ")";
                 read = "(" + read + ")||(" + entry.read.raw + ")";
@@ -205,21 +204,27 @@ var MetaSchema = (function () {
 })();
 exports.MetaSchema = MetaSchema;
 
-function annotate_schema(node, parent, api) {
+function annotate_schema(node, parent, key, api, model) {
+    if (node["$ref"]) {
+        //we should replace this node with its definition
+        node = exports.fetchRef(node["$ref"], model);
+    }
+
     //console.log("annotate_schema", node);
-    var annotation = new SchemaNode();
+    var annotation = new SchemaNode(node);
 
     for (var key in node.properties) {
-        annotation.properties[key] = annotate_schema(node.properties[key], node, api);
+        annotation.properties[key] = annotate_schema(node.properties[key], node, key, api, model);
     }
 
     if (getWildchild(node)) {
-        annotation.properties[getWildchild(node)] = annotate_schema(node[getWildchild(node)], node, api);
+        annotation.properties[getWildchild(node)] = annotate_schema(node[getWildchild(node)], node, key, api, model);
     }
 
-    api.setContext(node, parent, annotation);
+    api.setContext(node, parent, annotation, model);
     annotation.type = node.type ? node.type : null;
     node.constraint = node.constraint ? node.constraint : "true"; //default to true for constraint
+    annotation.additionalProperties = node.additionalProperties !== false;
 
     if (annotation.type != null) {
         if (api.metaschema[annotation.type] != undefined) {
@@ -229,10 +234,11 @@ function annotate_schema(node, parent, api) {
                 //entering the system pragmatically in compile (done in addProperty)
                 api.metaschema[annotation.type].compile(api);
             } else {
-                console.error(node, "is not a valid", annotation.type);
+                throw new Error("type validation failed: " + JSON.stringify(node));
             }
         } else {
             console.error("unknown schema type:", annotation.type);
+            throw new Error("unknown type specified");
         }
     } else {
         //user has not defined type
@@ -244,6 +250,40 @@ function annotate_schema(node, parent, api) {
 
     return annotation;
 }
+
+function fetchRef(url, model) {
+    //todo: this should probably be routed through tv4's getSchema method properly
+    console.log("fetchRef" + url);
+
+    //code nicked from tv4.getSchema:
+    var baseUrl = url;
+    var fragment = "";
+    if (url.indexOf('#') !== -1) {
+        fragment = url.substring(url.indexOf("#") + 1);
+        baseUrl = url.substring(0, url.indexOf("#"));
+    }
+    var pointerPath = decodeURIComponent(fragment);
+
+    if (pointerPath.charAt(0) !== "/") {
+        return undefined;
+    }
+
+    var parts = pointerPath.split("/").slice(1);
+    var schema = model.schema.json;
+
+    for (var i = 0; i < parts.length; i++) {
+        var component = parts[i].replace(/~1/g, "/").replace(/~0/g, "~");
+        if (schema[component] === undefined) {
+            schema = undefined;
+            break;
+        }
+        schema = schema[component];
+    }
+
+    console.log(schema);
+    return schema;
+}
+exports.fetchRef = fetchRef;
 
 /**
 * provides hooks for meta-data to pragmatically generate constraints and predicates
@@ -271,10 +311,11 @@ var SchemaAPI = (function () {
     * @param parent
     * @param annotationInProgress
     */
-    SchemaAPI.prototype.setContext = function (node, parent, annotationInProgress) {
+    SchemaAPI.prototype.setContext = function (node, parent, annotationInProgress, model) {
         this.node = node;
         this.parent = parent;
         this.annotationInProgress = annotationInProgress;
+        this.model = model;
     };
 
     /**
@@ -293,15 +334,15 @@ var SchemaAPI = (function () {
         //as this is called through compile, which is part way through the annotation,
         //this new node would be over looked, so we need call the annotation routine explicitly out of turn
         var extra_annotator = new SchemaAPI();
-        extra_annotator.setContext(json, this.node, this.annotationInProgress);
-        this.annotationInProgress.properties[name] = annotate_schema(json, this.node, extra_annotator);
+        extra_annotator.setContext(json, this.node, this.annotationInProgress, this.model);
+
+        this.annotationInProgress.properties[name] = annotate_schema(json, this.node, name, extra_annotator, this.model);
     };
 
     /**
     * User method for read access to schema fields
     */
     SchemaAPI.prototype.getField = function (name) {
-        console.log(this.node);
         return this.node[name];
     };
 

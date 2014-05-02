@@ -1,3 +1,5 @@
+additionalProperties = false screws up writing as wildchild blocks higher up stuff
+
 fill in types properly (e.g. "required" is a list)
 internal quoting in expressions can't be "" needs to be sanatised to ''
 might want to coerce for methods like .contains()

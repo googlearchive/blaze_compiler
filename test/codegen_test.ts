@@ -143,3 +143,33 @@ export function testTypes(test:nodeunit.Test):void{
 
     ], test.done.bind(null));
 }
+
+export function testDefinitions(test:nodeunit.Test):void{
+    async.series([
+        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/definitions.yaml")),
+
+        test_utils.assert_admin_can_write.bind(null, "/",{}, test),
+
+        test_utils.assert_can_write.bind(null, "any","/object",  {"boolean":true}   , test),
+        test_utils.assert_can_write_mock.bind(null, "any","/object/boolean",  true   , test),
+        test_utils.assert_can_write_mock.bind(null, "any","/string",  "string", test),
+        test_utils.assert_can_write_mock.bind(null, "any","/number",  1, test),
+        test_utils.assert_can_write_mock.bind(null, "any","/boolean", true    , test),
+
+        test_utils.assert_cant_write.bind(null, "any","/object",  "string" , test),
+        test_utils.assert_cant_write.bind(null, "any","/string",  1        , test),
+        test_utils.assert_cant_write.bind(null, "any","/number",  true     , test),
+        test_utils.assert_cant_write.bind(null, "any","/boolean", {a:5}    , test),
+        test_utils.assert_cant_write.bind(null, "any","/boolean", "true"   , test),
+
+        test_utils.assert_cant_write.bind(null, "any","/extra", true    , test),
+
+        test_utils.assert_can_write_mock.bind(null, "any","/object/string",  "string", test),
+        test_utils.assert_can_write_mock.bind(null, "any","/object/number",  1, test),
+        test_utils.assert_can_write_mock.bind(null, "any","/object/boolean", true    , test),
+
+
+        test_utils.assert_cant_write.bind(null, "any","/object/extra", true    , test),
+
+    ], test.done.bind(null));
+}

@@ -2,21 +2,11 @@ name: object
 validator: {$ref: "http://firebase.com/schema/types/object#"}
 compile:
   console.log("compile object");
-  console.log("required field", api.getField("required"));
-
-  api.addConstraint("!(next.isString()||next.isNumber()||next.isBoolean())");
+  api.addConstraint("!next.exists() || !(next.isString()||next.isNumber()||next.isBoolean())");
 
   if(api.getField("required")){
     for(var idx in api.getField("required")){
       var required_property = api.getField("required")[idx];
-
       api.addConstraint("next['"+required_property+"'].exists()");
     }
-  }
-
-  if(api.getField("additionalProperties") == false){
-    api.addProperty("$other", {
-      "type":"object",
-      "constraint":"false",
-    });
   }
