@@ -5,7 +5,7 @@ var falafel = require("falafel");
 var XRegExp = require('xregexp').XRegExp;
 
 //todo
-//implement explicit types ratehr than ad hoc string
+//implement explicit types rather than ad hoc string
 
 export class Predicate{
     identifier: string; //the function name

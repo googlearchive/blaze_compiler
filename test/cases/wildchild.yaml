@@ -7,7 +7,6 @@ schema:
   properties:
     extra: {type: string}
 
-
 access:
   - location: "/*"
     read:  "true"

@@ -44,7 +44,7 @@ JSON schema keywords to implement initially, through the meta-schema
 - DONE type: object, string
 - DONE type: boolean, number
 - DONE required
-- additionalProperties
+- DONE additionalProperties
 - definitions
 - DONE properties
 - enum

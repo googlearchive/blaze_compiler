@@ -225,13 +225,16 @@ function annotate_schema(node:any, parent:any, api:SchemaAPI):SchemaNode{
     }
 
 
-    api.setContext(node, parent);
+    api.setContext(node, parent, annotation);
     annotation.type = node.type ? node.type:null;
     node.constraint = node.constraint ? node.constraint:"true"; //default to true for constraint
 
     if(annotation.type != null){
         if(api.metaschema[annotation.type] != undefined){
             if(api.metaschema[annotation.type].validate(node)){
+                //the user compile could actually add more nodes, see schemaAPI.addProperty
+                //if this happens annotate_schema needs to be called for new nodes
+                //entering the system pragmatically in compile (done in addProperty)
                 api.metaschema[annotation.type].compile(api);
             }else{
                 console.error(node, "is not a valid", annotation.type)
@@ -260,6 +263,7 @@ export class SchemaAPI{
 
     node:any;   //local context for api application
     parent:any; //local context for api application
+    annotationInProgress:SchemaNode; //local context for api application
 
     constructor(){
         //load all built in schema definitions from schema directory
@@ -280,10 +284,12 @@ export class SchemaAPI{
      * point the api at the right schema instances
      * @param node
      * @param parent
+     * @param annotationInProgress
      */
-    setContext(node:any, parent:any){
+    setContext(node:any, parent:any, annotationInProgress:SchemaNode){
         this.node = node;
         this.parent = parent;
+        this.annotationInProgress = annotationInProgress;
     }
 
     /**
@@ -291,6 +297,19 @@ export class SchemaAPI{
      */
     addConstraint(expression:string):void{
         this.node.constraint = "("+ this.node.constraint + ") && (" + expression + ")";
+    }
+
+    /**
+     * User method for dynamically adding a property as a schema node
+     */
+    addProperty(name:string, json:any):void{
+        this.node[name] = json;
+
+        //as this is called through compile, which is part way through the annotation,
+        //this new node would be over looked, so we need call the annotation routine explicitly out of turn
+        var extra_annotator = new SchemaAPI();
+        extra_annotator.setContext(json, this.node, this.annotationInProgress);
+        this.annotationInProgress.properties[name] = annotate_schema(json, this.node, extra_annotator);
     }
 
     /**

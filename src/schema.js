@@ -217,13 +217,16 @@ function annotate_schema(node, parent, api) {
         annotation.properties[getWildchild(node)] = annotate_schema(node[getWildchild(node)], node, api);
     }
 
-    api.setContext(node, parent);
+    api.setContext(node, parent, annotation);
     annotation.type = node.type ? node.type : null;
     node.constraint = node.constraint ? node.constraint : "true"; //default to true for constraint
 
     if (annotation.type != null) {
         if (api.metaschema[annotation.type] != undefined) {
             if (api.metaschema[annotation.type].validate(node)) {
+                //the user compile could actually add more nodes, see schemaAPI.addProperty
+                //if this happens annotate_schema needs to be called for new nodes
+                //entering the system pragmatically in compile (done in addProperty)
                 api.metaschema[annotation.type].compile(api);
             } else {
                 console.error(node, "is not a valid", annotation.type);
@@ -266,10 +269,12 @@ var SchemaAPI = (function () {
     * point the api at the right schema instances
     * @param node
     * @param parent
+    * @param annotationInProgress
     */
-    SchemaAPI.prototype.setContext = function (node, parent) {
+    SchemaAPI.prototype.setContext = function (node, parent, annotationInProgress) {
         this.node = node;
         this.parent = parent;
+        this.annotationInProgress = annotationInProgress;
     };
 
     /**
@@ -277,6 +282,19 @@ var SchemaAPI = (function () {
     */
     SchemaAPI.prototype.addConstraint = function (expression) {
         this.node.constraint = "(" + this.node.constraint + ") && (" + expression + ")";
+    };
+
+    /**
+    * User method for dynamically adding a property as a schema node
+    */
+    SchemaAPI.prototype.addProperty = function (name, json) {
+        this.node[name] = json;
+
+        //as this is called through compile, which is part way through the annotation,
+        //this new node would be over looked, so we need call the annotation routine explicitly out of turn
+        var extra_annotator = new SchemaAPI();
+        extra_annotator.setContext(json, this.node, this.annotationInProgress);
+        this.annotationInProgress.properties[name] = annotate_schema(json, this.node, extra_annotator);
     };
 
     /**
