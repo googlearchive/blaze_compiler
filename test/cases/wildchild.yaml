@@ -1,0 +1,14 @@
+schema:
+  type: object
+  $chld:
+    type: object
+    constraint: next.val().contains('Y') #todo internal quotes can't be ""
+
+  properties:
+    extra: {type: string}
+
+
+access:
+  - location: "/*"
+    read:  "true"
+    write: "true"

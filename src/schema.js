@@ -168,6 +168,10 @@ var SchemaNode = (function () {
             this.properties[property].combineACL(acl, child_location);
         }
     };
+
+    SchemaNode.prototype.getWildchild = function () {
+        return getWildchild(this.properties);
+    };
     return SchemaNode;
 })();
 exports.SchemaNode = SchemaNode;
@@ -209,13 +213,17 @@ function annotate_schema(node, parent, api) {
         annotation.properties[key] = annotate_schema(node.properties[key], node, api);
     }
 
+    if (getWildchild(node)) {
+        annotation.properties[getWildchild(node)] = annotate_schema(node[getWildchild(node)], node, api);
+    }
+
+    api.setContext(node, parent);
     annotation.type = node.type ? node.type : null;
     node.constraint = node.constraint ? node.constraint : "true"; //default to true for constraint
 
     if (annotation.type != null) {
         if (api.metaschema[annotation.type] != undefined) {
             if (api.metaschema[annotation.type].validate(node)) {
-                api.setContext(node, parent);
                 api.metaschema[annotation.type].compile(api);
             } else {
                 console.error(node, "is not a valid", annotation.type);
@@ -276,7 +284,30 @@ var SchemaAPI = (function () {
         console.log(this.node);
         return this.node[name];
     };
+
+    /**
+    * user method for retrieving the wildchild's name for this node
+    * call getField(getWildchild()) if you want the wildchilds schema node
+    * @returns {string}
+    */
+    SchemaAPI.prototype.getWildchild = function () {
+        return getWildchild(this.node);
+    };
     return SchemaAPI;
 })();
 exports.SchemaAPI = SchemaAPI;
+
+function getWildchild(node) {
+    var wildchild = null;
+    for (var name in node) {
+        if (name.indexOf("$") == 0) {
+            if (wildchild == null)
+                wildchild = name;
+            else {
+                throw Error("more than one wildchild defined");
+            }
+        }
+    }
+    return wildchild;
+}
 //# sourceMappingURL=schema.js.map

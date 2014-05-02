@@ -9,7 +9,6 @@ function compile(path) {
 
     //check user's JSON meets JSON schema spec of rule file
     var ok = rules.validate_rules(json);
-
     if (ok) {
         //convert users rule file into a model
         var model = rules.Rules.parse(json);

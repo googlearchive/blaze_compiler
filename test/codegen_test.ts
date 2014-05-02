@@ -7,6 +7,7 @@ import compile = require('../src/compile');
 import rules = require('../src/rules');
 import async = require('async');
 
+/*
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml")),
@@ -95,6 +96,27 @@ export function testRequired(test:nodeunit.Test):void{
 
         //but not one grandchild of the required subtree
         test_utils.assert_cant_write.bind(null, "any","/chld1/grnd1", "1", test),
+
+
+    ], test.done.bind(null));
+}*/
+
+export function testWildchild(test:nodeunit.Test):void{
+    async.series([
+        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/wildchild.yaml")),
+
+        test_utils.assert_admin_can_write.bind(null, "/",{}, test),
+
+
+        test_utils.assert_can_write_mock.bind(null, "any","/chld1", "Y", test),
+        test_utils.assert_can_write_mock.bind(null, "any","/chld2", "Y", test),
+        test_utils.assert_cant_write.bind(null,     "any","/chld2", "N", test),
+        test_utils.assert_cant_write.bind(null,     "any","/chld2", "N", test),
+
+        test_utils.assert_cant_write.bind(null, "any","/", {chld1:"Y", chld2:"Y"}, test),
+
+
+        test_utils.assert_can_write.bind(null, "any","/extra", "N", test),
 
 
     ], test.done.bind(null));

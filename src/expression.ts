@@ -115,6 +115,8 @@ export class Expression{
      * changes next and prev references for next['child_name'] and prev['child_name']
      */
     rewriteForParent(child_name):string{
+        if(child_name.indexOf("$") == 0) return "false"; //whildchilds can't be pushed up
+
         var falafel_visitor = function(node){
             if(node.type == "Identifier"){
                 if(node.name == "next"){

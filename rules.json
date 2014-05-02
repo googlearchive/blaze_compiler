@@ -1,30 +1,14 @@
 {
   "rules":{
-    ".write":"(((true) && (((true) && (((true)&&(((true) && (newData.child('chld1').child('grnd1').parent().child('grnd1').exists())) && (newData.child('chld1').child('grnd1').parent().child('grnd2').exists())))&&((true) && (!newData.child('chld1').child('grnd1').exists() || newData.child('chld1').child('grnd1').isString())))) && (((true)&&(((true) && (newData.child('chld1').child('grnd2').parent().child('grnd1').exists())) && (newData.child('chld1').child('grnd2').parent().child('grnd2').exists())))&&((true) && (!newData.child('chld1').child('grnd2').exists() || newData.child('chld1').child('grnd2').isString()))))) && (((true) && (((true)&&(true))&&((true) && (!newData.child('chld2').child('grnd3').exists() || newData.child('chld2').child('grnd3').isString())))) && (((true)&&(true))&&((true) && (!newData.child('chld2').child('grnd4').exists() || newData.child('chld2').child('grnd4').isString())))))&&((false)||(true))",
-    ".read":"(false)||(false)",
-    "chld1": {
-      ".write":"(((true) && (((true)&&(((true) && (newData.child('grnd1').parent().child('grnd1').exists())) && (newData.child('grnd1').parent().child('grnd2').exists())))&&((true) && (!newData.child('grnd1').exists() || newData.child('grnd1').isString())))) && (((true)&&(((true) && (newData.child('grnd2').parent().child('grnd1').exists())) && (newData.child('grnd2').parent().child('grnd2').exists())))&&((true) && (!newData.child('grnd2').exists() || newData.child('grnd2').isString()))))&&((false)||(true))",
-      ".read":"(false)||(false)",
-      "grnd1": {
-        ".write":"(((true)&&(((true) && (newData.parent().child('grnd1').exists())) && (newData.parent().child('grnd2').exists())))&&((true) && (!newData.exists() || newData.isString())))&&((false)||(true))",
-        ".read":"(false)||(false)"
-      },
-      "grnd2": {
-        ".write":"(((true)&&(((true) && (newData.parent().child('grnd1').exists())) && (newData.parent().child('grnd2').exists())))&&((true) && (!newData.exists() || newData.isString())))&&((false)||(true))",
-        ".read":"(false)||(false)"
-      }
+    ".write":"(((true) && ((true)&&((true) && (!newData.child('extra').exists() || newData.child('extra').isString())))) && (false))&&((false)||(true))",
+    ".read":"(false)||(true)",
+    "extra": {
+      ".write":"((true)&&((true) && (!newData.exists() || newData.isString())))&&((false)||(true))",
+      ".read":"(false)||(true)"
     },
-    "chld2": {
-      ".write":"(((true) && (((true)&&(true))&&((true) && (!newData.child('grnd3').exists() || newData.child('grnd3').isString())))) && (((true)&&(true))&&((true) && (!newData.child('grnd4').exists() || newData.child('grnd4').isString()))))&&((false)||(true))",
-      ".read":"(false)||(false)",
-      "grnd3": {
-        ".write":"(((true)&&(true))&&((true) && (!newData.exists() || newData.isString())))&&((false)||(true))",
-        ".read":"(false)||(false)"
-      },
-      "grnd4": {
-        ".write":"(((true)&&(true))&&((true) && (!newData.exists() || newData.isString())))&&((false)||(true))",
-        ".read":"(false)||(false)"
-      }
+    "$chld": {
+      ".write":"((true)&&(newData.val().contains('Y')))&&((false)||(true))",
+      ".read":"(false)||(true)"
     }
   }
 }

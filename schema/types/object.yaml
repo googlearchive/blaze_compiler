@@ -5,7 +5,10 @@ properties:
   properties: {$ref: "http://firebase.com/schema#"}
   type: {}
   constraint: {}
-  additionalProperties: {type: boolean}
   required: {}
+  additionalProperties: {type: boolean}
+
+patternProperties: #wildchild support
+  '\\$[A-z0-9_]+': {$ref: "http://firebase.com/schema#"}
 
 additionalProperties: false

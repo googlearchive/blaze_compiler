@@ -4,7 +4,7 @@ description: "Core meta-schema for validating Firebase schema types"
 
 anyOf:
   - {$ref: "http://firebase.com/schema/types/object#"}
-  - {$ref: "http://firebase.com/schema/types/object#"}
+  - {$ref: "http://firebase.com/schema/types/string#"}
 
   - properties:
       type: {type: string}

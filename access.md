@@ -6,7 +6,7 @@ The new security semantics 2.0 seperate access control from data intergrity cons
 
 root is the root of the firebase. chldN is the Nth child of root, grndN is the Nth grandchild of root
 
-## 
+## one-to-one parent child relations
 
 ```
 schema:
@@ -67,6 +67,4 @@ etc. for ancestors
 
 So if auth is red, root.chld1.\* is writable and so should root.chld1 be writable without children
 So if auth is black, \* is not writable, but root.chldX.grnd(3|4) are and so should root.chld2 be writable without children too
-    
 
-Note firebase 1.0 rules really only operate on leaves so we jsut have to carry the rules forward on the leaves.

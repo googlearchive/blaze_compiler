@@ -108,6 +108,9 @@ var Expression = (function () {
     * changes next and prev references for next['child_name'] and prev['child_name']
     */
     Expression.prototype.rewriteForParent = function (child_name) {
+        if (child_name.indexOf("$") == 0)
+            return "false";
+
         var falafel_visitor = function (node) {
             if (node.type == "Identifier") {
                 if (node.name == "next") {

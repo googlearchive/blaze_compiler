@@ -42,12 +42,12 @@ delay for later
 
 JSON schema keywords to implement initially, through the meta-schema 
 - type: boolean, number, object, string
-- additionalItems
 - required
 - additionalProperties
 - definitions
 - properties
 - enum
+- additionalItems
 
 JSON schema keywords to be ignored for now
 - allOf, anyOf, oneOf, not (should be added soon though)
