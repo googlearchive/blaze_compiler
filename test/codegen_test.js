@@ -38,10 +38,10 @@ function testAccess(test) {
         test_utils.assert_can_write_mock.bind(null, "red", "/chld1/grnd2", "string", test),
         test_utils.assert_can_write_mock.bind(null, "black", "/chld2/grnd3", "string", test),
         test_utils.assert_can_write_mock.bind(null, "black", "/chld2/grnd4", "string", test),
-        test_utils.assert_can_write_mock.bind(null, "red", "/chld1", "string", test),
-        test_utils.assert_can_write_mock.bind(null, "black", "/chld2", "string", test),
-        test_utils.assert_cant_write.bind(null, "black", "/chld1", "string", test),
-        test_utils.assert_cant_write.bind(null, "red", "/chld2", "string", test),
+        test_utils.assert_can_write_mock.bind(null, "red", "/chld1", {}, test),
+        test_utils.assert_can_write_mock.bind(null, "black", "/chld2", {}, test),
+        test_utils.assert_cant_write.bind(null, "black", "/chld1", {}, test),
+        test_utils.assert_cant_write.bind(null, "red", "/chld2", {}, test),
         test_utils.assert_cant_write.bind(null, "red", "/", {}, test),
         test_utils.assert_cant_write.bind(null, "red", "/", {}, test)
     ], test.done.bind(null));
@@ -87,4 +87,20 @@ function testWildchild(test) {
     ], test.done.bind(null));
 }
 exports.testWildchild = testWildchild;
+
+function testTypes(test) {
+    async.series([
+        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/types.yaml")),
+        test_utils.assert_admin_can_write.bind(null, "/", {}, test),
+        test_utils.assert_can_write_mock.bind(null, "any", "/object", { a: 5 }, test),
+        test_utils.assert_can_write_mock.bind(null, "any", "/string", "string", test),
+        test_utils.assert_can_write_mock.bind(null, "any", "/number", 1, test),
+        test_utils.assert_can_write_mock.bind(null, "any", "/boolean", true, test),
+        test_utils.assert_cant_write.bind(null, "any", "/object", "string", test),
+        test_utils.assert_cant_write.bind(null, "any", "/string", 1, test),
+        test_utils.assert_cant_write.bind(null, "any", "/number", true, test),
+        test_utils.assert_cant_write.bind(null, "any", "/boolean", { a: 5 }, test)
+    ], test.done.bind(null));
+}
+exports.testTypes = testTypes;
 //# sourceMappingURL=codegen_test.js.map

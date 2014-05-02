@@ -4,6 +4,8 @@ compile:
   console.log("compile object");
   console.log("required field", api.getField("required"));
 
+  api.addConstraint("!(next.isString()||next.isNumber()||next.isBoolean())");
+
   if(api.getField("required")){
     for(var idx in api.getField("required")){
       var required_property = api.getField("required")[idx];

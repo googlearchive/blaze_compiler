@@ -1,0 +1,5 @@
+name: number
+validator: {$ref: "http://firebase.com/schema/types/number#"}
+compile:
+  console.log("compile number");
+  api.addConstraint("!next.exists() || next.isNumber()")

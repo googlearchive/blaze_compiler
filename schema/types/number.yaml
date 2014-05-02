@@ -1,0 +1,8 @@
+id: "http://firebase.com/schema/types/number#"
+$schema: "http://firebase.com/schema/types/number#"
+
+properties:
+  type: {}
+  constraint: {}
+
+additionalProperties: false

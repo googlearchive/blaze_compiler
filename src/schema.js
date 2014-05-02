@@ -232,7 +232,9 @@ function annotate_schema(node, parent, api) {
             console.error("unknown schema type:", annotation.type);
         }
     } else {
-        throw new Error("no defined type, this is not supported yet");
+        //user has not defined type
+        console.log(node);
+        throw new Error("no defined type, this is not supported yet for node: ");
     }
 
     annotation.constraint = expression.Expression.parse(node.constraint);

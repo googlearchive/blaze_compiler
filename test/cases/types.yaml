@@ -1,0 +1,13 @@
+schema:
+  type: object
+
+  properties:
+    object:  {type: object }
+    string:  {type: string }
+    boolean: {type: boolean}
+    number:  {type: number }
+
+access:
+  - location: "/*"
+    read:  "true"
+    write: "true"

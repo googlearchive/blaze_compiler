@@ -1,13 +1,21 @@
 {
   "rules":{
-    ".write":"(((true) && ((true)&&((true) && (!newData.child('extra').exists() || newData.child('extra').isString())))) && (false))&&((false)||(true))",
+    ".write":"(((((true) && (((true) && (!(newData.child('object').parent().isString()||newData.child('object').parent().isNumber()||newData.child('object').parent().isBoolean())))&&((true) && (!(newData.child('object').isString()||newData.child('object').isNumber()||newData.child('object').isBoolean()))))) && (((true) && (!(newData.child('string').parent().isString()||newData.child('string').parent().isNumber()||newData.child('string').parent().isBoolean())))&&((true) && (!newData.child('string').exists() || newData.child('string').isString())))) && (((true) && (!(newData.child('boolean').parent().isString()||newData.child('boolean').parent().isNumber()||newData.child('boolean').parent().isBoolean())))&&((true) && (!newData.child('boolean').exists() || newData.child('boolean').isBoolean())))) && (((true) && (!(newData.child('number').parent().isString()||newData.child('number').parent().isNumber()||newData.child('number').parent().isBoolean())))&&((true) && (!newData.child('number').exists() || newData.child('number').isNumber()))))&&((false)||(true))",
     ".read":"(false)||(true)",
-    "extra": {
-      ".write":"((true)&&((true) && (!newData.exists() || newData.isString())))&&((false)||(true))",
+    "object": {
+      ".write":"(((true) && (!(newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean())))&&((true) && (!(newData.isString()||newData.isNumber()||newData.isBoolean()))))&&((false)||(true))",
       ".read":"(false)||(true)"
     },
-    "$chld": {
-      ".write":"((true)&&(newData.val().contains('Y')))&&((false)||(true))",
+    "string": {
+      ".write":"(((true) && (!(newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean())))&&((true) && (!newData.exists() || newData.isString())))&&((false)||(true))",
+      ".read":"(false)||(true)"
+    },
+    "boolean": {
+      ".write":"(((true) && (!(newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean())))&&((true) && (!newData.exists() || newData.isBoolean())))&&((false)||(true))",
+      ".read":"(false)||(true)"
+    },
+    "number": {
+      ".write":"(((true) && (!(newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean())))&&((true) && (!newData.exists() || newData.isNumber())))&&((false)||(true))",
       ".read":"(false)||(true)"
     }
   }

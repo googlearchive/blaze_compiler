@@ -25,6 +25,8 @@ exports.rules_schema = exports.load_yaml("schema/security_rules.yaml");
 function validate_rules(rules) {
     tv4.addSchema("http://firebase.com/schema/types/object#", this.load_yaml("schema/types/object.yaml"));
     tv4.addSchema("http://firebase.com/schema/types/string#", this.load_yaml("schema/types/string.yaml"));
+    tv4.addSchema("http://firebase.com/schema/types/boolean#", this.load_yaml("schema/types/boolean.yaml"));
+    tv4.addSchema("http://firebase.com/schema/types/number#", this.load_yaml("schema/types/number.yaml"));
 
     tv4.addSchema("http://firebase.com/schema#", this.load_yaml("schema/schema.yaml"));
 

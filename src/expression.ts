@@ -189,6 +189,12 @@ export class Expression{
                         }else if(node.property.name == 'isString'){
                             node.expr_type = "fun():value"
 
+                        }else if(node.property.name == 'isBoolean'){
+                            node.expr_type = "fun():value"
+
+                        }else if(node.property.name == 'isNumber'){
+                            node.expr_type = "fun():value"
+
                         }else if(node.property.name == 'exists'){
                             node.expr_type = "fun():value"
 

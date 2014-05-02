@@ -4,6 +4,5 @@ $schema: "http://firebase.com/schema/types/string#"
 properties:
   type: {}
   constraint: {}
-  additionalProperties: {type: boolean}
 
 additionalProperties: false

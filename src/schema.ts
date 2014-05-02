@@ -241,7 +241,8 @@ function annotate_schema(node:any, parent:any, api:SchemaAPI):SchemaNode{
         }
     }else{
         //user has not defined type
-        throw new Error("no defined type, this is not supported yet")
+        console.log(node);
+        throw new Error("no defined type, this is not supported yet for node: ")
     }
 
 

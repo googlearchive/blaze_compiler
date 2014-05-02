@@ -1,7 +1,7 @@
 schema:
   type: object
   $chld:
-    type: object
+    type: string
     constraint: next.val().contains('Y') #todo internal quotes can't be ""
 
   properties:

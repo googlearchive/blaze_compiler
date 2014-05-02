@@ -1,0 +1,5 @@
+name: boolean
+validator: {$ref: "http://firebase.com/schema/types/boolean#"}
+compile:
+  console.log("compile boolean");
+  api.addConstraint("!next.exists() || next.isBoolean()")
