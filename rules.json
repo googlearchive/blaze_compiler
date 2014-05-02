@@ -1,14 +1,30 @@
 {
   "rules":{
-    ".write":"(((true) && ((true)&&((true) && (!newData.child('extra').exists() || newData.child('extra').isString())))) && (false))&&((false)||(true))",
-    ".read":"(false)||(true)",
-    "extra": {
-      ".write":"((true)&&((true) && (!newData.exists() || newData.isString())))&&((false)||(true))",
-      ".read":"(false)||(true)"
+    ".write":"(((true) && (((true) && (((true)&&((auth.username == 'red')))&&(((auth.username == 'red') || (auth.username == 'black')) && (!newData.child('chld1').child('grnd1').exists() || newData.child('chld1').child('grnd1').isString())))) && (((true)&&((auth.username == 'red')))&&((true) && (!newData.child('chld1').child('grnd2').exists() || newData.child('chld1').child('grnd2').isString()))))) && (((true) && (((true)&&(true))&&(((auth.username == 'black')) && (!newData.child('chld2').child('grnd3').exists() || newData.child('chld2').child('grnd3').isString())))) && (((true)&&(true))&&(((auth.username == 'red') || (auth.username == 'black')) && (!newData.child('chld2').child('grnd4').exists() || newData.child('chld2').child('grnd4').isString())))))&&((false)||((auth.username == 'black')))",
+    ".read":"(false)||(false)",
+    "chld1": {
+      ".write":"(((true) && (((true)&&((auth.username == 'red')))&&(((auth.username == 'red') || (auth.username == 'black')) && (!newData.child('grnd1').exists() || newData.child('grnd1').isString())))) && (((true)&&((auth.username == 'red')))&&((true) && (!newData.child('grnd2').exists() || newData.child('grnd2').isString()))))&&(((false)||((auth.username == 'red')))||((auth.username == 'black')))",
+      ".read":"((false)||(false))||(false)",
+      "grnd1": {
+        ".write":"(((true)&&((auth.username == 'red')))&&(((auth.username == 'red') || (auth.username == 'black')) && (!newData.exists() || newData.isString())))&&(((false)||((auth.username == 'red')))||((auth.username == 'black')))",
+        ".read":"((false)||(false))||(false)"
+      },
+      "grnd2": {
+        ".write":"(((true)&&((auth.username == 'red')))&&((true) && (!newData.exists() || newData.isString())))&&(((false)||((auth.username == 'red')))||((auth.username == 'black')))",
+        ".read":"((false)||(false))||(false)"
+      }
     },
-    "$chld": {
-      ".write":"((true)&&(newData.val().contains('Y')))&&((false)||(true))",
-      ".read":"(false)||(true)"
+    "chld2": {
+      ".write":"(((true) && (((true)&&(true))&&(((auth.username == 'black')) && (!newData.child('grnd3').exists() || newData.child('grnd3').isString())))) && (((true)&&(true))&&(((auth.username == 'red') || (auth.username == 'black')) && (!newData.child('grnd4').exists() || newData.child('grnd4').isString()))))&&((false)||((auth.username == 'black')))",
+      ".read":"(false)||(false)",
+      "grnd3": {
+        ".write":"(((true)&&(true))&&(((auth.username == 'black')) && (!newData.exists() || newData.isString())))&&((false)||((auth.username == 'black')))",
+        ".read":"(false)||(false)"
+      },
+      "grnd4": {
+        ".write":"(((true)&&(true))&&(((auth.username == 'red') || (auth.username == 'black')) && (!newData.exists() || newData.isString())))&&((false)||((auth.username == 'black')))",
+        ".read":"(false)||(false)"
+      }
     }
   }
 }

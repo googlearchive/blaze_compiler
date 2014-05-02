@@ -1,13 +1,13 @@
 /// <reference path="../types/nodeunit.d.ts" />
 import expressions = require('../src/expression');
 
-import test_utils  = require('./test_utils.js');
-import firebase_io = require('./firebase_io.js');
+import test_utils  = require('./test_utils');
+import firebase_io = require('./firebase_io');
 import compile = require('../src/compile');
 import rules = require('../src/rules');
 import async = require('async');
 
-/*
+
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml")),
@@ -68,7 +68,7 @@ export function testCascade(test:nodeunit.Test):void{
         test_utils.assert_cant_write.bind(null, "any","/chld2/grnd4", "string", test),
 
         test_utils.assert_can_write.bind(null, "any","/",
-            {chld1:{grnd1:"1", grnd2:"2"}, chld2:{grnd3:"3", grnd4:"4"}}, test),
+            {chld1:{grnd1:"1", grnd2:"2"}, chld2:{grnd3:"3", grnd4:"4"}}, test)
 
 
     ], test.done.bind(null));
@@ -95,11 +95,11 @@ export function testRequired(test:nodeunit.Test):void{
         test_utils.assert_can_write_mock.bind(null, "any","/chld2/grnd3", "3", test),
 
         //but not one grandchild of the required subtree
-        test_utils.assert_cant_write.bind(null, "any","/chld1/grnd1", "1", test),
+        test_utils.assert_cant_write.bind(null, "any","/chld1/grnd1", "1", test)
 
 
     ], test.done.bind(null));
-}*/
+}
 
 export function testWildchild(test:nodeunit.Test):void{
     async.series([
@@ -116,7 +116,7 @@ export function testWildchild(test:nodeunit.Test):void{
         test_utils.assert_cant_write.bind(null, "any","/", {chld1:"Y", chld2:"Y"}, test),
 
 
-        test_utils.assert_can_write.bind(null, "any","/extra", "N", test),
+        test_utils.assert_can_write.bind(null, "any","/extra", "N", test)
 
 
     ], test.done.bind(null));
