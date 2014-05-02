@@ -12,6 +12,7 @@
 */
 /// <reference path="../types/node.d.ts" />
 /// <reference path="../types/async.d.ts" />
+/// <reference path="../types/nodeunit.d.ts" />
 var firebase_io = require('../test/firebase_io.js');
 
 /**

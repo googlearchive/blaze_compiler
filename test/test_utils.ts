@@ -12,6 +12,7 @@
  */
 /// <reference path="../types/node.d.ts" />
 /// <reference path="../types/async.d.ts" />
+/// <reference path="../types/nodeunit.d.ts" />
 var firebase_io = require('../test/firebase_io.js');
 
 /**
@@ -21,7 +22,7 @@ var firebase_io = require('../test/firebase_io.js');
  * @param test the nodeunit to check invariants
  * @return {*} Deferred object
  */
-export function assert_admin_can_write(where:string, value:any, test, cb){
+export function assert_admin_can_write(where:string, value:any, test:nodeunit.Test, cb){
     firebase_io.loginAs("anAdmin", true, function(err){
         if(err){
             test.ok(false, "can't login");
@@ -37,7 +38,7 @@ export function assert_admin_can_write(where:string, value:any, test, cb){
 }
 
 
-export function assert_can_read(who:string, where:string, expected:any, test, cb){
+export function assert_can_read(who:string, where:string, expected:any, test:nodeunit.Test, cb){
     firebase_io.loginAs(who, false, function(err){
         if(err){
             test.ok(false, "can't login");
@@ -55,7 +56,7 @@ export function assert_can_read(who:string, where:string, expected:any, test, cb
     });
 }
 
-export function assert_cant_read(who:string, where:string, test, cb){
+export function assert_cant_read(who:string, where:string, test:nodeunit.Test, cb){
     firebase_io.loginAs(who, false, function(err){
         if(err){
             test.ok(false, "can't login");
@@ -77,7 +78,7 @@ export function assert_cant_read(who:string, where:string, test, cb){
     });
 }
 
-export function assert_can_write(who:string, where:string, value:any, test, cb){
+export function assert_can_write(who:string, where:string, value:any, test:nodeunit.Test, cb){
     firebase_io.loginAs(who, false, function(err){
         if(err){
             test.ok(false, "can't login");
@@ -96,7 +97,7 @@ export function assert_can_write(who:string, where:string, value:any, test, cb){
     });
 }
 
-export function assert_can_write_mock(who:string, where:string, value:any, test, cb){
+export function assert_can_write_mock(who:string, where:string, value:any, test:nodeunit.Test, cb){
     firebase_io.simulateLoginAs(who, false, function(err){
         if(err){
             test.ok(false, "can't login");
@@ -115,7 +116,7 @@ export function assert_can_write_mock(who:string, where:string, value:any, test,
     });
 }
 
-export function assert_cant_write(who:string, where:string, value:any, test, cb){
+export function assert_cant_write(who:string, where:string, value:any, test:nodeunit.Test, cb){
     firebase_io.loginAs(who, false, function(err){
         if(err){
             test.ok(false, "can't login");
