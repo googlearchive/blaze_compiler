@@ -12,7 +12,7 @@ export function testSetup(test:nodeunit.Test):void{
         firebase_io.setValidationRules.bind(null, compile.compile("examples/mail_example.yaml", true))
     ], test.done.bind(null));
 }
-/*
+
 export function testWriteInbox(test:nodeunit.Test):void{
     async.series([
         test_utils.assert_admin_can_write.bind(null, "/", {}, test),
@@ -119,7 +119,7 @@ export function testDeleteOutbox(test:nodeunit.Test):void{
 
     ], test.done.bind(null));
 }
-*/
+
 
 export function testReadboxes(test:nodeunit.Test):void{
     async.series([

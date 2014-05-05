@@ -53,7 +53,7 @@ access:
 
   #the inbox owner can delete mail, so they can keep their inbox tidy
   - location: users/$userid/inbox/*
-    write:    $userid === auth.username
+    write:    deleteOnly() && $userid === auth.username
 
   #write and delete is given to owners outbox, so they can record what messages they sent
   - location: users/$userid/outbox/*
