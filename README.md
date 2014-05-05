@@ -9,6 +9,7 @@ The blaze compiler presents a higher level interface to Firebase security rules.
 - embed semantically obvious global functional constraints in the schema (as opposed to hierarchical)
 - describe access control as a separate concern
 - create reusable predicates (boolean functions)
+- improved parsing of expressions, coercion makes .val() unnecessary in many cases
 - inline tests to check and document what form data can be to be inserted
 
 Example
