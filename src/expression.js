@@ -1,25 +1,18 @@
-/// <reference path="../types/node.d.ts" />
 var falafel = require("falafel");
 
 var XRegExp = require('xregexp').XRegExp;
 
-//todo
-//implement explicit types rather than ad hoc string
 var Predicate = (function () {
     function Predicate(declaration, expression) {
-        //break the function declaration into its parts
         var match = XRegExp.exec(declaration, Predicate.DECLARATION_FORMAT);
         var params = XRegExp.split(match.paramlist, /\s*,\s*/);
 
-        //bug fix for weird split behaviour (preserved in XRegExp)
-        //if the declaration has no parameters, the "paramlist" gets split as [''] for some reason
         if (params.length == 1 && params[0] == '')
-            params = []; //convert it to empty list as it should be
+            params = [];
 
         this.identifier = match.name;
         this.signature = match.name + "(" + params.length + ")";
 
-        //now build up positional information of params
         this.parameter_map = params;
 
         this.expression = Expression.parse(expression);
@@ -35,14 +28,10 @@ var Predicate = (function () {
 })();
 exports.Predicate = Predicate;
 
-/**
-* instances support indexing like arrays, which maps cannocal predicate declarations to Predicate definitions
-*/
 var Predicates = (function () {
     function Predicates() {
     }
     Predicates.parse = function (json) {
-        //console.log("Predicates.parse:", json);
         var predicates = new Predicates();
 
         for (var predicate_def in json) {
@@ -87,9 +76,6 @@ var Expression = (function () {
         return expr;
     };
 
-    /**
-    * changes next and prev references for next.parent() and prev.parent()
-    */
     Expression.prototype.rewriteForChild = function () {
         var falafel_visitor = function (node) {
             if (node.type == "Identifier") {
@@ -104,11 +90,6 @@ var Expression = (function () {
         return falafel(this.raw, {}, falafel_visitor);
     };
 
-    /**
-    * changes next and prev references for next['child_name'] and prev['child_name']
-    * wildchild's can't be represented in their parents context, so wildchilds are conservatively
-    * represented as "false"
-    */
     Expression.prototype.rewriteForParent = function (child_name) {
         if (child_name.indexOf("$") == 0)
             return "false";
@@ -127,11 +108,8 @@ var Expression = (function () {
     };
 
     Expression.prototype.generate = function (symbols) {
-        //the falafel visitor function replaces source with a different construction
         var falafel_visitor = function (node) {
-            //console.log("type:", node.type);
             if (node.type == "Identifier") {
-                //console.log("identifier: ", node.name);
                 if (node.name == "next") {
                     node.update("newData");
                     node.expr_type = "rule";
@@ -151,18 +129,14 @@ var Expression = (function () {
                     node.expr_type = symbols.variables[node.name].expr_type;
                 }
             } else if (node.type == "Literal") {
-                //console.log("literal: ", node.value);
                 node.expr_type = "value";
             } else if (node.type == "ArrayExpression") {
                 node.expr_type = "value";
-                //node.state = new C_VAL(node.value, mem);
             } else if (node.type == "MemberExpression") {
-                //console.log("MemberExpression:", node);
                 if (node.object.expr_type == "rule") {
                     node.expr_type = null;
 
                     if (node.property.type == 'Identifier') {
-                        //reserved methods
                         if (node.property.name == 'val') {
                             node.expr_type = "fun():value";
                         } else if (node.property.name == 'parent') {
@@ -180,20 +154,16 @@ var Expression = (function () {
                         } else if (node.property.name == 'exists') {
                             node.expr_type = "fun():value";
                         } else if (node.property.expr_type == 'rule') {
-                            //cooertion from rule to value
                             node.update(node.object.source() + ".child(" + node.property.source() + ".val())");
                             node.expr_type = "rule";
                         } else {
-                            //not recognised member, so it must be an implicit child relation (with quotes in child)
                             node.update(node.object.source() + ".child('" + node.property.source() + "')");
                             node.expr_type = "rule";
                         }
                     } else if (node.property.expr_type == 'rule') {
-                        //cooertion from rule to value
                         node.update(node.object.source() + ".child(" + node.property.source() + ".val())");
                         node.expr_type = "rule";
                     } else if (node.property.expr_type == 'value') {
-                        //not recognised member, so it must be an implicit child relation (without quotes in child)
                         node.update(node.object.source() + ".child(" + node.property.source() + ")");
                         node.expr_type = "rule";
                     }
@@ -210,11 +180,8 @@ var Expression = (function () {
                 } else if (node.callee.expr_type === "fun(value):value") {
                     node.expr_type = "value";
                 } else if (node.callee.expr_type === "pred") {
-                    //console.log(node)
-                    //we are calling a user defined predicate
                     var predicate = symbols.predicates[node.callee.name];
 
-                    //clone the global symbol table and populate with binding to parameters
                     var predicate_symbols = symbols.clone();
 
                     var params = node.arguments;
@@ -230,7 +197,6 @@ var Expression = (function () {
                     node.expr_type = "value";
                 }
             } else if (node.type == "BinaryExpression" || node.type == "BooleanExpression" || node.type == "LogicalExpression") {
-                //coersion to value, if a rule (i.e. appending .val() when in a binary operator as ruleSnapshots don't support any binary operators)
                 if (node.left.expr_type === "rule") {
                     node.left.update(node.left.source() + ".val()");
                 }

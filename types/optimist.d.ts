@@ -2,47 +2,47 @@
 // sourced from https://github.com/soywiz/typescript-node-definitions/blob/master/optimist.d.ts
 // rehacked by @Bartvds
 
-declare module Optimist {
+declare module optimist {
 	export interface Argv {
 		_: string[];
 	}
-	export interface Optimist {
-		default(name: string, value: any): Optimist;
-		default(args: any): Optimist;
+	export interface optimist {
+		default(name: string, value: any): optimist;
+		default(args: any): optimist;
 
-		boolean(name: string): Optimist;
-		boolean(names: string[]): Optimist;
+		boolean(name: string): optimist;
+		boolean(names: string[]): optimist;
 
-		string(name: string): Optimist;
-		string(names: string[]): Optimist;
+		string(name: string): optimist;
+		string(names: string[]): optimist;
 
-		wrap(columns): Optimist;
+		wrap(columns): optimist;
 
-		help(): Optimist;
-		showHelp(fn?: Function): Optimist;
+		help(): optimist;
+		showHelp(fn?: Function): optimist;
 
-		usage(message: string): Optimist;
+		usage(message: string): optimist;
 
-		demand(key: string): Optimist;
-		demand(key: number): Optimist;
-		demand(key: string[]): Optimist;
+		demand(key: string): optimist;
+		demand(key: number): optimist;
+		demand(key: string[]): optimist;
 
-		alias(key: string, alias: string): Optimist;
+		alias(key: string, alias: string): optimist;
 
-		describe(key: string, desc: string): Optimist;
+		describe(key: string, desc: string): optimist;
 
-		options(key: string, opt: any): Optimist;
+		options(key: string, opt: any): optimist;
 
 		check(fn: Function);
 
-		parse(args: string[]): Optimist;
+		parse(args: string[]): optimist;
 
 		argv: Argv;
 	}
 }
-interface Optimist extends Optimist.Optimist {
-	(args: string[]): Optimist.Optimist;
+interface optimist extends optimist.optimist {
+	(args: string[]): optimist.optimist;
 }
 declare module 'optimist' {
-	export = Optimist;
+	export = optimist;
 }

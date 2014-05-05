@@ -1,5 +1,3 @@
-/// <reference path="../types/nodeunit.d.ts" />
-/// <reference path="../src/expression.ts" />
 var expressions = require('../src/expression');
 
 function translationTestCase(from, to, predicates, test) {
@@ -127,35 +125,30 @@ function test$var3(test) {
 exports.test$var3 = test$var3;
 
 function test$var4(test) {
-    //bit weird this works
     translationTestCase("prev.$userid.val()", "data.child($userid.val()).val()", new expressions.Predicates(), test);
     test.done();
 }
 exports.test$var4 = test$var4;
 
 function testPredicate1(test) {
-    //bit weird this works
     translationTestCase("isLoggedIn()", "(auth.id == null)", expressions.Predicates.parse([{ "isLoggedIn()": "auth.id == null" }]), test);
     test.done();
 }
 exports.testPredicate1 = testPredicate1;
 
 function testPredicate2(test) {
-    //bit weird this works
     translationTestCase("isEqual(prev, next.name)", "(data.val() == newData.child('name').val())", expressions.Predicates.parse([{ "isEqual(a, b)": "a == b" }]), test);
     test.done();
 }
 exports.testPredicate2 = testPredicate2;
 
 function testPredicate3(test) {
-    //bit weird this works
     translationTestCase("isLoggedIn(auth)", "(auth.id == 'yo')", expressions.Predicates.parse([{ "isLoggedIn(q)": "q.id == 'yo'" }]), test);
     test.done();
 }
 exports.testPredicate3 = testPredicate3;
 
 function testUnary(test) {
-    //bit weird this works
     translationTestCase("!isLoggedIn(auth)", "!(auth.id == 'yo')", expressions.Predicates.parse([{ "isLoggedIn(q)": "q.id == 'yo'" }]), test);
     test.done();
 }

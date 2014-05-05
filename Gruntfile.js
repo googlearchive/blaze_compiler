@@ -10,11 +10,23 @@ module.exports = function(grunt) {
             validation : ['test/validation_test.js'],
             codegen : ['test/codegen_test.js'],
             expressions: ['test/expressions_test.js']
-		}
+		},typescript: {
+          base: {
+            src: ['**/*.ts'],
+            dest: '.',
+            options: {
+              module: 'commonjs',
+              target: 'es5',
+              sourceMap: true,
+              declaration: false
+            }
+          }
+        }
 	});
 
 	// Load the plugins for this project
 	grunt.loadNpmTasks('grunt-contrib-nodeunit');
+    grunt.loadNpmTasks('grunt-typescript');
 
 
 	// Default task(s).

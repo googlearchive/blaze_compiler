@@ -1,7 +1,7 @@
 /// <reference path="../types/node.d.ts" />
 /// <reference path="../types/optimist.d.ts" />
 
-import optimist = require('optimist');
+var optimist = require('optimist'); //something weird going on, can't import it properly
 import compile = require('./compile');
 
 

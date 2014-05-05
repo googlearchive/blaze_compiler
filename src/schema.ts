@@ -125,12 +125,6 @@ export class SchemaNode{
         return buffer;
     }
 
-    validate(){
-        throw Error("ValidationError")
-        var ref = object[property];
-        var schema = tv4.getSchema(ref);
-    }
-
     /**
      * moves ancestors constraints to being explicitly being represented in leaf nodes
      * this is done by leaves being the && concatenation of all ancestors

@@ -4,47 +4,26 @@ var expression = require('../src/expression');
 var tv4 = require('tv4');
 var fs = require('fs');
 
-//todo
-//refactor out traversals
-/**
-* performs a bottom up traversal of a schema definition, allowing each metaschema processor
-* to generate constraints
-*/
 function annotate(model) {
     model.schema.root = annotate_schema(model.schema.json, null, null, new SchemaAPI(), model);
 }
 exports.annotate = annotate;
 
-/**
-* pushes ancestors schema constraints to being explicitly being represented in leaf nodes
-* this is done by leaves being the && concatenation of all ancestors
-* next in a parent's context is next.parent() in the child context
-*/
 function pushDownConstraints(model) {
     model.schema.root.pushDownConstraints(null);
 }
 exports.pushDownConstraints = pushDownConstraints;
 
-/**
-* pulls full leaf schema constraints upwards. ancestors constraints are overwritten
-* by the && concatenation of all children
-*/
 function pullUpConstraints(model) {
     model.schema.root.pullUpConstraints("");
 }
 exports.pullUpConstraints = pullUpConstraints;
 
-/**
-* intergrates the ACL constraints into the schema
-*/
 function combineACL(model) {
     model.schema.root.combineACL(model.access, []);
 }
 exports.combineACL = combineACL;
 
-/**
-* intergrates the ACL constraints into the schema
-*/
 function generateRules(model) {
     var buffer = [];
     buffer.push('{\n');
@@ -56,15 +35,11 @@ function generateRules(model) {
     model.schema.root.generate(symbols, "  ", buffer);
     buffer.push('}\n');
 
-    //convert buffer into big string
     var code = buffer.join('');
     return code;
 }
 exports.generateRules = generateRules;
 
-/**
-* main model class for schema tree, all schema nodes are parsed into this format by annotate
-*/
 var SchemaNode = (function () {
     function SchemaNode(node) {
         this.properties = {};
@@ -89,7 +64,7 @@ var SchemaNode = (function () {
             buffer.push(prefix + '  "' + property + '": ');
             this.properties[property].generate(symbols, prefix + "  ", buffer);
 
-            buffer.pop(); //pop closing brace and continue with comma
+            buffer.pop();
             buffer.push('},\n');
             comma_in_properties = true;
         }
@@ -100,12 +75,10 @@ var SchemaNode = (function () {
             comma_in_properties = true;
         }
 
-        //remove last trailing comma
         if (comma_in_properties) {
             buffer.pop();
             buffer.push("}\n");
         } else {
-            //else the comma was placed last at the ".read" statement
             buffer.pop();
             buffer.push('"\n');
         }
@@ -116,17 +89,6 @@ var SchemaNode = (function () {
         return buffer;
     };
 
-    SchemaNode.prototype.validate = function () {
-        throw Error("ValidationError");
-        var ref = object[property];
-        var schema = tv4.getSchema(ref);
-    };
-
-    /**
-    * moves ancestors constraints to being explicitly being represented in leaf nodes
-    * this is done by leaves being the && concatenation of all ancestors
-    * next in a parent's context is next.parent() in the child context
-    */
     SchemaNode.prototype.pushDownConstraints = function (inherited_clause) {
         if (inherited_clause != null) {
             this.constraint = expression.Expression.parse("(" + inherited_clause.rewriteForChild() + ")&&(" + this.constraint.raw + ")");
@@ -141,7 +103,6 @@ var SchemaNode = (function () {
         if (this.isLeaf())
             return this.constraint.rewriteForParent(child_name);
 
-        //recurse first for bottom up
         var children_clauses = "true";
 
         for (var property in this.properties) {
@@ -154,7 +115,6 @@ var SchemaNode = (function () {
     };
 
     SchemaNode.prototype.combineACL = function (acl, location) {
-        //console.log("combineACL", location);
         var write = "false";
         var read = "false";
 
@@ -167,7 +127,6 @@ var SchemaNode = (function () {
             }
         }
 
-        //combine the write rules with the schema constraints
         this.write = expression.Expression.parse("(" + this.constraint.raw + ")&&(" + write + ")");
         this.read = expression.Expression.parse(read);
 
@@ -216,41 +175,32 @@ exports.MetaSchema = MetaSchema;
 
 function annotate_schema(node, parent, key, api, model) {
     if (node["$ref"]) {
-        //we should replace this node with its definition
         node = exports.fetchRef(node["$ref"], model);
     }
 
-    //console.log("annotate_schema", node);
     var annotation = new SchemaNode(node);
 
     for (var key in node.properties) {
         annotation.properties[key] = annotate_schema(node.properties[key], node, key, api, model);
     }
 
-    //wildchilds need special treatment as they are not normal properties but still schema nodes
     if (getWildchild(node)) {
-        //add them as a property annotation
         annotation.properties[getWildchild(node)] = annotate_schema(node[getWildchild(node)], node, key, api, model);
 
-        //we also convert them into a pattern properties and add it to the JSON schema node so examples can pass
         node.patternProperties = {};
         node.patternProperties[SchemaNode.KEY_PATTERN] = node[getWildchild(node)];
     }
 
     api.setContext(node, parent, annotation, model);
     annotation.type = node.type ? node.type : null;
-    node.constraint = node.constraint ? node.constraint : "true"; //default to true for constraint
+    node.constraint = node.constraint ? node.constraint : "true";
     annotation.additionalProperties = node.additionalProperties === undefined ? true : node.additionalProperties;
     annotation.examples = node.examples ? node.examples : [];
     annotation.nonexamples = node.nonexamples ? node.nonexamples : [];
 
-    //using type information, the metaschema is given an opportunity to customise the node
     if (annotation.type != null) {
         if (api.metaschema[annotation.type] != undefined) {
             if (api.metaschema[annotation.type].validate(node)) {
-                //the user compile could actually add more nodes, see schemaAPI.addProperty
-                //if this happens annotate_schema needs to be called for new nodes
-                //entering the system pragmatically in compile (done in addProperty)
                 api.metaschema[annotation.type].compile(api);
             } else {
                 throw new Error("type validation failed: " + JSON.stringify(node));
@@ -260,7 +210,6 @@ function annotate_schema(node, parent, key, api, model) {
             throw new Error("unknown type specified");
         }
     } else {
-        //user has not defined type
         console.log(node);
         throw new Error("no defined type, this is not supported yet for node: ");
     }
@@ -289,10 +238,8 @@ function annotate_schema(node, parent, key, api, model) {
 }
 
 function fetchRef(url, model) {
-    //todo: this should probably be routed through tv4's getSchema method properly
     console.log("fetchRef" + url);
 
-    //code nicked from tv4.getSchema:
     var baseUrl = url;
     var fragment = "";
     if (url.indexOf('#') !== -1) {
@@ -322,13 +269,9 @@ function fetchRef(url, model) {
 }
 exports.fetchRef = fetchRef;
 
-/**
-* provides hooks for meta-data to pragmatically generate constraints and predicates
-*/
 var SchemaAPI = (function () {
     function SchemaAPI() {
         this.metaschema = {};
-        //load all built in schema definitions from schema directory
         var files = fs.readdirSync("schema/metaschema");
         for (var i in files) {
             if (!files.hasOwnProperty(i))
@@ -341,13 +284,6 @@ var SchemaAPI = (function () {
             this.metaschema[metaschema_def.name] = MetaSchema.parse(metaschema_def);
         }
     }
-    /**
-    * before the metaschema is given a hook for adding constraints, this method is called to
-    * point the api at the right schema instances
-    * @param node
-    * @param parent
-    * @param annotationInProgress
-    */
     SchemaAPI.prototype.setContext = function (node, parent, annotationInProgress, model) {
         this.node = node;
         this.parent = parent;
@@ -355,39 +291,23 @@ var SchemaAPI = (function () {
         this.model = model;
     };
 
-    /**
-    * User method for adding a type specific constraint, the constraint is &&ed to the current constraints
-    */
     SchemaAPI.prototype.addConstraint = function (expression) {
         this.node.constraint = "(" + this.node.constraint + ") && (" + expression + ")";
     };
 
-    /**
-    * User method for dynamically adding a property as a schema node
-    */
     SchemaAPI.prototype.addProperty = function (name, json) {
         this.node[name] = json;
 
-        //as this is called through compile, which is part way through the annotation,
-        //this new node would be over looked, so we need call the annotation routine explicitly out of turn
         var extra_annotator = new SchemaAPI();
         extra_annotator.setContext(json, this.node, this.annotationInProgress, this.model);
 
         this.annotationInProgress.properties[name] = annotate_schema(json, this.node, name, extra_annotator, this.model);
     };
 
-    /**
-    * User method for read access to schema fields
-    */
     SchemaAPI.prototype.getField = function (name) {
         return this.node[name];
     };
 
-    /**
-    * user method for retrieving the wildchild's name for this node
-    * call getField(getWildchild()) if you want the wildchilds schema node
-    * @returns {string}
-    */
     SchemaAPI.prototype.getWildchild = function () {
         return getWildchild(this.node);
     };

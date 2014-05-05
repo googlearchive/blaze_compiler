@@ -27,6 +27,9 @@ declare module "tv4" {
     export interface TV4MultiResult extends TV4BaseResult {
         errors:TV4Error[];
     }
+
+    export function validate(data:any, schema:any, checkRecursive:boolean, additionalProperties:boolean):TV4SingleResult;
+
     export function validateResult(data:any, schema:any):TV4SingleResult;
     export function validateMultiple(data:any, schema:any):TV4MultiResult;
 
