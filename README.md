@@ -14,8 +14,69 @@ The blaze compiler presents a higher level interface to Firebase security rules.
 Example
 ========
 
+This is an example that exploits most of the new features.
+
+It's is a messaging system whereby users can send messages to each other, by posting to other inboxes
+
+this example is tested in test/mail_example_test.ts
+
 ```
 
+predicates: #reusable boolean functions
+  - isLoggedIn():      auth.username !== null
+  - createOnly():      next.exists() && !prev.exists()  #a syntax wrinkle, unquoted string in YAML can't begin with !
+  - deleteOnly():      prev.exists() && !next.exists()
+  - createOrDelete():  createOnly() || deleteOnly()
+
+schema:
+  definitions: #create a reusable message model
+    message:
+      type: object
+      properties:
+        from:
+          type: string
+          #enforce the from field is *always* correct on creation, and only the *box owner can delete
+          constraint:  (auth.username == next     && createOnly()) ||
+                       ($userid === auth.username && deleteOnly())
+
+        to:      {type: string, constraint:  createOrDelete()} #you can't delete single field due to parent's required
+        message: {type: string, constraint:  createOrDelete()}
+
+      required: [from, to, message] # all messages require all the fields to be defined
+                                    #(or none if the message does not exist)
+
+      additionalProperties: false   #prevent spurious data being part of a message
+
+  type: object
+  properties:
+    users: # the users subtree is a collection of users
+      type: object
+      $userid:
+        type: object
+        properties: #each user has an optional inbox and outbox
+          inbox:
+            type: object
+            $message: {$ref: "#/definitions/message"} #references are in document URLs as per JSON schema spec
+
+          outbox:
+            type: object
+            $message: {$ref: "#/definitions/message"}
+
+  additionalProperties: false
+
+
+access:
+  #append only write is given to anyone's inbox, so users can send messages to strangers
+  - location: users/$userid/inbox/*
+    write:    createOnly() && isLoggedIn()
+
+  #the inbox owner can delete mail, so they can keep their inbox tidy
+  - location: users/$userid/inbox/*
+    write:    $userid === auth.username
+
+  #write and delete is given to owners outbox, so they can record what messages they sent
+  - location: users/$userid/outbox/*
+    write:    true
 
 ```
 

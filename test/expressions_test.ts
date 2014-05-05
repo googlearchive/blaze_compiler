@@ -177,18 +177,8 @@ export function testCoercion2(test:nodeunit.Test):void{
 
 export function test$var1(test:nodeunit.Test):void{
     translationTestCase(
-        "auth.id == $userid.val()",
-        "auth.id == $userid.val()",
-        new expressions.Predicates(),
-        test
-    );
-    test.done();
-}
-
-export function test$var2(test:nodeunit.Test):void{
-    translationTestCase(
         "auth.id == $userid",
-        "auth.id == $userid.val()",
+        "auth.id == $userid",
         new expressions.Predicates(),
         test
     );
@@ -198,7 +188,7 @@ export function test$var2(test:nodeunit.Test):void{
 export function test$var3(test:nodeunit.Test):void{
     translationTestCase(
         "prev[$userid].val()",
-        "data.child($userid.val()).val()",
+        "data.child($userid).val()",
         new expressions.Predicates(),
         test
     );
@@ -209,7 +199,7 @@ export function test$var4(test:nodeunit.Test):void{
     //bit weird this works
     translationTestCase(
         "prev.$userid.val()",
-        "data.child($userid.val()).val()",
+        "data.child($userid).val()",
         new expressions.Predicates(),
         test
     );

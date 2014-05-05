@@ -156,7 +156,7 @@ export class Expression{
                 }else if(symbols.predicates[node.name]){
                     node.expr_type = "pred"
                 }else if(symbols.variables[node.name]){
-                    node.update(symbols.variables[node.name].source())
+                    node.update(symbols.variables[node.name].source());
                     node.expr_type = symbols.variables[node.name].expr_type
                 }
 
@@ -203,6 +203,10 @@ export class Expression{
                         }else if(node.property.expr_type == 'rule'){ //not a recognised
                             //cooertion from rule to value
                             node.update(node.object.source() + ".child(" + node.property.source() + ".val())");
+                            node.expr_type = "rule"
+                        }else if(node.property.expr_type == 'value'){
+                            //not recognised member, so it must be an implicit child relation (without quotes in child)
+                            node.update(node.object.source() + ".child(" + node.property.source() + ")");
                             node.expr_type = "rule"
                         }else{
                             //not recognised member, so it must be an implicit child relation (with quotes in child)
