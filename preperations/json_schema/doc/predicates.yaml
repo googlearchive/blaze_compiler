@@ -1,6 +1,0 @@
-predicates: 
-  isLoggedIn():   auth.id !== null
-  isUser(userid): auth.id == userid && isLoggedIn()
-...
-write: isUser($userid)
-

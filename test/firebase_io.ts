@@ -5,7 +5,7 @@
  * This is meant for more complex functions like uploading/downloading a validation/rule set
  */
 
-
+/// <reference path="../types/node.d.ts" />
 export var Firebase = require('firebase');
 export var sandbox = new exports.Firebase(require('../properties.js').FIREBASE_LOCATION);
 export var FIREBASE_SECRET = require('../properties.js').FIREBASE_SECRET;

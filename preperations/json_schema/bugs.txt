@@ -1,4 +1,0 @@
-
-core validation schema does not include support for $ref, so added it myself see
-https://github.com/geraintluff/tv4/issues/75
-
