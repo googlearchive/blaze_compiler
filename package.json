@@ -8,6 +8,7 @@
 
   "main": "blaze.js",
   "bin" : { "blaze" : "./src/blaze.js" },
+  "prepublish": "grunt compile",
   "dependencies":{
     "optimist": "~0.6.1",
     "xregexp": "2.0.0",

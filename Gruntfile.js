@@ -34,5 +34,6 @@ module.exports = function(grunt) {
 
     //default test
     grunt.registerTask('test',   ["nodeunit:all"]);
+    grunt.registerTask('compile',["typescript:base"]);
 
 };

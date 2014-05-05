@@ -8,6 +8,8 @@ import compile = require('./compile');
 
 var argv = optimist
   .usage('blaze <file>')
+  .boolean('v')
+  .describe('v', 'enable debug output')
   .argv;
 
 
@@ -16,6 +18,6 @@ var file = argv._[0];
 
 console.log("transpiling", file);
 
-compile.compile(file);
+compile.compile(file, argv['v']);
 
 
