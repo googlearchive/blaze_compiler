@@ -1,6 +1,6 @@
 predicates: #reusable boolean functions
   - isLoggedIn():      auth.username !== null
-  - createOnly():      next.exists() && !prev.exists()  #a syntax wrinkle, unquoted string in YAML can't begin with !
+  - createOnly():      next.exists() && !prev.exists()
   - deleteOnly():      prev.exists() && !next.exists()
   - createOrDelete():  createOnly() || deleteOnly()
 
@@ -23,10 +23,10 @@ schema:
 
       additionalProperties: false   #prevent spurious data being part of a message
 
-      examples:
+      examples: #examples of inline testing
         - {from: "bill", to: "tom", message: "hey Tom!"}
       nonexamples:
-        - {to: "tom", message: "hey Tom!"}
+        - {to: "tom", message: "hey Tom!"} #not allowed becuase from is missing
 
   type: object
   properties:
