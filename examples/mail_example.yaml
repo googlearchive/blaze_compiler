@@ -23,6 +23,11 @@ schema:
 
       additionalProperties: false   #prevent spurious data being part of a message
 
+      examples:
+        - {from: "bill", to: "tom", message: "hey Tom!"}
+      nonexamples:
+        - {to: "tom", message: "hey Tom!"}
+
   type: object
   properties:
     users: # the users subtree is a collection of users
