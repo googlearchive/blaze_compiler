@@ -12,7 +12,7 @@ export function testSetup(test:nodeunit.Test):void{
         firebase_io.setValidationRules.bind(null, compile.compile("examples/mail_example.yaml", true))
     ], test.done.bind(null));
 }
-
+/*
 export function testWriteInbox(test:nodeunit.Test):void{
     async.series([
         test_utils.assert_admin_can_write.bind(null, "/", {}, test),
@@ -116,6 +116,46 @@ export function testDeleteOutbox(test:nodeunit.Test):void{
 
         test_utils.assert_cant_write.bind(null, "tom",  "/users/bill/outbox/1",  {}, test),
         test_utils.assert_can_write.bind(null,  "bill", "/users/bill/outbox/1",  {}, test)
+
+    ], test.done.bind(null));
+}
+*/
+
+export function testReadboxes(test:nodeunit.Test):void{
+    async.series([
+        test_utils.assert_admin_can_write.bind(null, "/", {}, test),
+
+        //write some messages to bills boxes
+        test_utils.assert_can_write.bind(null,  "bill", "/users/bill/outbox/1", {
+            from: "bill",
+            to:   "tom",
+            message: "Hi Tom!"
+        }, test),
+
+        //correct write:-
+        test_utils.assert_can_write.bind(null,  "tom", "/users/bill/inbox/1", {
+            from: "tom",
+            to:   "bill",
+            message: "Hi Bill!"
+        }, test),
+
+        //check strangers can't read other people's mail
+        test_utils.assert_cant_read.bind(null,  "tom", "/users/bill/outbox/1", test),
+        test_utils.assert_cant_read.bind(null,  "tom", "/users/bill/inbox/1",  test),
+
+        //check bill can read sent and received mail
+        test_utils.assert_can_read.bind(null,  "bill", "/users/bill/outbox/1",  {
+            from: "bill",
+            to:   "tom",
+            message: "Hi Tom!"
+        }, test),
+
+        test_utils.assert_can_read.bind(null,  "bill", "/users/bill/inbox/1",  {
+            from: "tom",
+            to:   "bill",
+            message: "Hi Bill!"
+        }, test)
+
 
     ], test.done.bind(null));
 }

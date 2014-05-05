@@ -58,3 +58,7 @@ access:
   #write and delete is given to owners outbox, so they can record what messages they sent
   - location: users/$userid/outbox/*
     write:    true
+
+  #owners can read everything in their inbox and outbox
+  - location: users/$userid/*
+    read:    $userid === auth.username
