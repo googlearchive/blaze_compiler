@@ -17,6 +17,14 @@ schema:
         grnd4:
           type: string
 
+  examples:
+    - {chld1: {grnd1: "a", grnd2: "b"}, chld2: {grnd3: "c", grnd4: "d"}}
+    - {chld1: {grnd1: "a", grnd2: "b"}, chld2: {grnd4: "d"}} #missing grnd3 is allowed
+    - {chld1: {grnd1: "a", grnd2: "b"}}                      #missing chld2 is allowed
+  nonexamples:
+    - {chld1: {grnd1: "a"}, chld2: {grnd3: "c", grnd4: "d"}} #missing grnd2 is not allowed becuase of required
+
+
 access:
   - location: "/*"
     write: true

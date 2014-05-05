@@ -2,12 +2,28 @@ schema:
   type: object
 
   properties:
-    object:  {type: object }
+    object:  {type: object}
     string:  {type: string }
     boolean: {type: boolean}
     number:  {type: number }
 
   additionalProperties: false
+
+  examples:
+    - {object:  {name: "hello"}} # you can have extra children in objects by default
+    - {string:  string}
+    - {boolean: true}
+    - {number:  4.6}
+    - {number:  4}
+    - {number:  -4}
+
+  nonexamples:
+    - {object:  true}
+    - {string:  {grandchild: true}}
+    - {boolean: "true"}
+    - {number:  "4.6"}
+    - {extra:   "4.6"} #additionProperties is false, so no unexpected params allowed
+
 
 access:
   - location: "/*"

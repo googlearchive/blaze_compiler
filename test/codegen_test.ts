@@ -7,7 +7,6 @@ import compile = require('../src/compile');
 import rules = require('../src/rules');
 import async = require('async');
 
-
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml")),

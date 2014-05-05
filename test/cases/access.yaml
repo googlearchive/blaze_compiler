@@ -26,6 +26,11 @@ schema:
           type: string
           constraint: red() || black()
 
+  examples:
+    - {chld1: {grnd1: "a", grnd2: "b"}, chld2: {grnd3: "c", grnd4: "d"}}
+  nonexamples:
+    - {chld1: {grnd1: true, grnd2: "b"}, chld2: {grnd3: "c", grnd4: "d"}} #boolean instead of string
+
 access:
   - location: "/chld1/*"
     write: red()

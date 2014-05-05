@@ -3,6 +3,11 @@ predicates:
 
 schema:
   type: string
+  examples:
+    - "correct"
+  nonexamples:
+    - true
+    - {a: "string"}
 
 access:
   - location: "/*"

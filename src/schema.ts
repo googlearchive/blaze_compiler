@@ -15,6 +15,7 @@ import fs = require('fs');
 export function annotate(model:rules.Rules){
     model.schema.root = annotate_schema(model.schema.json, null, null, new SchemaAPI(), model)
 }
+
 /**
 * pushes ancestors schema constraints to being explicitly being represented in leaf nodes
 * this is done by leaves being the && concatenation of all ancestors
@@ -57,7 +58,13 @@ export function generateRules(model:rules.Rules){
     return code;
 }
 
+/**
+ * main model class for schema tree, all schema nodes are parsed into this format by annotate
+ */
 export class SchemaNode{
+
+    static KEY_PATTERN:string = ".*"; //regex for patterns
+
     type: string;
     properties:{[name:string]:SchemaNode} = {};
     constraint:expression.Expression;
@@ -65,6 +72,8 @@ export class SchemaNode{
     read: expression.Expression;
     additionalProperties: boolean;
     node:any;
+    examples:any[];
+    nonexamples:any[];
 
     constructor(node:any){
         this.node = node;
@@ -114,6 +123,12 @@ export class SchemaNode{
         buffer.push("}\n");
 
         return buffer;
+    }
+
+    validate(){
+        throw Error("ValidationError")
+        var ref = object[property];
+        var schema = tv4.getSchema(ref);
     }
 
     /**
@@ -230,16 +245,24 @@ function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:
         annotation.properties[key] = annotate_schema(node.properties[key], node, key, api, model);
     }
 
+    //wildchilds need special treatment as they are not normal properties but still schema nodes
     if(getWildchild(node)){
+        //add them as a property annotation
         annotation.properties[getWildchild(node)] = annotate_schema(node[getWildchild(node)], node, key, api, model);
+        //we also convert them into a pattern properties and add it to the JSON schema node so examples can pass
+        node.patternProperties = {};
+        node.patternProperties[SchemaNode.KEY_PATTERN] = node[getWildchild(node)];
     }
 
 
     api.setContext(node, parent, annotation, model);
     annotation.type = node.type ? node.type:null;
     node.constraint = node.constraint ? node.constraint:"true"; //default to true for constraint
-    annotation.additionalProperties = node.additionalProperties !== false;
+    annotation.additionalProperties = node.additionalProperties === undefined? true: node.additionalProperties;
+    annotation.examples = node.examples? node.examples:[];
+    annotation.nonexamples = node.nonexamples? node.nonexamples:[];
 
+    //using type information, the metaschema is given an opportunity to customise the node
     if(annotation.type != null){
         if(api.metaschema[annotation.type] != undefined){
             if(api.metaschema[annotation.type].validate(node)){
@@ -261,6 +284,26 @@ function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:
     }
 
     annotation.constraint = expression.Expression.parse(node.constraint);
+
+    //if the user has supplied examples or non examples, the validity of these are checked
+    for(var example_index in annotation.examples){
+        var example = annotation.examples[example_index];
+
+        var valid = tv4.validate(example, node, true, false);
+        if(!valid){
+            throw new Error("example failed " + JSON.stringify(example) + " on " + JSON.stringify(node));
+        }
+    }
+
+    for(var nonexample_index in annotation.nonexamples){
+        var nonexample = annotation.nonexamples[nonexample_index];
+
+        var valid = tv4.validate(nonexample, node, true, false);
+        if(valid){
+            throw new Error("nonexample erroneously passed " + JSON.stringify(nonexample) + " on " + JSON.stringify(node));
+        }
+    }
+
 
     return annotation;
 }

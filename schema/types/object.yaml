@@ -8,6 +8,8 @@ properties:
   required: {}
   additionalProperties: {type: boolean}
   definitions: {}
+  examples: {}
+  nonexamples: {}
 
 patternProperties: #wildchild support
   '\\$[A-z0-9_]+': {$ref: "http://firebase.com/schema#"}

@@ -7,6 +7,14 @@ schema:
   properties:
     extra: {type: string}
 
+  examples:
+    - {chld1: "string not containing capitol y"} #passes becuase constraints are not evaluated with examples
+    - {chld1: "anything", X: "as long as string its ok"}
+    - {}
+  nonexamples:
+    - {chldX: true} #types are checked by the examples though, as that is part of core JSON schema
+    - "root strings not allowed"
+
 access:
   - location: "/*"
     read:  "true"

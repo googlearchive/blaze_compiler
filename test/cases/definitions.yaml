@@ -8,6 +8,13 @@ schema:
         boolean: {$ref: "#/definitions/boolean_def"}
         number:  {$ref: "#/definitions/number_def" }
       additionalProperties: false
+      examples:
+        - {string:  string}
+        - {boolean: true}
+        - {number:  4.6}
+      nonexamples:
+        - {extra: "error"}
+        - {object: {}}
 
     string_def:  {type: string }
     boolean_def: {type: boolean}
@@ -21,6 +28,16 @@ schema:
     boolean: {$ref: "#/definitions/boolean_def"}
     number:  {$ref: "#/definitions/number_def" }
   additionalProperties: false
+
+  examples:
+    - {object:  {string: "hello"}}
+    - {string:  string}
+    - {boolean: true}
+    - {number:  4.6}
+
+  nonexamples:
+    - {object:  {string: 4}}
+    - {object:  {string: "hello", extra: "error"}}
 
 access:
   - location: "/*"

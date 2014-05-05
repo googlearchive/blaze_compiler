@@ -4,5 +4,7 @@ $schema: "http://firebase.com/schema/types/boolean#"
 properties:
   type: {}
   constraint: {}
+  examples: {}
+  nonexamples: {}
 
 additionalProperties: false
