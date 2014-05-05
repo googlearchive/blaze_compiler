@@ -1,11 +1,33 @@
+Blaze compiler for Firebase
+============================
+
+The blaze compiler presents a higher level interface to Firebase security rules.
+
+- write rules in YAML, trailing commas, unquoted strings and comments with tool support
+- specify Firebase layout with typed JSON schema models
+- reuse models in multiple locations in the data tree
+- embed semantically obvious global functional constraints in the schema (as opposed to hierarchical)
+- describe access control as a separate concern
+- create reusable predicates (boolean functions)
+- inline tests to check and document what form data can be to be inserted
+
+Example
+========
+
+```
+
+
+```
+
 Install
 =========
-npm install -g
+npm install
+npm link
 
 Run
 =========
 
-node src/blaze.js examples/structure.yaml
+blaze.js examples/structure.yaml
 
 this will save a rules.json in the current directory
 

@@ -150,7 +150,7 @@ export class Expression{
                 }else if(node.name == "root"){
                     node.expr_type = "rule"
                 }else if(node.name.indexOf("$")==0){
-                    node.expr_type = "rule"
+                    node.expr_type = "value"
                 }else if(node.name == "auth"){
                     node.expr_type = "map"
                 }else if(symbols.predicates[node.name]){

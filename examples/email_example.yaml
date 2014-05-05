@@ -1,0 +1,48 @@
+predicates:
+  - isLoggedIn():      auth.username !== null
+  - createOnly():      next.exists() && !prev.exists()  #a syntax wrinkle, unquoted string in YAML can't begin with !
+  - deleteOnly():      prev.exists() && !next.exists()
+  - createOrDelete():  createOnly() || deleteOnly()  #a syntax wrinkle, unquoted string in YAML can't begin with !
+
+schema:
+  definitions:
+    message:
+      type: object
+      properties:
+        from:
+          type: string
+          constraint:  (auth.username == next) ||
+                       ($userid === auth.username)
+
+        to:      {type: string, constraint:  createOrDelete()}
+        message: {type: string, constraint:  createOrDelete()}
+
+      required: [from, to, message]
+      additionalProperties: false
+
+  type: object
+  properties:
+    users:
+      type: object
+      $userid:
+        type: object
+        properties:
+          inbox:
+            type: object
+            $message: {$ref: "#/definitions/message"}
+
+          outbox:
+            type: object
+            $message: {$ref: "#/definitions/message"}
+
+  additionalProperties: false
+
+
+access:
+  #append only write is given to anyone's inbox
+  - location: users/$userid/inbox/*
+    write:    createOnly()
+
+  #the inbox owner can delete mail
+  - location: users/$userid/inbox/*
+    write:    $userid === auth.id

@@ -1,0 +1,53 @@
+predicates:
+  - isLoggedIn():      auth.username !== null
+  - createOnly():      next.exists() && !prev.exists()  #a syntax wrinkle, unquoted string in YAML can't begin with !
+  - deleteOnly():      prev.exists() && !next.exists()
+  - createOrDelete():  createOnly() || deleteOnly()
+
+schema:
+  definitions:
+    message:
+      type: object
+      properties:
+        from:
+          type: string
+          #enforce the from field is *always* correct on creation, and only the *box owner can delete
+          constraint:  (auth.username == next     && createOnly()) ||
+                       ($userid === auth.username && deleteOnly())
+
+        to:      {type: string, constraint:  createOrDelete()} #you can't delete single field due to parent's required
+        message: {type: string, constraint:  createOrDelete()}
+
+      required: [from, to, message]
+      additionalProperties: false   #prevent spurious data entering system
+
+  type: object
+  properties:
+    users:
+      type: object
+      $userid:
+        type: object
+        properties:
+          inbox:
+            type: object
+            $message: {$ref: "#/definitions/message"}
+
+          outbox:
+            type: object
+            $message: {$ref: "#/definitions/message"}
+
+  additionalProperties: false
+
+
+access:
+  #append only write is given to anyone's inbox, so users can send messages to strangers
+  - location: users/$userid/inbox/*
+    write:    createOnly()
+
+  #the inbox owner can delete mail, so they can keep their inbox tidy
+  - location: users/$userid/inbox/*
+    write:    $userid === auth.username
+
+  #write and delete is given to owners outbox, so they can record what messages they sent
+  - location: users/$userid/outbox/*
+    write:    true

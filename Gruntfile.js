@@ -9,7 +9,8 @@ module.exports = function(grunt) {
 			all: ['test/**/*_test.js'],
             validation : ['test/validation_test.js'],
             codegen : ['test/codegen_test.js'],
-            expressions: ['test/expressions_test.js']
+            expressions: ['test/expressions_test.js'],
+            mail: ['test/mail_example_test.js']
 		},typescript: {
           base: {
             src: ['**/*.ts'],
