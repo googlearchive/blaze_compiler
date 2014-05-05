@@ -70,7 +70,7 @@ JSON schema keywords to be ignored for now
 New Schema keywords developed for firebase
 - DONE constraint to translation into security rules (should be expressed in 2.0 rule expression syntax)
 - DONE $var handling
-- example/nonexample for inline testing
+- DONE example/nonexample for inline testing
 
 ###Meta-schema
 
