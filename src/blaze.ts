@@ -16,8 +16,12 @@ var argv = optimist
 
 var file = argv._[0];
 
-console.log("transpiling", file);
 
-compile.compile(file, argv['v']);
+if(file){
+    console.log("transpiling", file);
+    compile.compile(file, argv['v']);
+}else{
+    console.log("you must specify a YAML file containing the rules to compile")
+}
 
 
