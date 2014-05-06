@@ -1,0 +1,6 @@
+schema:
+  string:  {type: string}
+  properties:
+    child: {type: string} #can't have children
+
+---
