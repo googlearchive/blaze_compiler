@@ -205,6 +205,24 @@ export function test$var4(test:nodeunit.Test):void{
     );
     test.done();
 }
+export function testPredicateParsing1(test){
+    var predicate = new expressions.Predicate("f(x)", "true");
+
+    test.ok(predicate.signature == "f(1)");
+    test.done();
+}
+export function testPredicateParsing2(test){
+    var predicate = new expressions.Predicate("f()", "true");
+
+    test.ok(predicate.signature == "f(0)");
+    test.done();
+}
+export function testPredicateParsing3(test){
+    var predicate = new expressions.Predicate("f(x, y)", "true");
+    test.equals(predicate.signature, "f(2)");
+    test.deepEqual(predicate.parameter_map, ['x', 'y']);
+    test.done();
+}
 
 export function testPredicate1(test:nodeunit.Test):void{
     //bit weird this works
