@@ -158,7 +158,7 @@ export function testAuth2(test:nodeunit.Test):void{
 export function testCoercion1(test:nodeunit.Test):void{
     translationTestCase(
         "root.superuser == auth.id",
-        "root.child('superuser').val() == auth.id",
+        "root.child('superuser').val()==auth.id",
         new expressions.Predicates(),
         test
     );
@@ -168,7 +168,7 @@ export function testCoercion1(test:nodeunit.Test):void{
 export function testCoercion2(test:nodeunit.Test):void{
     translationTestCase(
         "auth.id == root[next]",
-        "auth.id == root.child(newData.val()).val()",
+        "auth.id==root.child(newData.val()).val()",
         new expressions.Predicates(),
         test
     );
@@ -178,7 +178,7 @@ export function testCoercion2(test:nodeunit.Test):void{
 export function test$var1(test:nodeunit.Test):void{
     translationTestCase(
         "auth.id == $userid",
-        "auth.id == $userid",
+        "auth.id==$userid",
         new expressions.Predicates(),
         test
     );
@@ -210,7 +210,7 @@ export function testPredicate1(test:nodeunit.Test):void{
     //bit weird this works
     translationTestCase(
         "isLoggedIn()",
-        "(auth.id == null)",
+        "(auth.id==null)",
         expressions.Predicates.parse(
             [{"isLoggedIn()":"auth.id == null"}]
         ),
@@ -223,7 +223,7 @@ export function testPredicate2(test:nodeunit.Test):void{
     //bit weird this works
     translationTestCase(
         "isEqual(prev, next.name)",
-        "(data.val() == newData.child('name').val())",
+        "(data.val()==newData.child('name').val())",
         expressions.Predicates.parse(
             [{"isEqual(a, b)":"a == b"}]
         ),
@@ -236,7 +236,7 @@ export function testPredicate3(test:nodeunit.Test):void{
     //bit weird this works
     translationTestCase(
         "isLoggedIn(auth)",
-        "(auth.id == 'yo')",
+        "(auth.id=='yo')",
         expressions.Predicates.parse(
             [{"isLoggedIn(q)":"q.id == 'yo'"}]
         ),
@@ -249,7 +249,7 @@ export function testUnary(test:nodeunit.Test):void{
     //bit weird this works
     translationTestCase(
         "!isLoggedIn(auth)",
-        "!(auth.id == 'yo')",
+        "!(auth.id=='yo')",
         expressions.Predicates.parse(
             [{"isLoggedIn(q)":"q.id == 'yo'"}]
         ),

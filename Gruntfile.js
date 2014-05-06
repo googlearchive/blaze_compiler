@@ -10,6 +10,7 @@ module.exports = function(grunt) {
             validation : ['test/validation_test.js'],
             codegen : ['test/codegen_test.js'],
             expressions: ['test/expressions_test.js'],
+            optimize: ['test/optimize_test.js'],
             mail: ['test/mail_example_test.js']
 		},typescript: {
           base: {
