@@ -304,7 +304,7 @@ function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:
 
 export function fetchRef(url:string, model:rules.Rules):any{
     //todo: this should probably be routed through tv4's getSchema method properly
-    console.log("fetchRef" + url);
+    //console.log("fetchRef" + url);
 
     //code nicked from tv4.getSchema:
     var baseUrl = url; //not interested in yet
@@ -331,7 +331,6 @@ export function fetchRef(url:string, model:rules.Rules):any{
         schema = schema[component];
     }
 
-    console.log(schema)
     return schema;
 
 
