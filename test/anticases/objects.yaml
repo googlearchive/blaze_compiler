@@ -1,0 +1,11 @@
+schema:
+  type: object
+  properties:
+    - {type: string} #properties can't be an array
+---
+schema:
+  type: [object]     #can't have an array as a type
+---
+schema:
+  type: object
+  required: object   #must have an array as required

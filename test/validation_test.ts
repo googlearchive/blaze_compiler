@@ -4,6 +4,7 @@
 import fs = require("fs");
 import expression = require('../src/expression');
 import rules      = require('../src/rules');
+import compile    = require('../src/compile');
 import tv4 = require("tv4");
 
 
@@ -31,5 +32,30 @@ export function testStructureParsing(test){
     console.log(rule);
     test.ok(rule.schema != null);
     test.ok(rule.predicates["isLoggedIn"] != null);
+    test.done();
+}
+
+export function testAntiCases(test){
+
+    //load all anti-cases
+    var files = fs.readdirSync("test/anticases");
+
+    for(var i in files){
+        if (!files.hasOwnProperty(i)) continue;
+        var path:string = "test/anticases/"+files[i];
+
+        rules.load_yaml_collection(path, function(anticase:any){
+
+
+            try{
+                compile.compileJSON(anticase, false);
+                test.ok(false, "should not have passed validation: " + JSON.stringify(anticase))
+            }catch(err){
+                test.ok(true)
+            }
+
+        });
+    }
+
     test.done();
 }

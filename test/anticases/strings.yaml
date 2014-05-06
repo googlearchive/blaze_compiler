@@ -1,6 +1,8 @@
 schema:
-  string:  {type: string}
+  type: string
   properties:
-    child: {type: string} #can't have children
-
+    child: {type: string} #string can't have children
 ---
+schema:
+  type: string
+  required: [child] #string can't have required

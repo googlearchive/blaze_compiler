@@ -3,10 +3,8 @@ import rules = require('../src/rules');
 import expression = require('../src/expression');
 import fs = require('fs');
 
-export function compile(path:string, debug:boolean):string{
-    //convert to JSON
-    var json:string = rules.load_yaml(path);
 
+export function compileJSON(json:any, debug:boolean):string{
     //check user's JSON meets JSON schema spec of rule file
     var ok = rules.validate_rules(json);
     if(ok){
@@ -57,6 +55,13 @@ export function compile(path:string, debug:boolean):string{
         fs.writeFileSync("rules.json", code);
         return code;
     }else{
-        return null;
+        throw Error("did not globally validate");
     }
+}
+
+export function compile(path:string, debug:boolean):string{
+    //convert to JSON
+    var json:string = rules.load_yaml(path);
+    return compileJSON(json, debug);
+
 }

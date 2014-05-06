@@ -2,10 +2,14 @@ id: "http://firebase.com/schema/types/object#"
 $schema: "http://firebase.com/schema/types/object#"
 
 properties:
-  properties: {$ref: "http://firebase.com/schema#"}
-  type: {}
-  constraint: {}
-  required: {}
+  properties:
+    type: object
+    additionalProperties: {$ref: "http://firebase.com/schema#"}
+    default: {}
+
+  type: {type: string}
+  constraint: {type: string}
+  required: {$ref: "http://json-schema.org/draft-04/schema#/definitions/stringArray"}
   additionalProperties: {type: boolean}
   definitions: {}
   examples: {}

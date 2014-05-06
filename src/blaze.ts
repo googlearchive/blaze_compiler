@@ -19,6 +19,7 @@ var file = argv._[0];
 
 if(file){
     console.log("transpiling", file);
+
     compile.compile(file, argv['v']);
 }else{
     console.log("you must specify a YAML file containing the rules to compile")
