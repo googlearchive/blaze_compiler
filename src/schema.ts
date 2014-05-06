@@ -201,18 +201,24 @@ export class MetaSchema{
 
     validate(node:any):boolean{
 
-        var result =  tv4.validateResult(node, this.validator);
+        var valid =  tv4.validate(node, this.validator, true, true);
 
-        if(!result.valid){
-            console.log(result.error)
+        if(!valid){
+            console.log("could not validate");
+            console.log(JSON.stringify(node));
+            console.log("with the validator");
+            console.log(JSON.stringify(this.validator));
+            console.log(tv4.error)
         }
+
 
         if(tv4.getMissingUris().length != 0){
             console.log(tv4.getMissingUris());
             return false;
         }
 
-        return result.valid;
+
+        return valid;
     }
 
     static parse(json:any):MetaSchema{
@@ -330,6 +336,8 @@ export function fetchRef(url:string, model:rules.Rules):any{
         }
         schema = schema[component];
     }
+
+    if(schema == undefined) throw new Error("could not find definition: " + url);
 
     return schema;
 

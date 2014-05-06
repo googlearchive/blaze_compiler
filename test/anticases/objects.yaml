@@ -9,3 +9,7 @@ schema:
 schema:
   type: object
   required: object   #must have an array as required
+---
+schema:
+  type: object
+  nonkeyword: object   #can't use invalid keywords

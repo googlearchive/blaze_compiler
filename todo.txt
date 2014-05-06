@@ -2,3 +2,4 @@ fill in types properly (e.g. "required" is a list)
 internal quoting in expressions can't be "" needs to be sanatised to '' (is this ok?)
 might want to coerce for methods like .contains()
 overly complex generated expressions
+change mail_example to mail (in documentation too)

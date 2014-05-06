@@ -2,19 +2,36 @@ id: "http://firebase.com/schema/types/object#"
 $schema: "http://firebase.com/schema/types/object#"
 
 properties:
+
+  type: {type: string}
+  constraint: {type: string}
+  additionalProperties: {type: boolean}
+
+  required:
+    type: array
+    items: { type: string }
+    minItems: 1
+    uniqueItems: true
+
   properties:
     type: object
     additionalProperties: {$ref: "http://firebase.com/schema#"}
     default: {}
 
-  type: {type: string}
-  constraint: {type: string}
-  required: {$ref: "http://json-schema.org/draft-04/schema#/definitions/stringArray"}
-  additionalProperties: {type: boolean}
-  definitions: {}
+  patternProperties: #not for user use, wildcards get turned into a pattern properties behind the scenes
+    type: object
+    additionalProperties: {$ref: "http://firebase.com/schema#"}
+    default: {}
+
+  definitions:
+    type: object
+    additionalProperties: {$ref: "http://firebase.com/schema#"}
+    default: {}
+
   examples: {}
   nonexamples: {}
 
-patternProperties: #wildchild support
-  '\\$[A-z0-9_]+': {$ref: "http://firebase.com/schema#"}
+patternProperties: #wildchild support, starts with dollar
+  \$.+:
+    {$ref: "http://firebase.com/schema#"}
 

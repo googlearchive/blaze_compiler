@@ -28,7 +28,8 @@ declare module "tv4" {
         errors:TV4Error[];
     }
 
-    export function validate(data:any, schema:any, checkRecursive:boolean, additionalProperties:boolean):TV4SingleResult;
+    export function validate(data:any, schema:any, checkRecursive:boolean, additionalProperties:boolean):boolean;
+    export var error:TV4SingleResult;
 
     export function validateResult(data:any, schema:any):TV4SingleResult;
     export function validateMultiple(data:any, schema:any):TV4MultiResult;

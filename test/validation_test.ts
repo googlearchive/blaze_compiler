@@ -1,10 +1,14 @@
 /// <reference path="../types/nodeunit.d.ts" />
 /// <reference path="../src/expression.ts" />
 
+
+/// <reference path="../types/js-yaml.d.ts" />
+
 import fs = require("fs");
 import expression = require('../src/expression');
 import rules      = require('../src/rules');
 import compile    = require('../src/compile');
+import js_yaml = require("js-yaml");
 import tv4 = require("tv4");
 
 
@@ -25,6 +29,7 @@ export function testStructureValidation(test){
     test.ok(rules.validate_rules(structure_example));
     test.done();
 }
+
 
 export function testStructureParsing(test){
     var structure_example = rules.load_yaml("examples/structure.yaml");
@@ -55,6 +60,33 @@ export function testAntiCases(test){
             }
 
         });
+    }
+
+    test.done();
+}
+
+export function testMailValidation(test){
+    var mail_example = rules.load_yaml("examples/mail_example.yaml");
+    test.ok(rules.validate_rules(mail_example));
+    test.done();
+}
+
+export function testRequiredArray(test){
+    var schema_yaml =
+        "schema:\n"+
+        "  type: object\n"+
+        "  required: object\n"; //should fail because required is not an array
+
+
+    var schema = js_yaml.load(schema_yaml, 'utf8');
+
+    test.ok(!rules.validate_rules(schema)); //should not pass global validation
+
+    try{
+        compile.compileJSON(schema, false);
+        test.ok(false)
+    }catch(err){
+        test.ok(true)
     }
 
     test.done();

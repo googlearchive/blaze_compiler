@@ -41,10 +41,10 @@ export function validate_rules(rules:string):boolean{
     tv4.addSchema("http://firebase.com/schema#", this.load_yaml("schema/schema.yaml"));
     tv4.addSchema("http://json-schema.org/draft-04/schema#", fs.readFileSync("schema/jsonschema", {encoding: 'utf8'}).toString());
 
-    var result =  tv4.validateResult(rules, this.rules_schema);
-
-    if(!result.valid){
-        console.log(result.error)
+    var valid =  tv4.validate(rules, this.rules_schema, true, true);
+    console.log("result", tv4.error);
+    if(!valid){
+        console.log(tv4.error)
     }
 
     if(tv4.getMissingUris().length != 0){
@@ -52,7 +52,7 @@ export function validate_rules(rules:string):boolean{
         return false;
     }
 
-    return result.valid;
+    return valid;
 }
 
 export class SchemaRoot{
