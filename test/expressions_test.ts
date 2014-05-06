@@ -73,6 +73,16 @@ export function testArrayLookup6(test:nodeunit.Test):void{
     test.done();
 }
 
+export function testArrayLookup7(test:nodeunit.Test):void{
+    translationTestCase(
+        "next[prev[child]]['fred'].val()",
+        "newData.child(data.child('child').val()).child('fred').val()",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
 export function testParent1(test:nodeunit.Test):void{
     translationTestCase(
         "next.parent()",
@@ -106,8 +116,8 @@ export function testHasChildren(test:nodeunit.Test):void{
 
 export function testContains1(test:nodeunit.Test):void{
     translationTestCase(
-        "next.c1.contains('yo')",
-        "newData.child('c1').contains('yo')",
+        "next.c1.val().contains('yo')",
+        "newData.child('c1').val().contains('yo')",
         new expressions.Predicates(),
         test
     );
@@ -205,6 +215,139 @@ export function test$var4(test:nodeunit.Test):void{
     );
     test.done();
 }
+
+export function testNow(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "next < now",
+        "newData.val()<now",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testRoot(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "root.users[auth.id].active == true",
+        "root.child('users').child(auth.id).child('active').val()==true",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testHasChild(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "next.hasChild('name')",
+        "newData.hasChild('name')",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testHasChildren1(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "next.hasChildren()",
+        "newData.hasChildren()",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testHasChildren2(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "next.hasChildren(['name', 'age'])",
+        "newData.hasChildren(['name', 'age'])",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testGetPriority(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "next.getPriority() != null",
+        "newData.getPriority()!=null",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testLength(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "next.isString()&&next.val().length>=10",
+        "newData.isString()&&newData.val().length>=10",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testBeginsWith(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "auth.identifier.beginsWith('internal-')",
+        "auth.identifier.beginsWith('internal-')",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testEndsWith(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "next.val().endsWith('internal-')",
+        "newData.val().endsWith('internal-')",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testReplace(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "root.users[auth.email.replace('.', ',')].exists()",
+        "root.child('users').child(auth.email.replace('.', ',')).exists()",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testToLowerCase(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "root.users[auth.identifier.toLowerCase()].exists()",
+        "root.child('users').child(auth.identifier.toLowerCase()).exists()",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testToUpperCase(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "root.users[auth.identifier.toUpperCase()].exists()",
+        "root.child('users').child(auth.identifier.toUpperCase()).exists()",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
 export function testPredicateParsing1(test){
     var predicate = new expressions.Predicate("f(x)", "true");
 
@@ -297,4 +440,3 @@ export function testSanitizeQuotes2(test:nodeunit.Test):void{
     );
     test.done();
 }
-

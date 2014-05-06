@@ -168,11 +168,14 @@ export class Expression{
 
                 node.expr_type = "value";
             }else if(node.type == "ArrayExpression"){
+                //console.log("ArrayExpression", node);
                 node.expr_type = "value";
 
                 //node.state = new C_VAL(node.value, mem);
             }else if(node.type == "MemberExpression"){
                 //console.log("MemberExpression:", node);
+
+                //if the object is a type (rules, map or value) it unlocks different valid properties
 
                 if(node.object.expr_type == "rule"){
                     node.expr_type = null;
@@ -186,10 +189,10 @@ export class Expression{
                             node.expr_type = "fun():rule"
 
                         }else if(node.property.name == 'hasChildren'){
-                            node.expr_type = "fun(array):rule"
+                            node.expr_type = "fun(array):value"
 
-                        }else if(node.property.name == 'contains'){
-                            node.expr_type = "fun(value):value"
+                        }else if(node.property.name == 'hasChild'){
+                            node.expr_type = "fun():value"
 
                         }else if(node.property.name == 'isString'){
                             node.expr_type = "fun():value"
@@ -203,14 +206,22 @@ export class Expression{
                         }else if(node.property.name == 'exists'){
                             node.expr_type = "fun():value"
 
+                        }else if(node.property.name == 'now'){
+                            node.expr_type = "value"
+
+                        }else if(node.property.name == 'getPriority'){
+                            node.expr_type = "fun():value"
+
                         }else if(node.property.expr_type == 'rule'){ //not a recognised
                             //cooertion from rule to value
                             node.update(node.object.source() + ".child(" + node.property.source() + ".val())");
                             node.expr_type = "rule"
+
                         }else if(node.property.expr_type == 'value'){
                             //not recognised member, so it must be an implicit child relation (without quotes in child)
                             node.update(node.object.source() + ".child(" + node.property.source() + ")");
                             node.expr_type = "rule"
+
                         }else{
                             //not recognised member, so it must be an implicit child relation (with quotes in child)
                             node.update(node.object.source() + ".child('" + node.property.source() + "')");
@@ -227,6 +238,31 @@ export class Expression{
                     }
                 }else if(node.object.expr_type == "map"){//auth is a map, auth.* always goes to a value
                     node.expr_type = "value"
+                }else if(node.object.expr_type == "value"){
+                    //inbuild methods for values
+                    node.expr_type = "value"
+
+                    //inbuilt methods for value objects
+                    if(node.property.type == 'Identifier'){
+                        if(node.property.name == 'contains'){
+                            node.expr_type = "fun(value):value"
+                        }else if(node.property.name == 'replace'){
+                            node.expr_type = "fun(value,value):value"
+                        }else if(node.property.name == 'toLowerCase'){
+                            node.expr_type = "fun():value"
+                        }else if(node.property.name == 'toUpperCase'){
+                            node.expr_type = "fun():value"
+                        }else if(node.property.name == 'beginsWith'){
+                            node.expr_type = "fun():value"
+                        }else if(node.property.name == 'endsWith'){
+                            node.expr_type = "fun():value"
+                        }
+                    }
+                }
+
+                if(node.expr_type == null){
+                    console.error(node);
+                    throw Error("unexpected situation in type system " + node.object.expr_type + " " + node.property.expr_type)
                 }
 
 
@@ -238,6 +274,10 @@ export class Expression{
                 }else if(node.callee.expr_type === "fun(array):rule"){
                     node.expr_type = "value";
                 }else if(node.callee.expr_type === "fun(value):value"){
+                    node.expr_type = "value";
+                }else if(node.callee.expr_type === "fun(array):value"){
+                    node.expr_type = "value";
+                }else if(node.callee.expr_type === "fun(value,value):value"){
                     node.expr_type = "value";
                 }else if(node.callee.expr_type === "pred"){
                     //console.log(node)
@@ -258,6 +298,9 @@ export class Expression{
 
                     node.update("(" + expansion + ")");
                     node.expr_type = "value";
+                }else{
+                    console.error(node);
+                    throw Error("unexpected situation in call expression " + node.callee.expr_type)
                 }
             }else if(node.type == "BinaryExpression" || node.type == "BooleanExpression" || node.type == "LogicalExpression"){
                 //coersion to value, if a rule (i.e. appending .val() when in a binary operator as ruleSnapshots don't support any binary operators)
