@@ -2,8 +2,11 @@ id: "http://firebase.com/schema/types/number#"
 $schema: "http://firebase.com/schema/types/number#"
 
 properties:
-  type: {}
-  constraint: {}
+  type: {type: string}
+  constraint:
+    anyOf:
+      - {type: string}
+      - {type: boolean}
   examples: {}
   nonexamples: {}
 

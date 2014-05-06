@@ -4,7 +4,20 @@ $schema: "http://firebase.com/schema/types/object#"
 properties:
 
   type: {type: string}
-  constraint: {type: string}
+  constraint:
+    anyOf:
+      - {type: string}
+      - {type: boolean}
+  examples:
+    type: array
+    minItems: 1
+    uniqueItems: true
+
+  nonexamples:
+    type: array
+    minItems: 1
+    uniqueItems: true
+
   additionalProperties: {type: boolean}
 
   required:
@@ -27,9 +40,6 @@ properties:
     type: object
     additionalProperties: {$ref: "http://firebase.com/schema#"}
     default: {}
-
-  examples: {}
-  nonexamples: {}
 
 patternProperties: #wildchild support, starts with dollar
   \$.+:

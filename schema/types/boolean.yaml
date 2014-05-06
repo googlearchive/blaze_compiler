@@ -2,9 +2,19 @@ id: "http://firebase.com/schema/types/boolean#"
 $schema: "http://firebase.com/schema/types/boolean#"
 
 properties:
-  type: {}
-  constraint: {}
-  examples: {}
-  nonexamples: {}
+  type: {type: string}
+  constraint:
+    anyOf:
+      - {type: string}
+      - {type: boolean}
+  examples:
+    type: array
+    minItems: 1
+    uniqueItems: true
+
+  nonexamples:
+    type: array
+    minItems: 1
+    uniqueItems: true
 
 additionalProperties: false
