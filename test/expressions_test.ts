@@ -258,3 +258,25 @@ export function testUnary(test:nodeunit.Test):void{
     test.done();
 }
 
+export function testSanitizeQuotes1(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "\"string\"=='string'",
+        "\"string\"=='string'",
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
+export function testSanitizeQuotes2(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "next['string'] == prev[\"string\"]",
+        'newData.child(\'string\').val()==data.child("string").val()',
+        new expressions.Predicates(),
+        test
+    );
+    test.done();
+}
+
