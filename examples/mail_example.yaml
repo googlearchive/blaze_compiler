@@ -1,21 +1,23 @@
-predicates: #reusable boolean functions
+predicates:            #reusable boolean functions
   - isLoggedIn():      auth.username !== null
   - createOnly():      next.exists() && !prev.exists()
   - deleteOnly():      prev.exists() && !next.exists()
   - createOrDelete():  createOnly() || deleteOnly()
 
 schema:
-  definitions: #create a reusable message model
-    message:
+  definitions:         #create a reusable message model
+    message:           #for use in the in and out boxes
       type: object
       properties:
         from:
           type: string
-          #enforce the from field is *always* correct on creation, and only the *box owner can delete
+          #enforce the from field is *always* correct on creation,
+          #and only that only the *box owner can delete
           constraint:  (auth.username == next     && createOnly()) ||
                        ($userid === auth.username && deleteOnly())
 
-        to:      {type: string, constraint:  createOrDelete()} #you can't delete single field due to parent's required
+        #you can't delete single field due to parent's required
+        to:      {type: string, constraint:  createOrDelete()}
         message: {type: string, constraint:  createOrDelete()}
 
       required: [from, to, message] # all messages require all the fields to be defined
@@ -32,12 +34,12 @@ schema:
   properties:
     users: # the users subtree is a collection of users
       type: object
-      $userid:
+      $userid: #wildchild expression of many children
         type: object
         properties: #each user has an optional inbox and outbox
           inbox:
             type: object
-            $message: {$ref: "#/definitions/message"} #references are in document URLs as per JSON schema spec
+            $message: {$ref: "#/definitions/message"}
 
           outbox:
             type: object
@@ -47,15 +49,16 @@ schema:
 
 
 access:
-  #append only write is given to anyone's inbox, so users can send messages to strangers
+  #append only write is granted to anyone's inbox,
+  #so users can send messages to strangers
   - location: users/$userid/inbox/*
     write:    createOnly() && isLoggedIn()
 
-  #the inbox owner can delete mail, so they can keep their inbox tidy
+  #the inbox owner can delete their incoming mail
   - location: users/$userid/inbox/*
     write:    deleteOnly() && $userid === auth.username
 
-  #write and delete is given to owners outbox, so they can record what messages they sent
+  #write and delete is given to owners outbox
   - location: users/$userid/outbox/*
     write:    true
 
