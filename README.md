@@ -2,8 +2,8 @@
 
 The blaze compiler presents a higher level interface to Firebase security rules.
 
-- write rules in <a href="#Rules-specified-in-YAML">YAML</a>, trailing commas, unquoted strings and comments with tool support
-- terser security <a href="#Terser-Expression-Syntax">expression</a> syntax
+- write rules in <a href="#rules-specified-in-yaml">YAML</a>, trailing commas, unquoted strings and comments with tool support
+- terser security <a href="#terser-expression-syntax">expression</a> syntax
 - create reusable <a href="#predicates">predicates</a> (boolean functions)
 - specify Firebase layout with typed JSON <a href="#schema">schema models</a>
 - embed global functional <a href="#constraints">constraints</a> in the schema
@@ -13,7 +13,7 @@ The blaze compiler presents a higher level interface to Firebase security rules.
 
 see the big <a href="#example">example</a>
 
-## Install 
+## Install
 
 requires node.js and npm, but it's not in npm yet.
 
