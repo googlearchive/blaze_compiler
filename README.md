@@ -218,7 +218,7 @@ schema:
 
 ```
 
-You can be sure all constraints above and below evaluate to true for a write to be allowed. The only qwerk is related to wildchilds. You can't write anything above a wildchild that includes them as a decedent. They do inherit their parents constraints still though, as do their siblings, so the use of wildcards **never** makes the Firebase less constrained accidentally.
+You can be sure all constraints above and below evaluate to true for a write to be allowed. The only qwerk is related to wildchilds. You can't write anything above a wildchild that includes the wildchild as a decedent. They do inherit their parents constraints still though, as do their siblings, so the use of wildcards **never** makes the Firebase less constrained accidentally.
 
 #### Model reuse
 
