@@ -2,18 +2,17 @@
 
 The blaze compiler presents a higher level interface to Firebase security rules.
 
-- write rules in <a href="#yaml">YAML</a>, trailing commas, unquoted strings and comments with tool support
-- terser security <a href="#expression">expression</a> syntax
+- write rules in <a href="#Rules-specified-in-YAML">YAML</a>, trailing commas, unquoted strings and comments with tool support
+- terser security <a href="#Terser-Expression-Syntax">expression</a> syntax
 - create reusable <a href="#predicates">predicates</a> (boolean functions)
 - specify Firebase layout with typed JSON <a href="#schema">schema models</a>
 - embed global functional <a href="#constraints">constraints</a> in the schema
-- <a href="#denormalization">reuse</a> models in multiple locations in the data tree
-- <a href="#testing">inline tests</a> to check and document what form data can be to be inserted
-- describe <a href="#acl">access control</a> as a separate concern
+- <a href="#model-reuse">reuse</a> models in multiple locations in the data tree
+- <a href="#inline-testing">inline tests</a> to check and document what form data can be to be inserted
+- describe <a href="#access-control">access control</a> as a separate concern
 
 see the big <a href="#example">example</a>
 
-<a id="install"></a>
 ## Install 
 
 requires node.js and npm, but it's not in npm yet.
@@ -31,7 +30,6 @@ blaze.js examples/structure.yaml
 ```
 this will save a rules.json in the current directory
 
-<a id="yaml"></a>
 ## Rules specified in YAML
 
 JSON is sometimes fiddly to get syntactically right. Forgetting to quote keys or leaving a trailing comma is a common cause parseing errors. So for the blaze compiler, the input language is YAML. As YAML is a strict superset of JSON, you can still write all your rules in JSON if you prefer, however YAML has many nice features
@@ -86,7 +84,6 @@ would be compiled to the following JSON, you can think of YAML as just a compact
 
 The space after a colon is important! All indentation to denote keys or arrays is 2 spaces
 
-<a id="expression"></a>
 ## Terser Expression Syntax
 
 Security expressions are the values that used to go in write/read/validate portions of the old security rules. Blaze expressions have similar semantics but terser syntax
@@ -123,7 +120,7 @@ is simplified to just
 ```
 next.counter == prev.counter + 1
 ```
-<a id="predicates"></a>
+
 ## Predicates
 
 To reduce repetition of common expressions, you can create reusable boolean functions with meaningful names to snippets of expression logic. The boolean functions are called predicates and are expressed as an array child of a top level key *predicates*.
@@ -142,12 +139,11 @@ access:
   location: /users/$userid/*
   write:    isUser($userid)
 ```
-<a id="schema"></a>
+
 ## Schema
 
 We have separated out access control concerns (read/write) from describing the static structure of the Firebase. The schema portion of the blaze rules YAML file is for specifying the shape of valid data, **not** who can access it. The semantics are a subset of JSON schema v4.
 
-<a id="types"></a>
 #### Types
 
 A firebase node is either a primitive leaf type (string, number, boolean) or an object which can have further child nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
@@ -200,7 +196,6 @@ schema:
       $userid: {}
 ```
 
-<a id="constraints"></a>
 #### Constraints
 
 The semantics of enforcing data integrity is quite different from the original rules. There is no overriding of constraints, nor separate read/write/validate expressions. There is just one field for expressing data integrity named *constraint*. All ancestors and descendant constraints must evaluate to true for a write to be allowed.
@@ -227,7 +222,6 @@ schema:
 
 You can be sure all constraints above and below evaluate to true for a write to be allowed. The only qwerk is related to wildchilds. You can't write anything above a wildchild that includes the wildchild as a decedent. They do inherit their parents constraints still though, as do their siblings, so the use of wildcards **never** makes the Firebase less constrained accidentally.
 
-<a id="denormalization"></a>
 #### Model reuse
 
 Denormalization of data requires replicating a model in multiple places in a schema. JSON Schema allows importing of model across the internet or within a document through URLs. Currently, blaze only supports in-document reuse.
@@ -250,7 +244,6 @@ schema:
 
 In JSON schema you are able to extend model objects using the allOf modeling construct ([example](http://spacetelescope.github.io/understanding-json-schema/reference/combining.html)). However, blaze does not currently support this. Let us know if you need it!
 
-<a id="testing"></a>
 #### Inline testing
 
 Writing a complex schema can be difficult. For example, a typo in a required field could enforce the existence of
@@ -288,7 +281,6 @@ schema:
 
 ```
 
-<a id="acl"></a>
 ## Access Control
 
 The schema portion of the rules YAML file is for denoting integrity constraints. Read/write access is described in a separate access control list under "access". For each entry the scope of the rule is described using a regex-like *location* field. Read access is granted to that subtree if the *read* expression evaluates to true, and write access is granted if the *write* expression evaluates to true.
@@ -307,7 +299,6 @@ access:
 
 Only one access control entry needs to evaluate to true for an operation to be permitted.
 
-<a id="example"></a>
 ## Example
 
 This is an example that exploits most of the new features. It is a messaging system where users can send messages to each other, by posting to other user's inboxes
