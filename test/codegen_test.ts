@@ -10,9 +10,10 @@ import async = require('async');
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml", true)),
-        test_utils.assert_can_write.bind (null, "any", "/", "string", test),
-        test_utils.assert_cant_write.bind(null, "any", "/", {"child":"string"}, test),
-        test_utils.assert_can_read.bind  (null, "any", "/", "string", test)
+        test_utils.assert_can_write.bind (null, "any", "/", "correct", test),
+        test_utils.assert_cant_write.bind(null, "any", "/", "incorrect", test), //not in enum
+        test_utils.assert_cant_write.bind(null, "any", "/", {"child":"correct"}, test),
+        test_utils.assert_can_read.bind  (null, "any", "/", "correct", test)
     ], test.done.bind(null));
 }
 
@@ -172,3 +173,4 @@ export function testDefinitions(test:nodeunit.Test):void{
 
     ], test.done.bind(null));
 }
+

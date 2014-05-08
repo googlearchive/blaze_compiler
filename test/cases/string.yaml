@@ -1,10 +1,11 @@
 schema:
   type: string
-
+  enum: ["correct", "unknown"]
   examples:
     - "correct"
   nonexamples:
     - true
+    - notcorrect
     - {a: "string"}
 
 

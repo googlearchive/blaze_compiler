@@ -161,7 +161,7 @@ In the above example you could set `{string_child: "blah"}` at the root of the F
 
 #### required
 
-The required keyword states which children **must** be present for the parent object ot be valid. Its value is an array. Required children do not *need* to be specified in the properties (although that would be good practice typically)
+The required keyword states which children **must** be present for the parent object ot be valid. Its value is an array. Required children do not *need* to be specified in the properties (although that would be good practice typically). The required keyword is only valid for object types.
 
 ```
 schema:
@@ -171,7 +171,7 @@ schema:
 
 #### additionalProperties
 
-By default, values not constrained by the schema are considered valid. So objects, by default, accept children not explicitly mentioned in the schema. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed
+By default, values not constrained by the schema are considered valid. So objects, by default, accept children not explicitly mentioned in the schema. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object types
 
 ```
 schema:
@@ -179,6 +179,18 @@ schema:
   additionalProperties: false
   properties:
     string_child:  {type: string}
+```
+
+would not accept `{number_child: 5}` in the root, but without additionalProperties it would.
+
+#### enum
+
+The enum keyword constrains string types to be one of the mentioned array elements. enum keyword is only valid for string types
+
+```
+schema:
+  type: string
+  enum: [yes, no, maybe]
 ```
 
 would not accept `{number_child: 5}` in the root, but without additionalProperties it would.

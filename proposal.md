@@ -48,8 +48,7 @@ JSON schema keywords to implement initially, through the meta-schema
 - DONE definitions
 - DONE properties
 - DONE $ref
-- enum
-- additionalItems
+- DONE enum
 
 JSON schema keywords to be ignored for now
 - allOf, anyOf, oneOf, not (should be added soon though)
@@ -66,6 +65,7 @@ JSON schema keywords to be ignored for now
 - maxProperties minProperties
 - patternProperties
 - dependencies
+- additionalItems
 
 New Schema keywords developed for firebase
 - DONE constraint to translation into security rules (should be expressed in 2.0 rule expression syntax)
@@ -82,6 +82,6 @@ allow users and Firebase developers to implement custom keywords
 a preliminary hyper-schema should be implemented last, just to evaluate UI generation. The bare minimum to get json-editor working.
 
 ### Examples
-- a big example demonstrating all the features
+- DONE a big example demonstrating all the features
 
 
