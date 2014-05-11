@@ -12,6 +12,7 @@ import js_yaml = require("js-yaml");
 import tv4 = require('tv4');
 import expression = require('../src/expression');
 import schema = require('../src/schema');
+import path = require('path');
 
 /**
  * synchronously loads a file resource, converting from YAML to JSON
@@ -30,16 +31,17 @@ export function load_yaml_collection(filepath:string, cb:(doc: any) => any):void
     js_yaml.loadAll(json, cb,'utf8');
 }
 
-export var rules_schema:string = load_yaml("schema/security_rules.yaml");
+export var root:string = path.dirname(fs.realpathSync(__filename)) + "/../";
+export var rules_schema:string = load_yaml(root + "schema/security_rules.yaml");
 
 export function validate_rules(rules:string):boolean{
-    tv4.addSchema("http://firebase.com/schema/types/object#", this.load_yaml("schema/types/object.yaml"));
-    tv4.addSchema("http://firebase.com/schema/types/string#", this.load_yaml("schema/types/string.yaml"));
-    tv4.addSchema("http://firebase.com/schema/types/boolean#",this.load_yaml("schema/types/boolean.yaml"));
-    tv4.addSchema("http://firebase.com/schema/types/number#", this.load_yaml("schema/types/number.yaml"));
+    tv4.addSchema("http://firebase.com/schema/types/object#", this.load_yaml(root + "schema/types/object.yaml"));
+    tv4.addSchema("http://firebase.com/schema/types/string#", this.load_yaml(root + "schema/types/string.yaml"));
+    tv4.addSchema("http://firebase.com/schema/types/boolean#",this.load_yaml(root + "schema/types/boolean.yaml"));
+    tv4.addSchema("http://firebase.com/schema/types/number#", this.load_yaml(root + "schema/types/number.yaml"));
 
-    tv4.addSchema("http://firebase.com/schema#", this.load_yaml("schema/schema.yaml"));
-    tv4.addSchema("http://json-schema.org/draft-04/schema#", fs.readFileSync("schema/jsonschema", {encoding: 'utf8'}).toString());
+    tv4.addSchema("http://firebase.com/schema#", this.load_yaml(root + "schema/schema.yaml"));
+    tv4.addSchema("http://json-schema.org/draft-04/schema#", fs.readFileSync(root + "schema/jsonschema", {encoding: 'utf8'}).toString());
 
     var valid =  tv4.validate(rules, this.rules_schema, true, true);
     console.log("result", tv4.error);

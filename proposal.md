@@ -61,11 +61,10 @@ JSON schema keywords to be ignored for now
 - multipleOf
 - maximum/exclusiveMaximum/minimum/exclusiveMinimum
 - min/maxLength
-- additionalItems, maxItems, minItems, uniqueItems
-- maxProperties minProperties
+- additionalItems, maxItems, minItems, uniqueItems //not possible?
+- maxProperties minProperties //not possible?
 - patternProperties
 - dependencies
-- additionalItems
 
 New Schema keywords developed for firebase
 - DONE constraint to translation into security rules (should be expressed in 2.0 rule expression syntax)

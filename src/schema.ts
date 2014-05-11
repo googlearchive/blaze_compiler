@@ -4,7 +4,6 @@ import expression = require('../src/expression');
 import tv4 = require('tv4');
 import fs = require('fs');
 
-
 //todo
 //refactor out traversals
 
@@ -356,10 +355,10 @@ export class SchemaAPI{
 
     constructor(){
         //load all built in schema definitions from schema directory
-        var files = fs.readdirSync("schema/metaschema");
+        var files = fs.readdirSync(rules.root + "schema/metaschema");
         for(var i in files){
             if (!files.hasOwnProperty(i)) continue;
-            var name = "schema/metaschema"+'/'+files[i];
+            var name = rules.root + "schema/metaschema"+'/'+files[i];
             var metaschema_def = rules.load_yaml(name);
 
             console.log("loading built in type", metaschema_def.name, "into metaschema");
