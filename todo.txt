@@ -10,3 +10,6 @@ change mail_example to mail (in documentation too)
 Comments in long expressions, is there a way to do this?
 
 bug (not in blaze) in low level rules, using a number as a index does not work (does not cast to string for child)
+
+Is using a validate instead of write better for inheritance across $whildchild relations? Waht about if a user sets a child to null.
+Is there a way to prevent things being nulled?
