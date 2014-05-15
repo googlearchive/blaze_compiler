@@ -38,7 +38,7 @@ contains the whole tree of constraints, and ancestors are stictly more restricti
 a parent is the && of its child constraints
 
 ```
-ansestor schemas:
+ancestor schemas:
 root       write: (((auth=black|red) && (auth=red))&&((true) && (auth=red))) && ((auth=black) && (auth=red|black))
 root.chld1 write: ((auth=black|red) && (auth=red))&&((true) && (auth=red))
     .chld2 write: (auth=black) && (auth=red|black)

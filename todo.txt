@@ -1,4 +1,12 @@
 internal quoting in expressions can't be "" needs to be sanatised to '' (is this ok?)
+ NO: root[prev.program][prev.pc] == ">" &&
+
 might want to coerce for methods like .contains()
-overly complex generated expressions
+
+overly complex generated expressions, need more optimizing
+
 change mail_example to mail (in documentation too)
+
+Comments in long expressions, is there a way to do this?
+
+bug (not in blaze) in low level rules, using a number as a index does not work (does not cast to string for child)
