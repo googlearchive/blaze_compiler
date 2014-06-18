@@ -33,7 +33,7 @@ this will save a rules.json in the current directory
 
 ## Rules specified in YAML
 
-JSON is sometimes fiddly to get syntactically right. Forgetting to quote keys or leaving a trailing comma is a common cause parseing errors. So for the blaze compiler, the input language is YAML. As YAML is a strict superset of JSON, you can still write all your rules in JSON if you prefer, however YAML has many nice features
+JSON is sometimes fiddly to get syntactically right. Forgetting to quote keys or leaving a trailing comma is a common cause of parsing errors. So for the blaze compiler, the input language is YAML. As YAML is a strict superset of JSON, you can still write all your rules in JSON if you prefer, however YAML has many nice features
 
 - automatic quoting of keys
 - automatic quoting of string, and detection of multi-line strings
@@ -60,7 +60,7 @@ my_object: #my_object will be the first and only propery of the root document ob
 
 ```
 
-would be compiled to the following JSON, you can think of YAML as just a compact way of specifying JSON
+would be compiled to the following JSON (you can think of YAML as just a compact way of specifying JSON)
 
 ```
 {
