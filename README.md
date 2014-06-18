@@ -19,6 +19,7 @@ requires node.js and npm, but it's not in npm yet.
 
 ```
 git clone https://github.com/firebase/blaze_compiler.git
+npm install -g grunt-cli
 npm install
 npm link
 ```
@@ -26,7 +27,7 @@ npm link
 <a id="run"></a>
 ## Run
 ```
-blaze.js examples/structure.yaml
+blaze examples/structure.yaml
 ```
 this will save a rules.json in the current directory
 
