@@ -330,7 +330,7 @@ schema:
         from:
           type: string
           #enforce the from field is *always* correct on creation,
-          #and only that only the *box owner can delete
+          #and that only the *box owner* can delete
           constraint:  (auth.username == next     && createOnly()) ||
                        ($userid === auth.username && deleteOnly())
 
@@ -346,7 +346,7 @@ schema:
       examples: #examples of inline testing
         - {from: "bill", to: "tom", message: "hey Tom!"}
       nonexamples:
-        - {to: "tom", message: "hey Tom!"} #not allowed becuase from is missing
+        - {to: "tom", message: "hey Tom!"} #not allowed because from is missing
 
   type: object
   properties:
