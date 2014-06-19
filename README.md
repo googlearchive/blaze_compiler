@@ -235,7 +235,7 @@ You can be sure all constraints above and below evaluate to true for a write to 
 
 #### Model reuse
 
-Denormalization of data requires replicating a model in multiple places in a schema. JSON Schema allows importing of model across the internet or within a document through URLs. Currently, blaze only supports in-document reuse.
+Denormalization of data requires replicating a model in multiple places in a schema. JSON Schema allows importing of models across the Internet or within a document through URLs. Currently, blaze only supports in-document reuse.
 
 Model definitions are declared in the keyword definitions object, and references are made using the $ref keyword as follows:
 
@@ -253,7 +253,7 @@ schema:
   $data: {$ref: "#/definitions/stamped_value"}
 ```
 
-In JSON schema you are able to extend model objects using the allOf modeling construct ([example](http://spacetelescope.github.io/understanding-json-schema/reference/combining.html)). However, blaze does not currently support this. Let us know if you need it!
+In JSON Schema you are able to extend model objects using the allOf modeling construct ([example](http://spacetelescope.github.io/understanding-json-schema/reference/combining.html)). However, blaze does not currently support this. Let us know if you need it!
 
 #### Inline testing
 
