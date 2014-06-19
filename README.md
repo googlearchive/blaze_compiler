@@ -83,15 +83,15 @@ would be compiled to the following JSON (you can think of YAML as just a compact
 
 
 
-The space after a colon is important! All indentation to denote keys or arrays is 2 spaces
+The space after a colon is important! All indentation to denote keys or arrays is 2 spaces.
 
 ## Terser Expression Syntax
 
-Security expressions are the values that used to go in write/read/validate portions of the old security rules. Blaze expressions have similar semantics but terser syntax
+Security expressions are the values that used to go in write/read/validate portions of the old security rules. Blaze expressions have similar semantics but terser syntax.
 
 #### Variables renamed
 
-*data* and *newData* have been renamed *prev* and *next*. *root* has the same meaning
+*data* and *newData* have been renamed *prev* and *next*. *root* has the same meaning.
 
 #### Child selection
 
@@ -115,7 +115,7 @@ root.users
 In the new syntax, *.val()* is inserted if the expression is next to an operator or in an array like child selector. You only need to use *.val()* if you are using a method of a value type like *.length*, *.beginsWith()* *.contains(...)*. So
 
 ```
-nextData.child('counter').val() == data.child('counter').val() + 1
+newData.child('counter').val() == data.child('counter').val() + 1
 ```
 is simplified to just
 ```
