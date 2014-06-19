@@ -147,7 +147,7 @@ We have separated out access control concerns (read/write) from describing the s
 
 #### Types
 
-A firebase node is either a primitive leaf type (string, number, boolean) or an object which can have further child nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
+A Firebase node is either a primitive leaf type (string, number, boolean) or an object which can have further child nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
 
 ```
 schema:
@@ -162,7 +162,7 @@ In the above example you could set `{string_child: "blah"}` at the root of the F
 
 #### required
 
-The required keyword states which children **must** be present for the parent object ot be valid. Its value is an array. Required children do not *need* to be specified in the properties (although that would be good practice typically). The required keyword is only valid for object types.
+The required keyword states which children **must** be present for the parent object to be valid. Its value is an array. Required children do not *need* to be specified in the properties (although that would be good practice typically). The required keyword is only valid for object types.
 
 ```
 schema:
@@ -172,7 +172,7 @@ schema:
 
 #### additionalProperties
 
-By default, values not constrained by the schema are considered valid. So objects, by default, accept children not explicitly mentioned in the schema. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object types
+By default, values not constrained by the schema are considered valid. So objects, by default, accept children not explicitly mentioned in the schema. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object types.
 
 ```
 schema:
@@ -186,15 +186,13 @@ would not accept `{number_child: 5}` in the root, but without additionalProperti
 
 #### enum
 
-The enum keyword constrains string types to be one of the mentioned array elements. enum keyword is only valid for string types
+The enum keyword constrains string types to be one of the mentioned array elements. enum keyword is only valid for string types.
 
 ```
 schema:
   type: string
   enum: [yes, no, maybe]
 ```
-
-would not accept `{number_child: 5}` in the root, but without additionalProperties it would.
 
 #### $wildchild
 
