@@ -1,0 +1,5 @@
+name: any
+validator: {$ref: "http://firebase.com/schema/types/any#"}
+compile:
+  console.log("compile any");
+

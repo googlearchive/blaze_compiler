@@ -6,7 +6,7 @@ import firebase_io = require('./firebase_io');
 import compile = require('../src/compile');
 import rules = require('../src/rules');
 import async = require('async');
-
+/*
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml", true)),
@@ -173,4 +173,20 @@ export function testDefinitions(test:nodeunit.Test):void{
 
     ], test.done.bind(null));
 }
+*/
 
+
+export function testAny(test:nodeunit.Test):void{
+    async.series([
+        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/any.yaml", true)),
+
+        test_utils.assert_admin_can_write.bind(null, "/",{}, test),
+
+        test_utils.assert_can_write_mock.bind(null, "any","/",  true   , test),
+        test_utils.assert_can_write_mock.bind(null, "any","/",  "string"   , test),
+        test_utils.assert_can_write_mock.bind(null, "any","/",  {chld_str: "a", chld_bool: true}, test),
+
+        test_utils.assert_cant_write.bind(null, "any","/", {chld_str: false, chld_bool: true}    , test),
+
+    ], test.done.bind(null));
+}

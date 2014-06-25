@@ -1,0 +1,23 @@
+
+schema:
+  additionalProperties: false
+
+  properties:
+    chld_str:
+      type: string
+    chld_bool:
+      type: boolean
+
+  examples:
+    - {chld_str: "a", chld_bool: true}
+    - true
+    - {}
+    - "string"
+
+  nonexamples:
+    - {chld_str: true, chld_bool: true} #boolean instead of string
+
+access:
+  - location: "/*"
+    write: true
+    read: true

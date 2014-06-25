@@ -1,0 +1,40 @@
+id: "http://firebase.com/schema/types/any#"
+$schema: "http://firebase.com/schema/types/any#"
+
+properties:
+
+  constraint:
+    anyOf:
+      - {type: string}
+      - {type: boolean}
+  examples:
+    type: array
+    minItems: 1
+    uniqueItems: true
+
+  nonexamples:
+    type: array
+    minItems: 1
+    uniqueItems: true
+
+  additionalProperties: {type: boolean}
+
+  properties:
+    type: object
+    additionalProperties: {$ref: "http://firebase.com/schema#"}
+    default: {}
+
+  patternProperties: #not for user use, wildcards get turned into a pattern properties behind the scenes
+    type: object
+    additionalProperties: {$ref: "http://firebase.com/schema#"}
+    default: {}
+
+  definitions:
+    type: object
+    additionalProperties: {$ref: "http://firebase.com/schema#"}
+    default: {}
+
+patternProperties: #wildchild support, starts with dollar
+  \$.+:
+    {$ref: "http://firebase.com/schema#"}
+

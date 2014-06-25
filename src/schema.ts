@@ -262,24 +262,20 @@ function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:
     annotation.nonexamples = node.nonexamples? node.nonexamples:[];
 
     //using type information, the metaschema is given an opportunity to customise the node
-    if(annotation.type != null){
-        if(api.metaschema[annotation.type] != undefined){
-            if(api.metaschema[annotation.type].validate(node)){
-                //the user compile could actually add more nodes, see schemaAPI.addProperty
-                //if this happens annotate_schema needs to be called for new nodes
-                //entering the system pragmatically in compile (done in addProperty)
-                api.metaschema[annotation.type].compile(api);
-            }else{
-                throw new Error("type validation failed: " + JSON.stringify(node));
-            }
+    if(annotation.type == null) annotation.type = "any";
+
+    if(api.metaschema[annotation.type] != undefined){
+        if(api.metaschema[annotation.type].validate(node)){
+            //the user compile could actually add more nodes, see schemaAPI.addProperty
+            //if this happens annotate_schema needs to be called for new nodes
+            //entering the system pragmatically in compile (done in addProperty)
+            api.metaschema[annotation.type].compile(api);
         }else{
-            console.error("unknown schema type:", annotation.type);
-            throw new Error("unknown type specified");
+            throw new Error("type validation failed: " + JSON.stringify(node));
         }
     }else{
-        //user has not defined type
-        console.log(node);
-        throw new Error("no defined type, this is not supported yet for node: ");
+        console.error("unknown schema type:", annotation.type);
+        throw new Error("unknown type specified");
     }
 
     annotation.constraint = expression.Expression.parse(node.constraint);
@@ -290,6 +286,7 @@ function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:
 
         var valid = tv4.validate(example, node, true, false);
         if(!valid){
+            console.error(tv4.error);
             throw new Error("example failed " + JSON.stringify(example) + " on " + JSON.stringify(node));
         }
     }
