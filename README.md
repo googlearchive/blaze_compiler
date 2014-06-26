@@ -19,6 +19,7 @@ requires node.js and npm, but it's not in npm yet.
 
 ```
 git clone https://github.com/firebase/blaze_compiler.git
+npm install -g grunt-cli
 npm install
 npm link
 ```
@@ -26,13 +27,13 @@ npm link
 <a id="run"></a>
 ## Run
 ```
-blaze.js examples/structure.yaml
+blaze examples/structure.yaml
 ```
 this will save a rules.json in the current directory
 
 ## Rules specified in YAML
 
-JSON is sometimes fiddly to get syntactically right. Forgetting to quote keys or leaving a trailing comma is a common cause parseing errors. So for the blaze compiler, the input language is YAML. As YAML is a strict superset of JSON, you can still write all your rules in JSON if you prefer, however YAML has many nice features
+JSON is sometimes fiddly to get syntactically right. Forgetting to quote keys or leaving a trailing comma is a common cause of parsing errors. So for the blaze compiler, the input language is YAML. As YAML is a strict superset of JSON, you can still write all your rules in JSON if you prefer, however YAML has many nice features
 
 - automatic quoting of keys
 - automatic quoting of string, and detection of multi-line strings
@@ -59,7 +60,7 @@ my_object: #my_object will be the first and only propery of the root document ob
 
 ```
 
-would be compiled to the following JSON, you can think of YAML as just a compact way of specifying JSON
+would be compiled to the following JSON (you can think of YAML as just a compact way of specifying JSON)
 
 ```
 {
@@ -82,15 +83,15 @@ would be compiled to the following JSON, you can think of YAML as just a compact
 
 
 
-The space after a colon is important! All indentation to denote keys or arrays is 2 spaces
+The space after a colon is important! All indentation to denote keys or arrays is 2 spaces.
 
 ## Terser Expression Syntax
 
-Security expressions are the values that used to go in write/read/validate portions of the old security rules. Blaze expressions have similar semantics but terser syntax
+Security expressions are the values that used to go in write/read/validate portions of the old security rules. Blaze expressions have similar semantics but terser syntax.
 
 #### Variables renamed
 
-*data* and *newData* have been renamed *prev* and *next*. *root* has the same meaning
+*data* and *newData* have been renamed *prev* and *next*. *root* has the same meaning.
 
 #### Child selection
 
@@ -114,7 +115,7 @@ root.users
 In the new syntax, *.val()* is inserted if the expression is next to an operator or in an array like child selector. You only need to use *.val()* if you are using a method of a value type like *.length*, *.beginsWith()* *.contains(...)*. So
 
 ```
-nextData.child('counter').val() == data.child('counter').val() + 1
+newData.child('counter').val() == data.child('counter').val() + 1
 ```
 is simplified to just
 ```
@@ -146,7 +147,7 @@ We have separated out access control concerns (read/write) from describing the s
 
 #### Types
 
-A firebase node is either a primitive leaf type (string, number, boolean) or an object which can have further child nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
+A Firebase node is either a primitive leaf type (string, number, boolean) or an object which can have further child nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
 
 ```
 schema:
@@ -161,7 +162,7 @@ In the above example you could set `{string_child: "blah"}` at the root of the F
 
 #### required
 
-The required keyword states which children **must** be present for the parent object ot be valid. Its value is an array. Required children do not *need* to be specified in the properties (although that would be good practice typically). The required keyword is only valid for object types.
+The required keyword states which children **must** be present for the parent object to be valid. Its value is an array. Required children do not *need* to be specified in the properties (although that would be good practice typically). The required keyword is only valid for object types.
 
 ```
 schema:
@@ -171,7 +172,7 @@ schema:
 
 #### additionalProperties
 
-By default, values not constrained by the schema are considered valid. So objects, by default, accept children not explicitly mentioned in the schema. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object types
+By default, values not constrained by the schema are considered valid. So objects, by default, accept children not explicitly mentioned in the schema. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object types.
 
 ```
 schema:
@@ -185,15 +186,13 @@ would not accept `{number_child: 5}` in the root, but without additionalProperti
 
 #### enum
 
-The enum keyword constrains string types to be one of the mentioned array elements. enum keyword is only valid for string types
+The enum keyword constrains string types to be one of the mentioned array elements. enum keyword is only valid for string types.
 
 ```
 schema:
   type: string
   enum: [yes, no, maybe]
 ```
-
-would not accept `{number_child: 5}` in the root, but without additionalProperties it would.
 
 #### $wildchild
 
@@ -232,11 +231,11 @@ schema:
 
 ```
 
-You can be sure all constraints above and below evaluate to true for a write to be allowed. The only qwerk is related to wildchilds. You can't write anything above a wildchild that includes the wildchild as a decedent. They do inherit their parents constraints still though, as do their siblings, so the use of wildcards **never** makes the Firebase less constrained accidentally.
+You can be sure all constraints above and below evaluate to true for a write to be allowed. The only quirk is related to wildchilds. You can't write anything above a wildchild that includes the wildchild as a descendant. They do inherit their parents constraints though, as do their siblings, so the use of wildchilds **never** makes the Firebase less constrained accidentally.
 
 #### Model reuse
 
-Denormalization of data requires replicating a model in multiple places in a schema. JSON Schema allows importing of model across the internet or within a document through URLs. Currently, blaze only supports in-document reuse.
+Denormalization of data requires replicating a model in multiple places in a schema. JSON Schema allows importing of models across the Internet or within a document through URLs. Currently, blaze only supports in-document reuse.
 
 Model definitions are declared in the keyword definitions object, and references are made using the $ref keyword as follows:
 
@@ -254,7 +253,7 @@ schema:
   $data: {$ref: "#/definitions/stamped_value"}
 ```
 
-In JSON schema you are able to extend model objects using the allOf modeling construct ([example](http://spacetelescope.github.io/understanding-json-schema/reference/combining.html)). However, blaze does not currently support this. Let us know if you need it!
+In JSON Schema you are able to extend model objects using the allOf modeling construct ([example](http://spacetelescope.github.io/understanding-json-schema/reference/combining.html)). However, blaze does not currently support this. Let us know if you need it!
 
 #### Inline testing
 
@@ -331,7 +330,7 @@ schema:
         from:
           type: string
           #enforce the from field is *always* correct on creation,
-          #and only that only the *box owner can delete
+          #and that only the *box owner* can delete
           constraint:  (auth.username == next     && createOnly()) ||
                        ($userid === auth.username && deleteOnly())
 
@@ -347,7 +346,7 @@ schema:
       examples: #examples of inline testing
         - {from: "bill", to: "tom", message: "hey Tom!"}
       nonexamples:
-        - {to: "tom", message: "hey Tom!"} #not allowed becuase from is missing
+        - {to: "tom", message: "hey Tom!"} #not allowed because from is missing
 
   type: object
   properties:
