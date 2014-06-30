@@ -32,8 +32,8 @@ schema:
     - {chld1: {grnd1: true, grnd2: "b"}, chld2: {grnd3: "c", grnd4: "d"}} #boolean instead of string
 
 access:
-  - location: "/chld1/*"
+  - location: "/chld1"
     write: red()
 
-  - location: "/*"
+  - location: "/"
     write: black()

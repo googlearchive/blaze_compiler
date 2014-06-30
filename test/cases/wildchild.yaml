@@ -16,6 +16,6 @@ schema:
     - "root strings not allowed"
 
 access:
-  - location: "/*"
+  - location: "/"
     read:  "true"
     write: "true"

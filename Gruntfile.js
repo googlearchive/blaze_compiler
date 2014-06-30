@@ -11,7 +11,8 @@ module.exports = function(grunt) {
             codegen : ['test/codegen_test.js'],
             expressions: ['test/expressions_test.js'],
             optimize: ['test/optimize_test.js'],
-            mail: ['test/mail_example_test.js']
+            mail: ['test/mail_example_test.js'],
+            parse: ['test/parse_test.js']
 		},typescript: {
           base: {
             src: ['**/*.ts'],

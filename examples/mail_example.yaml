@@ -51,17 +51,17 @@ schema:
 access:
   #append only write is granted to anyone's inbox,
   #so users can send messages to strangers
-  - location: users/$userid/inbox/*
+  - location: users/$userid/inbox/
     write:    createOnly() && isLoggedIn()
 
   #the inbox owner can delete their incoming mail
-  - location: users/$userid/inbox/*
+  - location: users/$userid/inbox/
     write:    deleteOnly() && $userid === auth.username
 
   #write and delete is given to owners outbox
-  - location: users/$userid/outbox/*
+  - location: users/$userid/outbox/
     write:    true
 
   #owners can read everything in their inbox and outbox
-  - location: users/$userid/*
+  - location: users/$userid
     read:    $userid === auth.username

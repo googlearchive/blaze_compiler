@@ -10,6 +10,6 @@ schema:
     - {a: "string"}
 
 access:
-  - location: "/*"
+  - location: "/"
     read:    isLoggedIn()
     write: "!isLoggedIn()"

@@ -12,6 +12,6 @@ schema:
   required: [child_object]
 
 access:
-  - location: "/*"
+  - location: "/"
     read:  "true" #todo, allow boolean in read and write rules
     write: isLoggedIn()

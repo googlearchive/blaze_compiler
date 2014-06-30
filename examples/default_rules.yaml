@@ -4,6 +4,6 @@ predicates:
 schema: {}
 
 access:
-  - location: "/*"
+  - location: "/"
     read:  "true"
     write: "true" #& isLoggedIn()" //remove comments and allow boolean true in

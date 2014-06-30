@@ -20,5 +20,5 @@ schema:
           type: string
 
 access:
-  - location: "/*"
+  - location: "/"
     write: true

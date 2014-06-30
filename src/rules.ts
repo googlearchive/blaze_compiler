@@ -73,43 +73,45 @@ export class SchemaRoot{
 
 
 export class AccessEntry{
-    location: string[]; //components of address, e.g. users/$userid/* is mapped to ['users', '$userid']
+    location: string[]; //components of address, e.g. users/$userid is mapped to ['users', '$userid']
     read:     expression.Expression = expression.Expression.parse("false");
     write:    expression.Expression = expression.Expression.parse("false");
 
-    static parse(json:any):AccessEntry{
+    static parse(json:any): AccessEntry{
         //console.log("AccessEntry.parse:", json);
 
         var accessEntry = new AccessEntry();
         accessEntry.location = json.location.split("/");
 
-        if(accessEntry.location[accessEntry.location.length-1] !== '*'){
-            throw new Error("AccessEntry.location must end in /*")
-        }else{
-            accessEntry.location.pop();
-        }
-
         //deal with issue of "/*" being split to "['', '*']" by removing first element
-        if(accessEntry.location.length > 0 && accessEntry.location[0] === ''){
+        while (accessEntry.location[0] === ''){
             accessEntry.location.shift();
         }
-        if(json.read){
+
+        if (accessEntry.location[accessEntry.location.length-1] == "") {
+            accessEntry.location.pop()
+        }
+
+        if (json.read){
             accessEntry.read     = expression.Expression.parse(<string>json.read);
         }
-        if(json.write){
+        if (json.write){
             accessEntry.write    = expression.Expression.parse(<string>json.write);
         }
 
+        console.log("accessEntry.location", accessEntry.location);
         return accessEntry
     }
 
     match(location:string[]):boolean{
+        console.log("checking if ", location, " matches ", this.location);
         //candidate location must be at least as specific as this location
         if(this.location.length > location.length) return false;
 
         for(var idx in this.location){
             if(this.location[idx] !== location[idx]) return false
         }
+        console.log("access entry is applicable");
         return true;
     }
 }

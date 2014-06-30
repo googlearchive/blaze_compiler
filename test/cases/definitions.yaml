@@ -40,6 +40,6 @@ schema:
     - {object:  {string: "hello", extra: "error"}}
 
 access:
-  - location: "/*"
+  - location: "/"
     read:  "true"
     write: "true"

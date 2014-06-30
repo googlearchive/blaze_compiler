@@ -18,6 +18,6 @@ schema:
     - {chld_str: true, chld_bool: true} #boolean instead of string
 
 access:
-  - location: "/*"
+  - location: "/"
     write: true
     read: true

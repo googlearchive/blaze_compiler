@@ -26,6 +26,6 @@ schema:
 
 
 access:
-  - location: "/*"
+  - location: "/"
     read:  "true"
     write: "true"

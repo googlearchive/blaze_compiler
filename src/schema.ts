@@ -93,7 +93,7 @@ export class SchemaNode{
 
         var comma_in_properties = false;
         //recurse
-        for(var property in this.properties){
+        for (var property in this.properties){
             buffer.push(prefix + '  "' + property + '": ');
             this.properties[property].generate(symbols, prefix + "  ", buffer)
 
@@ -102,17 +102,17 @@ export class SchemaNode{
             comma_in_properties = true;
         }
 
-        if(!this.additionalProperties){
+        if (!this.additionalProperties){
             buffer.push(prefix + '  "$other":{".validate":"false"');
             buffer.push('GETS REMOVED');
             comma_in_properties = true;
         }
 
         //remove last trailing comma
-        if(comma_in_properties){
+        if (comma_in_properties){
             buffer.pop();
             buffer.push("}\n");
-        }else{
+        } else {
             //else the comma was placed last at the ".read" statement
             buffer.pop();
             buffer.push('"\n');
