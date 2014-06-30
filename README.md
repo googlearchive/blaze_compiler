@@ -13,6 +13,12 @@ The blaze compiler presents a higher level interface to Firebase security rules.
 
 see the big <a href="#example">example</a>
 
+##  Changelog
+
+- 30th June 2014:
+  - removed trailing /* from access location syntax
+  - allowed untyped schema if type is not specified
+
 ## Install
 
 requires node.js and npm, but it's not in npm yet.
