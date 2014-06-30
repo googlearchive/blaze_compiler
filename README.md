@@ -137,7 +137,7 @@ predicates can then be used in other expressions elsewhere:
 
 ```
 access:
-  location: /users/$userid/*
+  location: /users/$userid/
   write:    isUser($userid)
 ```
 
@@ -147,7 +147,7 @@ We have separated out access control concerns (read/write) from describing the s
 
 #### Types
 
-A Firebase node is either a primitive leaf type (string, number, boolean) or an object which can have further child nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
+A Firebase node is either a primitive leaf type (*string*, *number*, *boolean*) or an *object* which can have further child nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
 
 ```
 schema:
@@ -160,9 +160,11 @@ schema:
 
 In the above example you could set `{string_child: "blah"}` at the root of the Firebase but not `{string_child: true}`
 
+You can leave a schema untyped by not specifying anything. The non-typed schema will allow primative or object types to be written at that location.
+
 #### required
 
-The required keyword states which children **must** be present for the parent object to be valid. Its value is an array. Required children do not *need* to be specified in the properties (although that would be good practice typically). The required keyword is only valid for object types.
+The required keyword states which children **must** be present for the parent object to be valid. Its value is an array. Required children do not *need* to be specified in the properties (although that would be good practice typically). The required keyword is only valid for object schemas.
 
 ```
 schema:
@@ -172,7 +174,7 @@ schema:
 
 #### additionalProperties
 
-By default, values not constrained by the schema are considered valid. So objects, by default, accept children not explicitly mentioned in the schema. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object types.
+By default, values not constrained by the schema are considered valid. So objects, by default, accept children not explicitly mentioned in the schema. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object and non-typed schemas.
 
 ```
 schema:
@@ -294,16 +296,16 @@ schema:
 
 ## Access Control
 
-The schema portion of the rules YAML file is for denoting integrity constraints. Read/write access is described in a separate access control list under "access". For each entry the scope of the rule is described using a regex-like *location* field. Read access is granted to that subtree if the *read* expression evaluates to true, and write access is granted if the *write* expression evaluates to true.
+The schema portion of the rules YAML file is for denoting integrity constraints. Read/write access is described in a separate access control list under "access". For each entry, the scope of the rule is a subtree at, or below, the path indicated in the *location* field. Read access is granted to that subtree if the *read* expression evaluates to true, and write access is granted if the *write* expression evaluates to true.
 
 ```
 predicates:
   - isLoggedIn():   auth !== null
 ...
 access:
-  - location: "/*"
+  - location: "/"
     read: isLoggedIn()
-  - location: "/users/$userid/*"
+  - location: "/users/$userid/"
     write: auth.username === $userid
 
 ```
@@ -368,18 +370,18 @@ schema:
 access:
   #append only write is granted to anyone's inbox,
   #so users can send messages to strangers
-  - location: users/$userid/inbox/*
+  - location: users/$userid/inbox/
     write:    createOnly() && isLoggedIn()
 
   #the inbox owner can delete their incoming mail
-  - location: users/$userid/inbox/*
+  - location: users/$userid/inbox/
     write:    deleteOnly() && $userid === auth.username
 
   #write and delete is given to owners outbox
-  - location: users/$userid/outbox/*
+  - location: users/$userid/outbox/
     write:    true
 
   #owners can read everything in their inbox and outbox
-  - location: users/$userid/*
+  - location: users/$userid/
     read:    $userid === auth.username
 ```
