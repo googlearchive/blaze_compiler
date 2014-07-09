@@ -1,0 +1,98 @@
+{
+  "predicates": [
+    {
+      "isLoggedIn()": "auth.username !== null"
+    },
+    {
+      "createOnly()": "next.exists() && !prev.exists()"
+    },
+    {
+      "deleteOnly()": "prev.exists() && !next.exists()"
+    },
+    {
+      "createOrDelete()": "createOnly() || deleteOnly()"
+    }
+  ],
+  "schema": {
+    "definitions": {
+      "message": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "constraint": "(auth.username == next     && createOnly()) || ($userid === auth.username && deleteOnly())"
+          },
+          "to": {
+            "type": "string",
+            "constraint": "createOrDelete()"
+          },
+          "message": {
+            "type": "string",
+            "constraint": "createOrDelete()"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "message"
+        ],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "from": "bill",
+            "to": "tom",
+            "message": "hey Tom!"
+          }
+        ],
+        "nonexamples": [
+          {
+            "to": "tom",
+            "message": "hey Tom!"
+          }
+        ]
+      }
+    },
+    "type": "object",
+    "properties": {
+      "users": {
+        "type": "object",
+        "$userid": {
+          "type": "object",
+          "properties": {
+            "inbox": {
+              "type": "object",
+              "$message": {
+                "$ref": "#/definitions/message"
+              }
+            },
+            "outbox": {
+              "type": "object",
+              "$message": {
+                "$ref": "#/definitions/message"
+              }
+            }
+          }
+        }
+      }
+    },
+    "additionalProperties": false
+  },
+  "access": [
+    {
+      "location": "users/$userid/inbox/",
+      "write": "createOnly() && isLoggedIn()"
+    },
+    {
+      "location": "users/$userid/inbox/",
+      "write": "deleteOnly() && $userid === auth.username"
+    },
+    {
+      "location": "users/$userid/outbox/",
+      "write": true
+    },
+    {
+      "location": "users/$userid",
+      "read": "$userid === auth.username"
+    }
+  ]
+}

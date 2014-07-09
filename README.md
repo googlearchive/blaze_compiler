@@ -15,6 +15,9 @@ see the big <a href="#example">example</a>
 
 ##  Changelog
 
+- 9th July 2014:
+  - support for rules in JSON
+
 - 30th June 2014:
   - removed trailing /* from access location syntax
   - allowed untyped schema if type is not specified
@@ -37,7 +40,7 @@ blaze examples/structure.yaml
 ```
 this will save a rules.json in the current directory
 
-## Rules specified in YAML
+## Rules specified in YAML (or JSON)
 
 JSON is sometimes fiddly to get syntactically right. Forgetting to quote keys or leaving a trailing comma is a common cause of parsing errors. So for the blaze compiler, the input language is YAML. As YAML is a strict superset of JSON, you can still write all your rules in JSON if you prefer, however YAML has many nice features
 
@@ -86,8 +89,6 @@ would be compiled to the following JSON (you can think of YAML as just a compact
   }
 }
 ```
-
-
 
 The space after a colon is important! All indentation to denote keys or arrays is 2 spaces.
 

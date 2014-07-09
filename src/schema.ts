@@ -6,12 +6,13 @@ import fs = require('fs');
 
 //todo
 //refactor out traversals
+var debug = true;
 
 /**
  * performs a bottom up traversal of a schema definition, allowing each metaschema processor
  * to generate constraints
  */
-export function annotate(model:rules.Rules){
+export function annotate(model: rules.Rules){
     model.schema.root = annotate_schema(model.schema.json, null, null, new SchemaAPI(), model)
 }
 
@@ -230,13 +231,14 @@ export class MetaSchema{
 }
 
 
-function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:rules.Rules):SchemaNode{
+function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:rules.Rules):SchemaNode {
+    if(debug) console.log("annotate_schema", node);
+
     if(node["$ref"]){
         //we should replace this node with its definition
         node = fetchRef(node["$ref"], model);
     }
 
-    //console.log("annotate_schema", node);
     var annotation = new SchemaNode(node);
 
     //recurse to children first in bottom up

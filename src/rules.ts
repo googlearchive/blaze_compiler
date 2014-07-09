@@ -99,19 +99,19 @@ export class AccessEntry{
             accessEntry.write    = expression.Expression.parse(<string>json.write);
         }
 
-        console.log("accessEntry.location", accessEntry.location);
+        //console.log("accessEntry.location", accessEntry.location);
         return accessEntry
     }
 
     match(location:string[]):boolean{
-        console.log("checking if ", location, " matches ", this.location);
+        //console.log("checking if ", location, " matches ", this.location);
         //candidate location must be at least as specific as this location
         if(this.location.length > location.length) return false;
 
         for(var idx in this.location){
             if(this.location[idx] !== location[idx]) return false
         }
-        console.log("access entry is applicable");
+        //console.log("access entry is applicable");
         return true;
     }
 }
