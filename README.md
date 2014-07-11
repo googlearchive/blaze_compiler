@@ -385,6 +385,8 @@ access:
     write:    deleteOnly() && $userid === auth.username
 
   #write and delete is given to owners outbox
+  #note that because only box owners can delete messages,
+  #other users cannot use this entry point (see message constraint)
   - location: users/$userid/outbox/
     write:    true
 
