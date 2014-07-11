@@ -386,7 +386,7 @@ access:
 
   #write and delete is given to owners outbox
   - location: users/$userid/outbox/
-    write:    true
+    write:    $userid === auth.username
 
   #owners can read everything in their inbox and outbox
   - location: users/$userid/
