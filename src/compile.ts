@@ -3,7 +3,7 @@ import rules = require('../src/rules');
 import expression = require('../src/expression');
 import fs = require('fs');
 
-export function compileJSON(json:any, debug:boolean): string {
+export function compileJSON(json:any, debug:boolean): rules.Rules {
     //check user's JSON meets JSON schema spec of rule file
     var ok = rules.validate_rules(json);
     if(ok){
@@ -13,7 +13,7 @@ export function compileJSON(json:any, debug:boolean): string {
         }
 
         //convert users rule file into a model
-        var model:rules.Rules = rules.Rules.parse(json);
+        var model: rules.Rules = rules.Rules.parse(json);
 
         //1st pass of compiler,
         //metaschema generate constraints for schema
@@ -57,13 +57,13 @@ export function compileJSON(json:any, debug:boolean): string {
         //write to file
         console.log("\nwriting rules.json");
         fs.writeFileSync("rules.json", code);
-        return code;
+        return model;
     }else{
         throw Error("did not globally validate");
     }
 }
 
-export function compile(path:string, debug:boolean):string{
+export function compile(path:string, debug:boolean): rules.Rules{
     //convert to JSON
     if (path.slice(path.length-5) == ".json"){
         var json: any = JSON.parse(fs.readFileSync(path, {encoding: 'utf8'}).toString());

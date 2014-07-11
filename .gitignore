@@ -1,8 +1,7 @@
 .idea/*
 node_modules/*
 rules.json
+model.java
 
-src/*.js
-src/*.map
-test/*.js
-test/*.map
+*.js
+*.js.map
