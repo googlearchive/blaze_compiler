@@ -1,6 +1,6 @@
-import schema = require('../src/schema');
-import rules = require('../src/rules');
-import expression = require('../src/expression');
+import schema = require('../schema');
+import rules = require('../blaze');
+import expression = require('../expression');
 import fs = require('fs');
 
 var TARGET: string = "model.java";

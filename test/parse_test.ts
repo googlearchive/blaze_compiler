@@ -1,14 +1,14 @@
 /// <reference path="../types/nodeunit.d.ts" />
-import rules = require('../src/rules');
+import blaze = require('../src/blaze');
 
 export function testEntryParseRoot1(test) {
-    var entry: rules.AccessEntry = rules.AccessEntry.parse({
+    var entry: blaze.AccessEntry = blaze.AccessEntry.parse({
         location: "/"
     });
 
     test.deepEqual(entry.location, []);
 
-    var entry: rules.AccessEntry = rules.AccessEntry.parse({
+    var entry: blaze.AccessEntry = blaze.AccessEntry.parse({
         location: ""
     });
 

@@ -1,11 +1,11 @@
 import schema = require('../src/schema');
-import rules = require('../src/rules');
+import blaze = require('./blaze');
 import expression = require('../src/expression');
 import fs = require('fs');
 
-export function compileJSON(json:any, debug:boolean): rules.Rules {
+export function compileJSON(json:any, debug:boolean): blaze.Rules {
     //check user's JSON meets JSON schema spec of rule file
-    var ok = rules.validate_rules(json);
+    var ok = blaze.validate_rules(json);
     if(ok){
         if(debug){
             console.log("\ninput:");
@@ -13,7 +13,7 @@ export function compileJSON(json:any, debug:boolean): rules.Rules {
         }
 
         //convert users rule file into a model
-        var model: rules.Rules = rules.Rules.parse(json);
+        var model: blaze.Rules = blaze.Rules.parse(json);
 
         //1st pass of compiler,
         //metaschema generate constraints for schema
@@ -57,18 +57,19 @@ export function compileJSON(json:any, debug:boolean): rules.Rules {
         //write to file
         console.log("\nwriting rules.json");
         fs.writeFileSync("rules.json", code);
+        model.code = code;
         return model;
     }else{
         throw Error("did not globally validate");
     }
 }
 
-export function compile(path:string, debug:boolean): rules.Rules{
+export function compile(path:string, debug:boolean): blaze.Rules{
     //convert to JSON
     if (path.slice(path.length-5) == ".json"){
         var json: any = JSON.parse(fs.readFileSync(path, {encoding: 'utf8'}).toString());
     } else {
-        var json: any = rules.load_yaml(path);
+        var json: any = blaze.load_yaml(path);
     }
     return compileJSON(json, debug);
 

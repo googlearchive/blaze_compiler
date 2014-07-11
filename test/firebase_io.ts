@@ -1,6 +1,6 @@
 /**
  * This module is for utility functions for Firebase
- * For standard operations you can just use require("firebase") directly
+ * For standard operations you can just use require("firebase") directly.
  * 
  * This is meant for more complex functions like uploading/downloading a validation/rule set
  */

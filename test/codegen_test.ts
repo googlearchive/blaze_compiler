@@ -3,13 +3,12 @@ import expressions = require('../src/expression');
 
 import test_utils  = require('./test_utils');
 import firebase_io = require('./firebase_io');
-import compile = require('../src/compile');
-import rules = require('../src/rules');
+import compiler = require('../src/compiler');
 import async = require('async');
 
 export function testString(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/string.yaml", true)),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/string.yaml", true).code),
         test_utils.assert_can_write.bind (null, "any", "/", "correct", test),
         test_utils.assert_cant_write.bind(null, "any", "/", "incorrect", test), //not in enum
         test_utils.assert_cant_write.bind(null, "any", "/", {"child":"correct"}, test),
@@ -19,7 +18,7 @@ export function testString(test:nodeunit.Test):void{
 
 export function testPredicate_access(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/predicate_access.yaml", true)),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/predicate_access.yaml", true).code),
         test_utils.assert_cant_write.bind(null,  "tom", "/", "string", test),
         test_utils.assert_can_write.bind (null,  "not", "/", "string", test),
         test_utils.assert_cant_read.bind (null,  "not", "/", test),
@@ -29,7 +28,7 @@ export function testPredicate_access(test:nodeunit.Test):void{
 
 export function testAccess(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/access.yaml", true)),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/access.yaml", true).code),
 
         test_utils.assert_admin_can_write.bind(null, "/",
             {chld1:{grnd1:"1", grnd2:"2"}, chld2:{grnd3:"3", grnd4:"4"}}, test),
@@ -58,7 +57,7 @@ export function testAccess(test:nodeunit.Test):void{
 
 export function testCascade(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/cascade.yaml", true)),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/cascade.yaml", true).code),
 
         test_utils.assert_admin_can_write.bind(null, "/",{}, test),
 
@@ -76,7 +75,7 @@ export function testCascade(test:nodeunit.Test):void{
 
 export function testRequired(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/required.yaml", true)),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/required.yaml", true).code),
 
         test_utils.assert_admin_can_write.bind(null, "/",{}, test),
 
@@ -103,7 +102,7 @@ export function testRequired(test:nodeunit.Test):void{
 
 export function testWildchild(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/wildchild.yaml", true)),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/wildchild.yaml", true).code),
 
         test_utils.assert_admin_can_write.bind(null, "/",{}, test),
 
@@ -124,7 +123,7 @@ export function testWildchild(test:nodeunit.Test):void{
 
 export function testTypes(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/types.yaml", true)),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/types.yaml", true).code),
 
         test_utils.assert_admin_can_write.bind(null, "/",{}, test),
 
@@ -146,7 +145,7 @@ export function testTypes(test:nodeunit.Test):void{
 
 export function testDefinitions(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/definitions.yaml", true)),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/definitions.yaml", true).code),
 
         test_utils.assert_admin_can_write.bind(null, "/",{}, test),
 
@@ -177,7 +176,7 @@ export function testDefinitions(test:nodeunit.Test):void{
 
 export function testAny(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("test/cases/any.yaml", true)),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/any.yaml", true).code),
 
         test_utils.assert_admin_can_write.bind(null, "/",{}, test),
 

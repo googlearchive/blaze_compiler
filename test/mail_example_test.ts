@@ -3,13 +3,13 @@ import expressions = require('../src/expression');
 
 import test_utils  = require('./test_utils');
 import firebase_io = require('./firebase_io');
-import compile = require('../src/compile');
-import rules = require('../src/rules');
+import compiler = require('../src/compiler');
+import rules = require('../src/blaze');
 import async = require('async');
 
 export function testSetup(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compile.compile("examples/mail_example.yaml", true))
+        firebase_io.setValidationRules.bind(null, compiler.compile("examples/mail_example.yaml", true).code)
     ], test.done.bind(null));
 }
 

@@ -5,7 +5,7 @@ var falafel = require("falafel");
 var XRegExp = require('xregexp').XRegExp;
 
 
-import optimize = require('../src/optimize');
+import optimizer = require('../src/optimizer');
 
 //todo
 //implement explicit types rather than ad hoc string
@@ -326,6 +326,6 @@ export class Expression{
 
         var code:string = falafel(this.raw, {}, falafel_visitor).toString();
 
-        return optimize.simplify(code);
+        return optimizer.simplify(code);
     }
 }

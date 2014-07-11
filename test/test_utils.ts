@@ -8,7 +8,7 @@
  *
  * All functions return deferred objects as many of the methods are async
  *
- * read permissions also want the expected value in the read location
+ * read permissions also want the expected value in the read location.
  */
 /// <reference path="../types/node.d.ts" />
 /// <reference path="../types/async.d.ts" />

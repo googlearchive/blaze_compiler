@@ -4,11 +4,9 @@
 var falafel = require("falafel");
 
 /**
- * uses precedence rules to eliminate redundant parenthesis and removed redundant white space
- * @param javascript to simplify
- * @returns {string} simplified expression
+ * rewrites the javascript to remove redundant parenthesis and white space
  */
-export function simplify(javascript_str:string):string{
+export function simplify(javascript_str: string):string{
     var simplify_fn = function(node){
         node.precedence = 1000; //default precedence for all nodes other than operator nodes, e.g. terminals
         if(node.type == "BinaryExpression" || node.type == "BooleanExpression" || node.type == "LogicalExpression"){
@@ -32,8 +30,8 @@ export function simplify(javascript_str:string):string{
             node.update(LHS + node.operator + RHS);
         }
     };
-    var result = falafel(javascript_str.toString(), {}, simplify_fn).toString();
-    return result
+
+    return falafel(javascript_str.toString(), {}, simplify_fn).toString();
 }
 
 
@@ -47,7 +45,7 @@ var isCommunicativeUniquePrecedence = function(token:string):boolean{
         default:
             return false;
     }
-}
+};
 
 /**
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence

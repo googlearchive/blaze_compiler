@@ -1,4 +1,4 @@
-import rules = require('../src/rules');
+import blaze = require('./blaze');
 import expression = require('../src/expression');
 
 import tv4 = require('tv4');
@@ -12,7 +12,7 @@ var debug = true;
  * performs a bottom up traversal of a schema definition, allowing each metaschema processor
  * to generate constraints
  */
-export function annotate(model: rules.Rules){
+export function annotate(model: blaze.Rules){
     model.schema.root = annotate_schema(model.schema.json, null, null, new SchemaAPI(), model)
 }
 
@@ -21,7 +21,7 @@ export function annotate(model: rules.Rules){
 * this is done by leaves being the && concatenation of all ancestors
 * next in a parent's context is next.parent() in the child context
 */
-export function pushDownConstraints(model:rules.Rules){
+export function pushDownConstraints(model:blaze.Rules){
     model.schema.root.pushDownConstraints(null);
 }
 
@@ -29,21 +29,21 @@ export function pushDownConstraints(model:rules.Rules){
 * pulls full leaf schema constraints upwards. ancestors constraints are overwritten
 * by the && concatenation of all children
 */
-export function pullUpConstraints(model:rules.Rules){
+export function pullUpConstraints(model:blaze.Rules){
     model.schema.root.pullUpConstraints("");
 }
 
 /**
 * intergrates the ACL constraints into the schema
 */
-export function combineACL(model:rules.Rules){
+export function combineACL(model:blaze.Rules){
     model.schema.root.combineACL(model.access, []);
 }
 
 /**
 * intergrates the ACL constraints into the schema
 */
-export function generateRules(model:rules.Rules){
+export function generateRules(model:blaze.Rules){
     var buffer:string[] = [];
     buffer.push('{\n');
     buffer.push('  "rules":');
@@ -162,7 +162,7 @@ export class SchemaNode{
         return this.constraint.rewriteForParent(child_name);
     }
 
-    combineACL(acl:rules.Access, location:string[]){
+    combineACL(acl:blaze.Access, location:string[]){
         //console.log("combineACL", location);
 
         var write:string = "false";
@@ -170,7 +170,7 @@ export class SchemaNode{
 
         //work out what ACL entries are active for this node by ORing active entries clauses together
         for(var idx in acl){
-            var entry:rules.AccessEntry = acl[idx];
+            var entry:blaze.AccessEntry = acl[idx];
 
             if(entry.match(location)){
                 write = "(" + write + ")||(" + entry.write.raw + ")";
@@ -231,7 +231,7 @@ export class MetaSchema{
 }
 
 
-function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:rules.Rules):SchemaNode {
+function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:blaze.Rules):SchemaNode {
     if(debug) console.log("annotate_schema", node);
 
     if(node["$ref"]){
@@ -306,7 +306,7 @@ function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:
     return annotation;
 }
 
-export function fetchRef(url:string, model:rules.Rules):any{
+export function fetchRef(url:string, model:blaze.Rules):any{
     //todo: this should probably be routed through tv4's getSchema method properly
     //console.log("fetchRef" + url);
 
@@ -347,18 +347,18 @@ export function fetchRef(url:string, model:rules.Rules):any{
 export class SchemaAPI{
     metaschema:{[name:string]:MetaSchema} = {};
 
-    node:any;   //local context for api application
-    parent:any; //local context for api application
-    annotationInProgress:SchemaNode; //local context for api application
-    model:rules.Rules
+    node: any;   //local context for api application
+    parent: any; //local context for api application
+    annotationInProgress: SchemaNode; //local context for api application
+    model: blaze.Rules;
 
     constructor(){
         //load all built in schema definitions from schema directory
-        var files = fs.readdirSync(rules.root + "schema/metaschema");
+        var files = fs.readdirSync(blaze.root + "schema/metaschema");
         for(var i in files){
             if (!files.hasOwnProperty(i)) continue;
-            var name = rules.root + "schema/metaschema"+'/'+files[i];
-            var metaschema_def = rules.load_yaml(name);
+            var name = blaze.root + "schema/metaschema"+'/'+files[i];
+            var metaschema_def = blaze.load_yaml(name);
 
             console.log("loading built in type", metaschema_def.name, "into metaschema");
 
@@ -373,7 +373,7 @@ export class SchemaAPI{
      * @param parent
      * @param annotationInProgress
      */
-    setContext(node:any, parent:any, annotationInProgress:SchemaNode, model:rules.Rules){
+    setContext(node:any, parent:any, annotationInProgress:SchemaNode, model: blaze.Rules){
         this.node = node;
         this.parent = parent;
         this.annotationInProgress = annotationInProgress;
