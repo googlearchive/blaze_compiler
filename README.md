@@ -388,7 +388,7 @@ access:
   #note that because only box owners can delete messages,
   #other users cannot use this entry point (see message constraint)
   - location: users/$userid/outbox/
-    write:    true
+    write:    $userid === auth.username
 
   #owners can read everything in their inbox and outbox
   - location: users/$userid/
