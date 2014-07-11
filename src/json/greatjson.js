@@ -59,7 +59,7 @@ function parse(text) {
 		var result = new Json.JObject();
 
         var startPosition = parser.getPosition();
-		result.setStart(startPosition);
+		result.setStart(startPosition-1);
 		var key;
 		var nextValue;
 		if (parser.peekAtNextCharacter() != '}') for (;;) {

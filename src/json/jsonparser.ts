@@ -79,7 +79,7 @@ export class TextSpan {
         this.start = new TextLocation(position);
     }
     setEnd(position) {
-        this.start = new TextLocation(position);
+        this.end = new TextLocation(position);
     }
 }
 
