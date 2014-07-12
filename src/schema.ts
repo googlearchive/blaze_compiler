@@ -1,8 +1,11 @@
+require('source-map-support').install();
+
 import blaze = require('./blaze');
 import expression = require('../src/expression');
-
 import tv4 = require('tv4');
 import fs = require('fs');
+import Json  = require('./json/jsonparser');
+import error  = require('./error');
 
 //todo
 //refactor out traversals
@@ -71,9 +74,9 @@ export class SchemaNode{
     write:expression.Expression;
     read: expression.Expression;
     additionalProperties: boolean;
-    node:any;
-    examples:any[];
-    nonexamples:any[];
+    node: any;
+    examples: Json.JArray;
+    nonexamples: Json.JArray;
 
     constructor(node:any){
         this.node = node;
@@ -189,23 +192,24 @@ export class SchemaNode{
         }
     }
 
-    getWildchild():string{
-        return getWildchild(this.properties);
+    getWildchild():string {
+        return getWildchild(this.node).value;
     }
 }
 
 export class MetaSchema{
-    validator:any; //json schema json used for validation of type
+    validator: Json.JValue; //json schema json used for validation of type
 
     compile:(api:SchemaAPI) => void; //function used to generate type specific constraints
 
-    validate(node:any):boolean{
+    validate(data: Json.JValue): boolean{
 
-        var valid =  tv4.validate(node, this.validator, true, true);
+        var valid =  tv4.validate(data.toJSON, this.validator.toJSON, true, true);
 
         if(!valid){
+            //todo the validation throws shoudl be here
             console.log("could not validate");
-            console.log(JSON.stringify(node));
+            console.log(JSON.stringify(data));
             console.log("with the validator");
             console.log(JSON.stringify(this.validator));
             console.log(tv4.error)
@@ -221,50 +225,83 @@ export class MetaSchema{
         return valid;
     }
 
-    static parse(json:any):MetaSchema{
+    static parse(json: Json.JValue): MetaSchema{
         var result:MetaSchema = new MetaSchema();
-        result.validator = json.validator;
-        result.compile = <(api:SchemaAPI) => void>new Function("api",json.compile);
+        result.validator = json.getOrThrow("validator", "no validator defined for the metaschema");
+        result.compile = <(api:SchemaAPI) => void>new Function("api",
+            json.getOrThrow("compile", "no compile defined for the metaschema").asString().value);
 
         return result;
     }
 }
 
 
-function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:blaze.Rules):SchemaNode {
-    if(debug) console.log("annotate_schema", node);
-
-    if(node["$ref"]){
+function annotate_schema(node: Json.JValue, parent: any, key: string, api: SchemaAPI, model: blaze.Rules):SchemaNode {
+    if(node.has("$ref")) {
         //we should replace this node with its definition
-        node = fetchRef(node["$ref"], model);
+        node = fetchRef(node.getOrThrow("$ref", "").coerceString().value, model);
     }
 
     var annotation = new SchemaNode(node);
 
     //recurse to children first in bottom up
-    for(var key in node.properties){
-        annotation.properties[key] = annotate_schema(node.properties[key], node, key, api, model);
+    if(node.has("properties")) {
+        node.getOrThrow("properties", "").asObject().forEach(
+            function(name: Json.JString, child: Json.JValue){
+                annotation.properties[name.value] = annotate_schema(child, node, key, api, model);
+            });
     }
+
+    if(debug) console.log("annotate_schema", node.toJSON());
 
     //wildchilds need special treatment as they are not normal properties but still schema nodes
     if(getWildchild(node)){
         //add them as a property annotation
-        annotation.properties[getWildchild(node)] = annotate_schema(node[getWildchild(node)], node, key, api, model);
+        var wildname = getWildchild(node).value;
+        var wildkey  = getWildchild(node);
+
+        annotation.properties[wildname] = annotate_schema(
+            node.getOrThrow(wildname, "cant find wildchild"),
+            node, key, api, model);
         //we also convert them into a pattern properties and add it to the JSON schema node so examples can pass
-        node.patternProperties = {};
-        node.patternProperties[SchemaNode.KEY_PATTERN] = node[getWildchild(node)];
+        var patternProperties = new Json.JObject();
+
+        //so we move the wildchild from the root of the schema declaration,
+        //into a child of patternProperties so that the JSON schema validator can read it like a pattern
+        //accepting any property without saying its not declared
+        node.asObject().put(
+            new Json.JString("patternProperties", wildkey.start.position, wildkey.end.position),
+            patternProperties);
+
+        patternProperties.put(
+            new Json.JString(SchemaNode.KEY_PATTERN,0,0),
+            node.getOrThrow(wildname, "cant find wildchild"));
+    } else {
+        //console.log("no wildchild")
     }
 
-
+    //fill in all defaults for a schema node
     api.setContext(node, parent, annotation, model);
-    annotation.type = node.type ? node.type:null;
-    node.constraint = node.constraint ? node.constraint:"true"; //default to true for constraint
-    annotation.additionalProperties = node.additionalProperties === undefined? true: node.additionalProperties;
-    annotation.examples = node.examples? node.examples:[];
-    annotation.nonexamples = node.nonexamples? node.nonexamples:[];
+    annotation.type = node.has("type") ? node.getOrThrow("type", "").asString().value: "any";
 
-    //using type information, the metaschema is given an opportunity to customise the node
-    if(annotation.type == null) annotation.type = "any";
+    if(!node.has("constraint")) {
+         node.asObject().put( //synthetically place a constraint in the user source so the SchemaAPI sees it
+             new Json.JString("constraint", 0,0),
+             new Json.JString("true", 0,0)
+         )
+    }
+
+    annotation.additionalProperties = //objects are allowed extra properties by default
+        node.has("additionalProperties") ?
+            node.getOrThrow("additionalProperties", "").asBoolean().value : true;
+
+    annotation.examples = node.has("examples") ?
+        node.asObject().getOrThrow("examples", "").asArray():new Json.JArray();
+
+    annotation.nonexamples = node.has("nonexamples") ?
+        node.asObject().getOrThrow("nonexamples", "").asArray():new Json.JArray();
+
+    //using type information, the metaschema is given an opportunity to customise the node with type specific keywords
 
     if(api.metaschema[annotation.type] != undefined){
         if(api.metaschema[annotation.type].validate(node)){
@@ -273,32 +310,46 @@ function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:
             //entering the system pragmatically in compile (done in addProperty)
             api.metaschema[annotation.type].compile(api);
         }else{
-            throw new Error("type validation failed: " + JSON.stringify(node));
+            throw error.validation(
+                node,
+                api.metaschema[annotation.type].validator,
+                "subtree",
+                "annotation.type",
+                tv4.error
+            ).on(new Error());
         }
     }else{
-        console.error("unknown schema type:", annotation.type);
-        throw new Error("unknown type specified");
+        throw error.source(node).message("unknown type '" + annotation.type + "' no metaschema to validate it").on(new Error());
     }
 
-    annotation.constraint = expression.Expression.parse(node.constraint);
+    //we parse the constraint after the api has processed it
+    //as it might have changed the constraints as part of its domain
+    annotation.constraint = expression.Expression.parseUser(
+        node.asObject().getOrThrow("constraint", "no constraint defined").coerceString()
+    );
 
     //if the user has supplied examples or non examples, the validity of these are checked
-    for(var example_index in annotation.examples){
-        var example = annotation.examples[example_index];
 
-        var valid = tv4.validate(example, node, true, false);
+    annotation.examples.forEach(function(example: Json.JValue){
+        var valid = tv4.validate(example.toJSON, node.toJSON, true, false);
         if(!valid){
-            console.error(tv4.error);
-            throw new Error("example failed " + JSON.stringify(example) + " on " + JSON.stringify(node));
+            throw error.validation(
+                example,
+                node,
+                "example",
+                "schema",
+                tv4.error
+            ).on(new Error());
         }
-    }
+    });
 
     for(var nonexample_index in annotation.nonexamples){
         var nonexample = annotation.nonexamples[nonexample_index];
 
         var valid = tv4.validate(nonexample, node, true, false);
         if(valid){
-            throw new Error("nonexample erroneously passed " + JSON.stringify(nonexample) + " on " + JSON.stringify(node));
+            //todo better error
+            throw error.message("nonexample erroneously passed " + JSON.stringify(nonexample) + " on " + JSON.stringify(node)).on(new Error());
         }
     }
 
@@ -306,9 +357,9 @@ function annotate_schema(node:any, parent:any, key:string, api:SchemaAPI, model:
     return annotation;
 }
 
-export function fetchRef(url:string, model:blaze.Rules):any{
+export function fetchRef(url:string, model:blaze.Rules): Json.JValue{
     //todo: this should probably be routed through tv4's getSchema method properly
-    //console.log("fetchRef" + url);
+    if (debug) console.log("fetchRef" + url);
 
     //code nicked from tv4.getSchema:
     var baseUrl = url; //not interested in yet
@@ -324,22 +375,18 @@ export function fetchRef(url:string, model:blaze.Rules):any{
     }
 
     var parts = pointerPath.split("/").slice(1);
-    var schema = model.schema.json; //navigate raw json
+    var schema:Json.JValue = model.schema.json; //navigate user source
 
     for (var i = 0; i < parts.length; i++) {
-        var component = parts[i].replace(/~1/g, "/").replace(/~0/g, "~");
-        if (schema[component] === undefined) {
-            schema = undefined;
-            break;
-        }
-        schema = schema[component];
+        var component: string = parts[i].replace(/~1/g, "/").replace(/~0/g, "~");
+        schema = schema.getOrThrow(component,
+            [
+                JSON.stringify(schema.toJSON()),
+                "could not find schema at " + component + " of " + pointerPath,
+
+            ].join("\n"))
     }
-
-    if(schema == undefined) throw new Error("could not find definition: " + url);
-
     return schema;
-
-
 }
 /**
  * provides hooks for meta-data to pragmatically generate constraints and predicates
@@ -347,8 +394,9 @@ export function fetchRef(url:string, model:blaze.Rules):any{
 export class SchemaAPI{
     metaschema:{[name:string]:MetaSchema} = {};
 
-    node: any;   //local context for api application
-    parent: any; //local context for api application
+    link:  Json.JValue;  //we provide a pointer to the live representation, so we can updated it
+    node:   any;         //local context for api application,  a raw JSON, for presentation to the meta-schema author
+    parent: any;         //local context for api application, also a raw JSON and it should not be updated
     annotationInProgress: SchemaNode; //local context for api application
     model: blaze.Rules;
 
@@ -357,12 +405,13 @@ export class SchemaAPI{
         var files = fs.readdirSync(blaze.root + "schema/metaschema");
         for(var i in files){
             if (!files.hasOwnProperty(i)) continue;
-            var name = blaze.root + "schema/metaschema"+'/'+files[i];
-            var metaschema_def = blaze.load_yaml(name);
+            var path = blaze.root + "schema/metaschema"+'/'+files[i];
+            var metaschema_def = blaze.load_yaml(path);
 
-            console.log("loading built in type", metaschema_def.name, "into metaschema");
+            var typename: string = metaschema_def.getOrThrow("name", "meta-schema is not named in: " + path).asString().value;
 
-            this.metaschema[metaschema_def.name] = MetaSchema.parse(metaschema_def);
+            console.log("loading type " + typename + " definition from " + path);
+            this.metaschema[typename] = MetaSchema.parse(metaschema_def);
         }
     }
 
@@ -373,9 +422,10 @@ export class SchemaAPI{
      * @param parent
      * @param annotationInProgress
      */
-    setContext(node:any, parent:any, annotationInProgress:SchemaNode, model: blaze.Rules){
-        this.node = node;
-        this.parent = parent;
+    setContext(node: Json.JValue, parent: Json.JValue, annotationInProgress: SchemaNode, model: blaze.Rules){
+        this.link = node;
+        this.node = this.link.toJSON();
+        this.parent = parent == null ? null : parent.toJSON();
         this.annotationInProgress = annotationInProgress;
         this.model = model;
     }
@@ -383,14 +433,24 @@ export class SchemaAPI{
     /**
      * User method for adding a type specific constraint, the constraint is &&ed to the current constraints
      */
-    addConstraint(expression:string):void{
-        this.node.constraint = "("+ this.node.constraint + ") && (" + expression + ")";
+    addConstraint(expression:string): void {
+        if (debug) console.log("addConstraint " + expression);
+        this.link.asObject().put(
+            new Json.JString("constraint", 0,0),
+            new Json.JString(
+                    "("+
+                    this.link.getOrThrow("constraint", "constraint not defined").coerceString().value +
+                    ") && (" +
+                    expression + ")", 0,0)
+
+        )
     }
 
     /**
      * User method for dynamically adding a property as a schema node
      */
     addProperty(name:string, json:any):void{
+        throw new Error("redo since refactor");
         this.node[name] = json;
 
         //as this is called through compile, which is part way through the annotation,
@@ -404,7 +464,8 @@ export class SchemaAPI{
     /**
      * User method for read access to schema fields
      */
-    getField(name:string):any{
+    getField(name:string): any{
+        if(debug) console.log("getField on", name, "result:", this.node[name], this.node);
         return this.node[name];
     }
 
@@ -414,20 +475,22 @@ export class SchemaAPI{
      * @returns {string}
      */
     getWildchild():string{
-        return getWildchild(this.node)
+        return getWildchild(this.node).value
     }
 }
 
-function getWildchild(node:any):string{
-    var wildchild:string = null;
-    for(var name in node){
-        if(name.indexOf("$") == 0){
-            if(wildchild == null) wildchild = name;
-            else{
-                throw Error("more than one wildchild defined")
+function getWildchild(node: Json.JValue): Json.JString{
+    var wildchild: Json.JString = null;
+    node.asObject().forEach(
+        function(keyword: Json.JString, child: Json.JValue){
+            var name: string = keyword.value;
+            if (name.indexOf("$") == 0) {
+                if(wildchild == null) wildchild = keyword;
+                else{
+                    throw error.message("multiple wildchilds defined:\n" + node.source()).on(new Error())
+                }
             }
-        }
-    }
+        });
     return wildchild;
 }
 

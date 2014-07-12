@@ -1,11 +1,8 @@
-/*
-    For loading and validating schema in JSON and YAML
-*/
-
 /// <reference path="../types/js-yaml.d.ts" />
 /// <reference path="../types/node.d.ts" />
 /// <reference path="../types/tv4.d.ts" />
 /// <reference path="../src/expression.ts" />
+require('source-map-support').install();
 
 import fs = require("fs");
 import js_yaml = require("js-yaml");
@@ -13,14 +10,23 @@ import tv4 = require('tv4');
 import expression = require('../src/expression');
 import schema = require('../src/schema');
 import path = require('path');
+import Json = require('./json/jsonparser');
+import error = require('./error');
 
+export var debug = false;
 /**
  * synchronously loads a file resource, converting from YAML to JSON
  * @param filepath location on filesystem
  */
-export function load_yaml(filepath:string):any{
+export function load_yaml(filepath: string): Json.JValue{
+    var yaml = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
+    var json_text = JSON.stringify(js_yaml.load(yaml, 'utf8'));
+    return Json.parse(json_text);
+}
+
+export function load_json(filepath: string): Json.JValue{
     var json = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
-    return js_yaml.load(json, 'utf8');
+    return Json.parse(json);
 }
 
 /**
@@ -32,40 +38,44 @@ export function load_yaml_collection(filepath:string, cb:(doc: any) => any):void
 }
 
 export var root:string = path.dirname(fs.realpathSync(__filename)) + "/../";
-export var rules_schema:string = load_yaml(root + "schema/security_rules.yaml");
+export var rules_schema: Json.JValue = load_yaml(root + "schema/security_rules.yaml");
 
-export function validate_rules(rules:string):boolean{
-    tv4.addSchema("http://firebase.com/schema/types/object#", this.load_yaml(root + "schema/types/object.yaml"));
-    tv4.addSchema("http://firebase.com/schema/types/string#", this.load_yaml(root + "schema/types/string.yaml"));
-    tv4.addSchema("http://firebase.com/schema/types/boolean#",this.load_yaml(root + "schema/types/boolean.yaml"));
-    tv4.addSchema("http://firebase.com/schema/types/number#", this.load_yaml(root + "schema/types/number.yaml"));
-    tv4.addSchema("http://firebase.com/schema/types/any#",    this.load_yaml(root + "schema/types/any.yaml"));
+export function validate_rules(rules: Json.JValue): boolean{
+    tv4.addSchema("http://firebase.com/schema/types/object#", this.load_yaml(root + "schema/types/object.yaml").toJSON);
+    tv4.addSchema("http://firebase.com/schema/types/string#", this.load_yaml(root + "schema/types/string.yaml").toJSON);
+    tv4.addSchema("http://firebase.com/schema/types/boolean#",this.load_yaml(root + "schema/types/boolean.yaml").toJSON);
+    tv4.addSchema("http://firebase.com/schema/types/number#", this.load_yaml(root + "schema/types/number.yaml").toJSON);
+    tv4.addSchema("http://firebase.com/schema/types/any#",    this.load_yaml(root + "schema/types/any.yaml").toJSON);
 
-    tv4.addSchema("http://firebase.com/schema#", this.load_yaml(root + "schema/schema.yaml"));
+    tv4.addSchema("http://firebase.com/schema#", this.load_yaml(root + "schema/schema.yaml").toJSON);
     tv4.addSchema("http://json-schema.org/draft-04/schema#", fs.readFileSync(root + "schema/jsonschema", {encoding: 'utf8'}).toString());
 
-    var valid =  tv4.validate(rules, this.rules_schema, true, true);
-    console.log("result", tv4.error);
-    if(!valid){
-        console.log(tv4.error)
+    var valid: boolean =  tv4.validate(rules.toJSON(), this.rules_schema.toJSON(), true, true);
+
+    if (!valid){
+        throw error.validation(
+            rules,
+            this.rules_schema,
+            "rules",
+            "rule schema",
+            tv4.error).on(new Error())
     }
 
-    if(tv4.getMissingUris().length != 0){
-        console.log(tv4.getMissingUris());
-        return false;
+    if (tv4.getMissingUris().length != 0){
+        throw error.missingURI(tv4.getMissingUris()).on(new Error());
     }
 
     return valid;
 }
 
 export class SchemaRoot{
-    json:any;
-    root:schema.SchemaNode;
+    json: Json.JValue;
+    root: schema.SchemaNode;
 
-    constructor(json:any){
+    constructor(json: Json.JValue){
         this.json = json;
     }
-    static parse(json:any):SchemaRoot{
+    static parse(json: Json.JValue): SchemaRoot{
         var schema = new SchemaRoot(json);
         return schema
     }
@@ -74,14 +84,16 @@ export class SchemaRoot{
 
 export class AccessEntry{
     location: string[]; //components of address, e.g. users/$userid is mapped to ['users', '$userid']
-    read:     expression.Expression = expression.Expression.parse("false");
-    write:    expression.Expression = expression.Expression.parse("false");
+    read:     expression.Expression = expression.Expression.FALSE;
+    write:    expression.Expression = expression.Expression.FALSE;
 
-    static parse(json:any): AccessEntry{
+    static parse(json: Json.JValue): AccessEntry{
         //console.log("AccessEntry.parse:", json);
 
         var accessEntry = new AccessEntry();
-        accessEntry.location = json.location.split("/");
+        accessEntry.location =
+            json.getOrThrow("location", "all access entries require a location to be defined")
+            .asString().value.split("/");
 
         //deal with issue of "/*" being split to "['', '*']" by removing first element
         while (accessEntry.location[0] === ''){
@@ -92,11 +104,11 @@ export class AccessEntry{
             accessEntry.location.pop()
         }
 
-        if (json.read){
-            accessEntry.read     = expression.Expression.parse(<string>json.read);
+        if (json.has("read")){
+            accessEntry.read     = expression.Expression.parseUser(json.getOrThrow("read", "").coerceString());
         }
-        if (json.write){
-            accessEntry.write    = expression.Expression.parse(<string>json.write);
+        if (json.has("write")){
+            accessEntry.write    = expression.Expression.parseUser(json.getOrThrow("write", "").coerceString());
         }
 
         //console.log("accessEntry.location", accessEntry.location);
@@ -116,18 +128,17 @@ export class AccessEntry{
     }
 }
 
-export class Access{
+export class Access {
     [index: number]: AccessEntry;
 
-    static parse(json:any):Access{
-
+    static parse(json: Json.JValue):Access{
         //console.log("Access.parse:", json);
         var access = new Access();
 
-        for(var index in json){
-            var accessEntry = AccessEntry.parse(json[index]);
-            access[index] = accessEntry;
-        }
+        json.asArray().forEachIndexed(function(entry: Json.JValue, id: number){
+            var accessEntry = AccessEntry.parse(entry);
+            access[id] = (accessEntry);
+        });
         return access
     }
 }
@@ -139,11 +150,11 @@ export class Rules{
 
     code: string = null; //generated rules, or null
 
-    static parse(json:any):Rules{
+    static parse(json: Json.JObject):Rules{
         var rules = new Rules();
-        rules.predicates = expression.Predicates.parse(json.predicates);
-        rules.schema     = SchemaRoot.parse(json.schema);
-        rules.access     = Access.parse(json.access);
+        rules.predicates = expression.Predicates.parse(json.getOrNull("predicates"));
+        rules.schema     = SchemaRoot.parse(json.getOrThrow("schema", "no schema defined"));
+        rules.access     = Access.parse(json.getOrThrow("access", "no access list defined"));
         return rules
     }
 }

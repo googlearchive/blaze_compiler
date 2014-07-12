@@ -1,10 +1,11 @@
 /// <reference path="../types/node.d.ts" />
-
+require('source-map-support').install();
 var falafel = require("falafel");
 
 var XRegExp = require('xregexp').XRegExp;
 
-
+import Json = require('./json/jsonparser');
+import error = require('./error');
 import optimizer = require('../src/optimizer');
 
 //todo
@@ -23,7 +24,7 @@ export class Predicate{
         '\\) \\s*  #close brace for function args \n',
         'gx');
 
-    constructor(declaration:string, expression:string) {
+    constructor(declaration: string, expression: Json.JString) {
         //break the function declaration into its parts
         var match = XRegExp.exec(declaration, Predicate.DECLARATION_FORMAT);
         var params = XRegExp.split(match.paramlist, /\s*,\s*/);
@@ -38,16 +39,18 @@ export class Predicate{
         //now build up positional information of params
         this.parameter_map = params;
 
-        this.expression = Expression.parse(expression);
+        this.expression = Expression.parseUser(expression);
     }
 
-    static parse(json:any):Predicate{
+    static parse(json: Json.JValue): Predicate{
         //console.log("Predicate.parse:", json);
+        var predicate: Predicate;
 
-        for(var key in json){//there should only be one entry
-            var predicate = new Predicate(key, json[key]);
+        //there should only be one entry
+        json.asObject().forEach(function(key: Json.JString, val: Json.JValue) {
+             predicate = new Predicate(key.asString().value, val.coerceString());
+        });
 
-        }
         return predicate
     }
 }
@@ -58,14 +61,15 @@ export class Predicate{
 export class Predicates{
     [index: string]: Predicate;
 
-    static parse(json:any):Predicates{
+    static parse(json: Json.JValue):Predicates{
         //console.log("Predicates.parse:", json);
         var predicates = new Predicates();
+        if (json == null) return;
 
-        for(var predicate_def in json){
-            var predicate:Predicate = Predicate.parse(json[predicate_def]);
+        json.asArray().forEach(function(val: Json.JValue) {
+            var predicate:Predicate = Predicate.parse(val);
             predicates[predicate.identifier] = predicate;
-        }
+        });
         return predicates
     }
 }
@@ -89,18 +93,28 @@ export class Symbols{
 }
 
 export class Expression{
-    raw:         string;
+    raw:    string;
+    source: Json.JString; //null source means the compiler generated it
 
-    static parse(raw:string):Expression{
-        var expr:Expression = new Expression();
-        expr.raw = raw;
-        return expr;
+    static FALSE: Expression = new Expression("false", null);
+    static TRUE: Expression = new Expression("false", null);
+
+    constructor (raw: string, source: Json.JString) {
+        this.raw = raw;
+        this.source = source;
+    }
+    static parse(raw: string): Expression{
+        return new Expression(raw, null);
+    }
+
+    static parseUser(json: Json.JString): Expression{
+        return new Expression(json.value, json);
     }
 
     /**
      * changes next and prev references for next.parent() and prev.parent()
      */
-    rewriteForChild():string{
+    rewriteForChild(): string{
         var falafel_visitor = function(node){
             if(node.type == "Identifier"){
                 if(node.name == "next"){
@@ -119,7 +133,7 @@ export class Expression{
      * wildchild's can't be represented in their parents context, so wildchilds are conservatively
      * represented as "false"
      */
-    rewriteForParent(child_name):string{
+    rewriteForParent(child_name): string{
         if(child_name.indexOf("$") == 0) return "false"; //wildchilds can't be pushed up
 
         var falafel_visitor = function(node){
@@ -240,7 +254,7 @@ export class Expression{
                     node.expr_type = "value"
                 }else if(node.object.expr_type == "value"){
                     //inbuild methods for values
-                    node.expr_type = "value"
+                    node.expr_type = "value";
 
                     //inbuilt methods for value objects
                     if(node.property.type == 'Identifier'){

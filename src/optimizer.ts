@@ -1,6 +1,5 @@
-
 /// <reference path="../types/node.d.ts" />
-
+require('source-map-support').install();
 var falafel = require("falafel");
 
 /**

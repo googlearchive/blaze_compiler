@@ -1,15 +1,18 @@
+require('source-map-support').install();
 import schema = require('../src/schema');
 import blaze = require('./blaze');
+import Json  = require('./json/jsonparser');
 import expression = require('../src/expression');
 import fs = require('fs');
 
-export function compileJSON(json:any, debug:boolean): blaze.Rules {
+export function compileJSON(json:any, debug: boolean): blaze.Rules {
     //check user's JSON meets JSON schema spec of rule file
-    var ok = blaze.validate_rules(json);
-    if(ok){
+
+    try {
+        var ok = blaze.validate_rules(json);
         if(debug){
             console.log("\ninput:");
-            console.log(json);
+            //console.log(JSON.stringify(json.toJSON()));
         }
 
         //convert users rule file into a model
@@ -47,7 +50,7 @@ export function compileJSON(json:any, debug:boolean): blaze.Rules {
             console.log(model.schema.root);
         }
         //generate output in security rules 1.0
-        var code:string = schema.generateRules(model);
+        var code: string = schema.generateRules(model);
 
         //print generate code out
         if(debug){
@@ -59,17 +62,23 @@ export function compileJSON(json:any, debug:boolean): blaze.Rules {
         fs.writeFileSync("rules.json", code);
         model.code = code;
         return model;
-    }else{
-        throw Error("did not globally validate");
+
+    } catch (error){
+        console.error(error.value);
+        console.error(error.msg);
+
+        if (debug) console.error(error.stack);
     }
 }
 
-export function compile(path:string, debug:boolean): blaze.Rules{
+export function compile(path: string, debug: boolean): blaze.Rules{
+    blaze.debug = debug;
+
     //convert to JSON
     if (path.slice(path.length-5) == ".json"){
-        var json: any = JSON.parse(fs.readFileSync(path, {encoding: 'utf8'}).toString());
+        var json: Json.JValue = blaze.load_json(path);
     } else {
-        var json: any = blaze.load_yaml(path);
+        var json: Json.JValue = blaze.load_yaml(path);
     }
     return compileJSON(json, debug);
 

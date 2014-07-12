@@ -1,8 +1,8 @@
+require('source-map-support').install();
 import schema = require('../schema');
 import rules = require('../blaze');
 import expression = require('../expression');
 import fs = require('fs');
-
 var TARGET: string = "model.java";
 var DEBUG: boolean;
 

@@ -1,6 +1,6 @@
 /// <reference path="../types/node.d.ts" />
 /// <reference path="../types/optimist.d.ts" />
-
+require('source-map-support').install();
 import compiler = require('./compiler');
 var configured_optimist = require('optimist')
     .usage([

@@ -90,7 +90,7 @@ function parse(text) {
 
 		var nextValue;
         var startPosition = parser.getPosition();
-		result.setStart(startPosition);
+		result.setStart(startPosition-1);
 		if (parser.peekAtNextCharacter() != ']') for (;;) {
 			if ((nextValue = getJsonValue()) instanceof Error && (result = nextValue)) break;
 

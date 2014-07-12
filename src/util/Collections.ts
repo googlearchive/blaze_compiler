@@ -4,7 +4,6 @@
 //
 // Orginal javascript code was by Mauricio Santos
 
-
 /**
 * Function signature for comparing
 * <0 means a is smaller
