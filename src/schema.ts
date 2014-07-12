@@ -10,6 +10,7 @@ import error  = require('./error');
 //todo
 //refactor out traversals
 var debug = true;
+var debug_metaschema_validation = true;
 
 /**
  * performs a bottom up traversal of a schema definition, allowing each metaschema processor
@@ -203,6 +204,13 @@ export class MetaSchema{
     compile:(api:SchemaAPI) => void; //function used to generate type specific constraints
 
     validate(data: Json.JValue): boolean{
+        if (debug_metaschema_validation) {
+            console.log("validating data");
+            console.log(data.toJSON());
+            console.log("with schema");
+            console.log(this.validator.toJSON());
+        }
+
 
         var valid =  tv4.validate(data.toJSON, this.validator.toJSON, true, true);
 
@@ -213,6 +221,8 @@ export class MetaSchema{
             console.log("with the validator");
             console.log(JSON.stringify(this.validator));
             console.log(tv4.error)
+        } else {
+            if (debug_metaschema_validation) console.log("passed validation");
         }
 
 
@@ -463,9 +473,30 @@ export class SchemaAPI{
 
     /**
      * User method for read access to schema fields
+     * returns null if the field is not present
+     * specifying type ('array', 'object', 'string', 'boolean', 'number') is optional
      */
-    getField(name:string): any{
+    getField(name:string, type: string): any{
         if(debug) console.log("getField on", name, "result:", this.node[name], this.node);
+        if(this.node[name] == null) return;
+
+        //so the field is present, now we check the type
+        if (type !== undefined) {
+            if(type == 'array') {
+                return this.link.getOrThrow(name, "").asArray().toJSON
+            } else if(type == 'object') {
+                return this.link.getOrThrow(name, "").asObject().toJSON
+            } else if(type == 'string') {
+                return this.link.getOrThrow(name, "").asString().toJSON
+            } else if(type == 'boolean') {
+                return this.link.getOrThrow(name, "").asBoolean().toJSON
+            } else if(type == 'number') {
+                return this.link.getOrThrow(name, "").asNumber().toJSON
+            } else {
+                throw error.message("unrecognised type specified: " + type).on(new Error())
+            }
+        }
+
         return this.node[name];
     }
 

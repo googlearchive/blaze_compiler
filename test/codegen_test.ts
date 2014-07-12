@@ -174,7 +174,7 @@ export function testDefinitions(test:nodeunit.Test):void{
 }
 
 
-export function testAny(test:nodeunit.Test):void{
+export function testAny(test: nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/any.yaml", true).code),
 

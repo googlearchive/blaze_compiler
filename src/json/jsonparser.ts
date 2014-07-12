@@ -141,6 +141,9 @@ export class JValue extends TextSpan{
     asBoolean(): JBoolean {
         return <JBoolean>this.cast(JType.JBoolean)
     }
+    asNumber(): JNumber {
+        return <JNumber>this.cast(JType.JNumber)
+    }
     coerceString(): JString {
         return <JString>this.cast(JType.JString)
     }
@@ -262,6 +265,15 @@ export class JObject extends JValue {
         if (this.has(property_name)){
             return this.properties.getValue(toKey(property_name))
         } else {
+            return null;
+        }
+    }
+
+    getOrWarn(property_name: string, warn_msg): JValue{
+        if (this.has(property_name)){
+            return this.properties.getValue(toKey(property_name))
+        } else {
+            console.error("Warning: " + this.source() + " " + warn_msg);
             return null;
         }
     }

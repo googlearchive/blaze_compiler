@@ -5,24 +5,29 @@ import Json  = require('./json/jsonparser');
 import expression = require('../src/expression');
 import fs = require('fs');
 
-export function compileJSON(json:any, debug: boolean): blaze.Rules {
+var debug_intermediates = false;
+/**
+ * compiles a json object into an annotated model of rules, then writes it to file in rules.json
+ * return null if failed, or the model
+ */
+export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
     //check user's JSON meets JSON schema spec of rule file
 
     try {
         var ok = blaze.validate_rules(json);
-        if(debug){
+        if (debug_intermediates){
             console.log("\ninput:");
-            //console.log(JSON.stringify(json.toJSON()));
+            console.log(JSON.stringify(json.toJSON()));
         }
 
         //convert users rule file into a model
-        var model: blaze.Rules = blaze.Rules.parse(json);
+        var model: blaze.Rules = blaze.Rules.parse(json.asObject());
 
         //1st pass of compiler,
         //metaschema generate constraints for schema
         schema.annotate(model);
 
-        if(debug){
+        if(debug_intermediates){
             console.log("\nannotated model:");
             console.log(model.schema.root);
         }
@@ -30,7 +35,7 @@ export function compileJSON(json:any, debug: boolean): blaze.Rules {
         //2nd pass of compiler
         //constraints pushed into leaves
         schema.pushDownConstraints(model);
-        if(debug){
+        if(debug_intermediates){
             console.log("\npushed down constraint model:");
             console.log(model.schema.root);
         }
@@ -38,14 +43,14 @@ export function compileJSON(json:any, debug: boolean): blaze.Rules {
         //3rd pass of compiler
         //constraints pushed into leaves
         schema.pullUpConstraints(model);
-        if(debug){
+        if (debug_intermediates){
             console.log("\npulled up constraint model:");
             console.log(model.schema.root);
         }
 
         //4th pass pass of compiler, unifying ACL and the schema
         schema.combineACL(model);
-        if(debug){
+        if (debug_intermediates){
             console.log("\n ACL and schema:");
             console.log(model.schema.root);
         }
@@ -53,7 +58,7 @@ export function compileJSON(json:any, debug: boolean): blaze.Rules {
         var code: string = schema.generateRules(model);
 
         //print generate code out
-        if(debug){
+        if (debug_intermediates){
             console.log("\ngenerated code:");
             console.log(code);
         }
@@ -64,10 +69,9 @@ export function compileJSON(json:any, debug: boolean): blaze.Rules {
         return model;
 
     } catch (error){
-        console.error(error.value);
-        console.error(error.msg);
-
+        console.error(error.message);
         if (debug) console.error(error.stack);
+        return null;
     }
 }
 

@@ -64,7 +64,7 @@ export class Predicates{
     static parse(json: Json.JValue):Predicates{
         //console.log("Predicates.parse:", json);
         var predicates = new Predicates();
-        if (json == null) return;
+        if (json == null) return predicates;
 
         json.asArray().forEach(function(val: Json.JValue) {
             var predicate:Predicate = Predicate.parse(val);

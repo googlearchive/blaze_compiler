@@ -32,9 +32,11 @@ export function load_json(filepath: string): Json.JValue{
 /**
  * synchronously loads a file resource, converting from multi document YAML to a callback with a JSON param
  */
-export function load_yaml_collection(filepath:string, cb:(doc: any) => any):void{
+export function load_yaml_collection(filepath:string, cb:(json: Json.JValue) => void):void{
     var json = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
-    js_yaml.loadAll(json, cb,'utf8');
+    js_yaml.loadAll(json, function (json: any) {
+        cb(Json.parse(JSON.stringify(json)))
+    },'utf8');
 }
 
 export var root:string = path.dirname(fs.realpathSync(__filename)) + "/../";
@@ -134,6 +136,7 @@ export class Access {
     static parse(json: Json.JValue):Access{
         //console.log("Access.parse:", json);
         var access = new Access();
+        if (json == null) return access;
 
         json.asArray().forEachIndexed(function(entry: Json.JValue, id: number){
             var accessEntry = AccessEntry.parse(entry);
@@ -154,7 +157,7 @@ export class Rules{
         var rules = new Rules();
         rules.predicates = expression.Predicates.parse(json.getOrNull("predicates"));
         rules.schema     = SchemaRoot.parse(json.getOrThrow("schema", "no schema defined"));
-        rules.access     = Access.parse(json.getOrThrow("access", "no access list defined"));
+        rules.access     = Access.parse(json.getOrWarn("access", "no access list defined"));
         return rules
     }
 }
