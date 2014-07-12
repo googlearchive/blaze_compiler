@@ -69,8 +69,15 @@ export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
         return model;
 
     } catch (error){
-        console.error(error.message);
-        if (debug) console.error(error.stack);
+        var source: Json.JValue = <Json.JValue>error.source;
+        var msg: string = error.message;
+
+        if (source) console.error(source.toJSON());
+
+        if (debug) console.error(error.stack); //includes writing message
+        else{
+            console.error(msg);
+        }
         return null;
     }
 }

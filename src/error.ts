@@ -63,7 +63,8 @@ export class Err{
     }
 
     on(error: Error): Error{
-        return this.decorator(error);
+        var processed: Error = this.decorator(error);
+        return processed;
     }
 }
 
@@ -79,18 +80,11 @@ export function validation(data: Json.JValue, schema: Json.JValue, data_name: st
     var data_path: string   = (<any>cause).dataPath;
     var schema_path: string = (<any>cause).schemaPath;
     var validation_message: string = (<any>cause).message;
-
-
-    console.log("data: ");
-    console.log(data.toJSON());
-    console.log("schema: ");
-    console.log(schema.toJSON());
-    console.log(cause);
     return err()
         .message([
             "cannot validate " + data_name  + " with " + schema_name,
-            "cause was on location " + data_path,
-            "does not validate schema rules at " + schema_path,
+            "data was on path: " + data_path,
+            "the schema constraint was defined at " + schema_path,
             validation_message,
         ].join("\n"))
         .validation(cause.error);

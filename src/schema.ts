@@ -211,24 +211,23 @@ export class MetaSchema{
             console.log(this.validator.toJSON());
         }
 
-
-        var valid =  tv4.validate(data.toJSON, this.validator.toJSON, true, true);
+        var valid =  tv4.validate(data.toJSON(), this.validator.toJSON(), true, true);
 
         if(!valid){
-            //todo the validation throws shoudl be here
-            console.log("could not validate");
-            console.log(JSON.stringify(data));
-            console.log("with the validator");
-            console.log(JSON.stringify(this.validator));
-            console.log(tv4.error)
+            throw error.validation(
+                data,
+                this.validator,
+                "schema node",
+                "type schema",
+                tv4.error
+            ).source(data).on(new Error())
         } else {
             if (debug_metaschema_validation) console.log("passed validation");
         }
 
 
         if(tv4.getMissingUris().length != 0){
-            console.log(tv4.getMissingUris());
-            return false;
+            throw error.message("missing $ref definitions: " + tv4.getMissingUris()).source(data).on(new Error());
         }
 
 
@@ -306,10 +305,10 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
             node.getOrThrow("additionalProperties", "").asBoolean().value : true;
 
     annotation.examples = node.has("examples") ?
-        node.asObject().getOrThrow("examples", "").asArray():new Json.JArray();
+        node.asObject().getOrThrow("examples", "").asArray(): new Json.JArray();
 
     annotation.nonexamples = node.has("nonexamples") ?
-        node.asObject().getOrThrow("nonexamples", "").asArray():new Json.JArray();
+        node.asObject().getOrThrow("nonexamples", "").asArray(): new Json.JArray();
 
     //using type information, the metaschema is given an opportunity to customise the node with type specific keywords
 
@@ -341,7 +340,7 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
     //if the user has supplied examples or non examples, the validity of these are checked
 
     annotation.examples.forEach(function(example: Json.JValue){
-        var valid = tv4.validate(example.toJSON, node.toJSON, true, false);
+        var valid = tv4.validate(example.toJSON(), node.toJSON(), true, false);
         if(!valid){
             throw error.validation(
                 example,
@@ -353,15 +352,12 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
         }
     });
 
-    for(var nonexample_index in annotation.nonexamples){
-        var nonexample = annotation.nonexamples[nonexample_index];
-
-        var valid = tv4.validate(nonexample, node, true, false);
+    annotation.nonexamples.forEach(function(nonexample: Json.JValue){
+        var valid = tv4.validate(nonexample.toJSON(), node.toJSON(), true, false);
         if(valid){
-            //todo better error
-            throw error.message("nonexample erroneously passed " + JSON.stringify(nonexample) + " on " + JSON.stringify(node)).on(new Error());
+            throw error.message("nonexample erroneously passed").source(nonexample).on(new Error());
         }
-    }
+    });
 
 
     return annotation;
@@ -460,7 +456,7 @@ export class SchemaAPI{
      * User method for dynamically adding a property as a schema node
      */
     addProperty(name:string, json:any):void{
-        throw new Error("redo since refactor");
+        throw new Error("redo since refactor, not reflecting change from raw json to Json.JValue");
         this.node[name] = json;
 
         //as this is called through compile, which is part way through the annotation,
@@ -518,7 +514,7 @@ function getWildchild(node: Json.JValue): Json.JString{
             if (name.indexOf("$") == 0) {
                 if(wildchild == null) wildchild = keyword;
                 else{
-                    throw error.message("multiple wildchilds defined:\n" + node.source()).on(new Error())
+                    throw error.message("multiple wildchilds defined:\n").source(node).on(new Error())
                 }
             }
         });

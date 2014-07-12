@@ -7,8 +7,3 @@ schema:
   type: string
   nonexamples:
     - "true"
----
-schema:
-  type: string
-  examples:
-    - "true"

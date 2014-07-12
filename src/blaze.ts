@@ -43,13 +43,13 @@ export var root:string = path.dirname(fs.realpathSync(__filename)) + "/../";
 export var rules_schema: Json.JValue = load_yaml(root + "schema/security_rules.yaml");
 
 export function validate_rules(rules: Json.JValue): boolean{
-    tv4.addSchema("http://firebase.com/schema/types/object#", this.load_yaml(root + "schema/types/object.yaml").toJSON);
-    tv4.addSchema("http://firebase.com/schema/types/string#", this.load_yaml(root + "schema/types/string.yaml").toJSON);
-    tv4.addSchema("http://firebase.com/schema/types/boolean#",this.load_yaml(root + "schema/types/boolean.yaml").toJSON);
-    tv4.addSchema("http://firebase.com/schema/types/number#", this.load_yaml(root + "schema/types/number.yaml").toJSON);
-    tv4.addSchema("http://firebase.com/schema/types/any#",    this.load_yaml(root + "schema/types/any.yaml").toJSON);
+    tv4.addSchema("http://firebase.com/schema/types/object#", this.load_yaml(root + "schema/types/object.yaml").toJSON());
+    tv4.addSchema("http://firebase.com/schema/types/string#", this.load_yaml(root + "schema/types/string.yaml").toJSON());
+    tv4.addSchema("http://firebase.com/schema/types/boolean#",this.load_yaml(root + "schema/types/boolean.yaml").toJSON());
+    tv4.addSchema("http://firebase.com/schema/types/number#", this.load_yaml(root + "schema/types/number.yaml").toJSON());
+    tv4.addSchema("http://firebase.com/schema/types/any#",    this.load_yaml(root + "schema/types/any.yaml").toJSON());
 
-    tv4.addSchema("http://firebase.com/schema#", this.load_yaml(root + "schema/schema.yaml").toJSON);
+    tv4.addSchema("http://firebase.com/schema#", this.load_yaml(root + "schema/schema.yaml").toJSON());
     tv4.addSchema("http://json-schema.org/draft-04/schema#", fs.readFileSync(root + "schema/jsonschema", {encoding: 'utf8'}).toString());
 
     var valid: boolean =  tv4.validate(rules.toJSON(), this.rules_schema.toJSON(), true, true);
@@ -60,7 +60,7 @@ export function validate_rules(rules: Json.JValue): boolean{
             this.rules_schema,
             "rules",
             "rule schema",
-            tv4.error).on(new Error())
+            tv4.error).source(rules).on(new Error())
     }
 
     if (tv4.getMissingUris().length != 0){
@@ -157,7 +157,7 @@ export class Rules{
         var rules = new Rules();
         rules.predicates = expression.Predicates.parse(json.getOrNull("predicates"));
         rules.schema     = SchemaRoot.parse(json.getOrThrow("schema", "no schema defined"));
-        rules.access     = Access.parse(json.getOrWarn("access", "no access list defined"));
+        rules.access     = Access.parse(json.getOrWarn("access", "no access list defined, this Firebase will be inactive"));
         return rules
     }
 }

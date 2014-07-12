@@ -10,7 +10,7 @@ import Json       = require('../src/json/jsonparser');
 import js_yaml = require("js-yaml");
 import tv4 = require("tv4");
 
-/*
+
 export function testValidSchema(test: nodeunit.Test){
     var firebase_schema     = blaze.load_yaml("schema/schema.yaml");
     var metaschema = fs.readFileSync("schema/jsonschema", {encoding: 'utf8'});
@@ -31,18 +31,18 @@ export function testStructureValidation(test: nodeunit.Test){
 
 
 export function testStructureParsing(test: nodeunit.Test){
-    var structure_example = blaze.load_yaml("examples/structure.yaml");
-    var rule = blaze.Rules.parse(structure_example);
+    var structure_example: Json.JValue = blaze.load_yaml("examples/structure.yaml");
+    var rule = blaze.Rules.parse(structure_example.asObject());
     console.log(rule);
     test.ok(rule.schema != null);
     test.ok(rule.predicates["isLoggedIn"] != null);
     test.done();
-}*/
+}
 
 export function testAntiCases(test: nodeunit.Test){
 
     //load all anti-cases
-    var files = fs.readdirSync("test/anticases");
+    var files = fs.readdirSync("test/anticases"); //it doesn't like directories
 
     for (var i in files){
         if (!files.hasOwnProperty(i)) continue;
@@ -50,18 +50,21 @@ export function testAntiCases(test: nodeunit.Test){
 
         blaze.load_yaml_collection(path, function(anticase: Json.JValue){
             var failed = compiler.compileJSON(anticase, true) == null;
-            test.ok(failed, "compile successful when it shouldn't be, halting anitcase tests");
             if (!failed){
-                console.log("passed anticase:-");
-                console.log(anticase.toJSON());
-                throw Error(); //stop on first error because it makes it easier to debug
+                console.error("passed anticase:-");
+                console.error(anticase.toJSON());
             }
+
+            test.ok(failed);
+            //I would like to halt the test but an error can't be thrown and
+            //you don't want the async done to be called twice
+
         });
     }
 
     test.done();
 }
-/*
+
 export function testMailValidation(test: nodeunit.Test){
     var mail_example = blaze.load_yaml("examples/mail_example.yaml");
     test.ok(blaze.validate_rules(mail_example));
@@ -75,16 +78,15 @@ export function testRequiredArray(test: nodeunit.Test){
         "  required: object\n"; //should fail because required is not an array
 
 
-    var schema = js_yaml.load(schema_yaml, 'utf8');
+    var schema: Json.JValue = Json.parse(JSON.stringify(js_yaml.load(schema_yaml, 'utf8')));
 
-    test.ok(!blaze.validate_rules(schema)); //should not pass global validation
-
-    try{
-        compiler.compileJSON(schema, false);
-        test.ok(false)
-    }catch(err){
-        test.ok(true)
+    try {
+        blaze.validate_rules(schema);
+        test.ok(false);
+    } catch(err) {
+        test.ok(true);
     }
 
+    test.ok(compiler.compileJSON(schema, false) == null);
     test.done();
-}*/
+}
