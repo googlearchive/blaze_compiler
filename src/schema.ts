@@ -9,8 +9,8 @@ import error  = require('./error');
 
 //todo
 //refactor out traversals
-var debug = true;
-var debug_metaschema_validation = true;
+export var debug = true;
+var debug_metaschema_validation = false;
 
 /**
  * performs a bottom up traversal of a schema definition, allowing each metaschema processor

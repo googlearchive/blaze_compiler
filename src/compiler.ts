@@ -12,7 +12,7 @@ var debug_intermediates = false;
  */
 export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
     //check user's JSON meets JSON schema spec of rule file
-
+    schema.debug = debug;
     try {
         var ok = blaze.validate_rules(json);
         if (debug_intermediates){
