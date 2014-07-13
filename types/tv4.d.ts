@@ -20,6 +20,8 @@ declare module "tv4" {
     export interface TV4BaseResult {
         missing:string[];
         valid:boolean;
+        dataPath: string;
+        schemaPath: string;
     }
     export interface TV4SingleResult extends TV4BaseResult {
         error:TV4Error;

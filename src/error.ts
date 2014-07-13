@@ -77,14 +77,12 @@ export function source(src: Json.JValue): Err {
 }
 
 export function validation(data: Json.JValue, schema: Json.JValue, data_name: string, schema_name: string, cause: tv4.TV4SingleResult): Err {
-    var data_path: string   = (<any>cause).dataPath;
-    var schema_path: string = (<any>cause).schemaPath;
     var validation_message: string = (<any>cause).message;
     return err()
         .message([
             "cannot validate " + data_name  + " with " + schema_name,
-            "data was on path: " + data_path,
-            "the schema constraint was defined at " + schema_path,
+            "data was on path: " + cause.dataPath,
+            "the schema constraint was defined at " + cause.schemaPath,
             validation_message,
         ].join("\n"))
         .validation(cause.error);

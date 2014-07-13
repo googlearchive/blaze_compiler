@@ -72,7 +72,10 @@ export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
         var source: Json.JValue = <Json.JValue>error.source;
         var msg: string = error.message;
 
-        if (source) console.error(source.toJSON());
+        if (source) {
+            console.error("error line " + source.start.row + ":" + source.start.col + " of underlying JSON representation");
+            console.error(source.toJSON());
+        }
 
         if (debug) console.error(error.stack); //includes writing message
         else{

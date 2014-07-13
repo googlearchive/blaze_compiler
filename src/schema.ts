@@ -83,9 +83,10 @@ export class SchemaNode{
         this.node = node;
     }
 
-    isLeaf():boolean{
+    isLeaf(): boolean{
         return Object.keys(this.properties).length == 0;
     }
+
     generate(symbols:expression.Symbols, prefix:string, buffer:string[]):string[]{
         buffer.push('{\n');
 

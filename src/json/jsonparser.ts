@@ -153,6 +153,21 @@ export class JValue extends TextSpan{
     toString(): string {
         return JSON.stringify(this.toJSON())
     }
+
+    /**
+     * find the json that defines the given data path, as reported by TV4
+     * e.g. /definitions/message
+     */
+    lookup(data_path: string[]): JValue {
+        if(data_path[0] == "") data_path.shift();
+        if (data_path.length == 0) return this;
+        var child_lookup: string = data_path.shift();
+        if (this.has(child_lookup)) {
+            return this.getOrThrow(child_lookup, "").lookup(data_path);
+        } else {
+            throw error.source(this).message("has no property '" + child_lookup + "'").on(new Error());
+        }
+    }
 }
 
 export class JLiteral extends JValue {

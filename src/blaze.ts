@@ -58,9 +58,11 @@ export function validate_rules(rules: Json.JValue): boolean{
         throw error.validation(
             rules,
             this.rules_schema,
-            "rules",
-            "rule schema",
-            tv4.error).source(rules).on(new Error())
+            "blaze file",
+            "blaze schema",
+            tv4.error)
+            .source(rules.lookup(tv4.error.dataPath.split("/")))
+            .on(new Error())
     }
 
     if (tv4.getMissingUris().length != 0){

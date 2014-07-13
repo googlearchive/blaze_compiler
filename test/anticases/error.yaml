@@ -1,0 +1,5 @@
+schema:
+  type: [object]
+
+  examples:
+    - true
