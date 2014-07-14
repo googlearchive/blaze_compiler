@@ -1,7 +1,7 @@
 /// <reference path="../types/tv4.d.ts" />
 require('source-map-support').install();
 import tv4  = require('tv4');
-import Json = require('./json/jsonparser');
+import Json = require('./processors/Json');
 /**
  * Typescript can't subclass Error, so this is a syntax to decorate an Error thrown at the correct context
  * with more meaningful fields

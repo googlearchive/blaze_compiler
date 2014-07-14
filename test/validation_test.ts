@@ -6,8 +6,7 @@ import fs = require("fs");
 import expression = require('../src/expression');
 import blaze      = require('../src/blaze');
 import compiler   = require('../src/compiler');
-import Json       = require('../src/json/jsonparser');
-import js_yaml = require("js-yaml");
+import Json       = require('../src/processors/Json');
 import tv4 = require("tv4");
 
 
@@ -78,7 +77,7 @@ export function testRequiredArray(test: nodeunit.Test){
         "  required: object\n"; //should fail because required is not an array
 
 
-    var schema: Json.JValue = Json.parse(JSON.stringify(js_yaml.load(schema_yaml, 'utf8')));
+    var schema: Json.JValue = Json.parse_yaml(schema_yaml);
 
     try {
         blaze.validate_rules(schema);

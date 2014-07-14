@@ -4,7 +4,7 @@ var falafel = require("falafel");
 
 var XRegExp = require('xregexp').XRegExp;
 
-import Json = require('./json/jsonparser');
+import Json = require('./processors/Json');
 import error = require('./error');
 import optimizer = require('../src/optimizer');
 

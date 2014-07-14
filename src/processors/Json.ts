@@ -1,10 +1,11 @@
 /// <reference path="../../types/node.d.ts" />
 require('source-map-support').install();
 var greatjson = require("./greatjson.js");
+var js_yaml   = require("./js-yaml.js");
 import collections = require("../util/Collections");
 import error = require('../error');
 
-export class TextInfo {
+export class SourceFile {
     text: string;
 
     constructor(text: string) {
@@ -45,7 +46,7 @@ export class TextInfo {
         return result
     }
 }
-var current_text: TextInfo;
+var current_text: SourceFile;
 
 /**
  *Facade for processing json, in particular, maintaining column and line numbers
@@ -71,7 +72,7 @@ export class TextLocation {
 export class TextSpan {
     start: TextLocation;
     end: TextLocation;
-    text: TextInfo;
+    text: SourceFile;
 
     constructor(){
         this.text = current_text;
@@ -95,12 +96,11 @@ export enum JType {
   JNull,
 
   JValue,
-  JPrimitive,
   JArray,
   JObject,
 }
 
-export class JValue extends TextSpan{
+export class JValue extends TextSpan {
     type: JType;
     constructor(type: JType) {
         super();
@@ -313,7 +313,19 @@ export class JObject extends JValue {
 }
 
 export function parse(text: string): JValue{
-    current_text = new TextInfo(text);
+    current_text = new SourceFile(text);
     return greatjson.parse(text)
+}
+
+export function parse_yaml(text: string): JValue{
+    current_text = new SourceFile(text);
+    var json_text = JSON.stringify(js_yaml.load(text, 'utf8'));
+    return parse(json_text)
+}
+
+export function parse_yaml_collection(text: string, callback: (json: JValue) => any) {
+    js_yaml.loadAll(text, function (json: any) {
+        callback(parse(JSON.stringify(json)));
+    },'utf8');
 }
 

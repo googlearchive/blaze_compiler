@@ -1,7 +1,7 @@
 require('source-map-support').install();
 import schema = require('../src/schema');
 import blaze = require('./blaze');
-import Json  = require('./json/jsonparser');
+import Json  = require('./processors/Json');
 import expression = require('../src/expression');
 import fs = require('fs');
 

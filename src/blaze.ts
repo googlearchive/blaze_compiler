@@ -5,12 +5,11 @@
 require('source-map-support').install();
 
 import fs = require("fs");
-import js_yaml = require("js-yaml");
 import tv4 = require('tv4');
 import expression = require('../src/expression');
 import schema = require('../src/schema');
 import path = require('path');
-import Json = require('./json/jsonparser');
+import Json = require('./processors/Json');
 import error = require('./error');
 
 export var debug = false;
@@ -19,24 +18,21 @@ export var debug = false;
  * @param filepath location on filesystem
  */
 export function load_yaml(filepath: string): Json.JValue{
-    var yaml = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
-    var json_text = JSON.stringify(js_yaml.load(yaml, 'utf8'));
-    return Json.parse(json_text);
+    var yaml_text = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
+    return Json.parse_yaml(yaml_text);
 }
 
 export function load_json(filepath: string): Json.JValue{
-    var json = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
-    return Json.parse(json);
+    var json_text = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
+    return Json.parse(json_text);
 }
 
 /**
  * synchronously loads a file resource, converting from multi document YAML to a callback with a JSON param
  */
-export function load_yaml_collection(filepath:string, cb:(json: Json.JValue) => void):void{
-    var json = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
-    js_yaml.loadAll(json, function (json: any) {
-        cb(Json.parse(JSON.stringify(json)))
-    },'utf8');
+export function load_yaml_collection(filepath: string, cb:(json: Json.JValue) => void):void{
+    var yaml_text = fs.readFileSync(filepath, {encoding: 'utf8'}).toString();
+    Json.parse_yaml_collection(yaml_text, cb);
 }
 
 export var root:string = path.dirname(fs.realpathSync(__filename)) + "/../";

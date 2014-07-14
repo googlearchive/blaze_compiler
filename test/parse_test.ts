@@ -1,6 +1,6 @@
 /// <reference path="../types/nodeunit.d.ts" />
 import blaze = require('../src/blaze');
-import Json = require("../src/json/jsonparser");
+import Json =  require('../src/processors/Json');
 
 export function testEntryParseRoot1(test) {
     var entry: blaze.AccessEntry = blaze.AccessEntry.parse(Json.parse('{"location": "/"}'));

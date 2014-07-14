@@ -4,7 +4,7 @@ import blaze = require('./blaze');
 import expression = require('../src/expression');
 import tv4 = require('tv4');
 import fs = require('fs');
-import Json  = require('./json/jsonparser');
+import Json  = require('./processors/Json');
 import error  = require('./error');
 
 //todo
