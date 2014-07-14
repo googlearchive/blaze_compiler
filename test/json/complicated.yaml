@@ -1,0 +1,154 @@
+definitions:
+  predicate:
+    type: object
+    additionalProperties: false
+    minProperties: 1
+    maxProperties: 1
+
+
+  predicates:
+    type: array
+    items: {$ref: "#/definitions/predicate"}
+
+
+  access_entry:
+      type: object
+      properties:
+        location: {type: string}
+        read:
+          anyOf:
+            - {type: string}
+            - {type: boolean}
+        write:
+          anyOf:
+            - {type: string}
+            - {type: boolean}
+      required: [location]
+      additionalProperties: false
+
+  access:
+    type: array
+    items: {$ref: "#/definitions/access_entry"}
+
+properties:
+  predicates: {$ref: "#/definitions/predicates"}
+  schema: {$ref: "http://firebase.com/schema#"}
+  access: {$ref: "#/definitions/access"}
+
+
+additionalProperties: false
+
+predicates:            #reusable boolean functions
+  - isLoggedIn():      auth.username !== null
+  - createOnly():      next.exists() && !prev.exists()
+  - deleteOnly():      prev.exists() && !next.exists()
+  - createOrDelete():  createOnly() || deleteOnly()
+
+schema:
+  definitions:         #create a reusable message model
+    message:           #for use in the in and out boxes
+      type: object
+      properties:
+        from:
+          type: string
+          #enforce the from field is *always* correct on creation,
+          #and only that only the *box owner can delete
+          constraint:  (auth.username == next     && createOnly()) ||
+                       ($userid === auth.username && deleteOnly())
+
+        #you can't delete single field due to parent's required
+        to:      {type: string, constraint:  createOrDelete()}
+        message: {type: string, constraint:  createOrDelete()}
+
+      required: [from, to, message] # all messages require all the fields to be defined
+                                    #(or none if the message does not exist)
+
+      additionalProperties: false   #prevent spurious data being part of a message
+
+      examples: #examples of inline testing
+        - {from: "bill", to: "tom", message: "hey Tom!"}
+      nonexamples:
+        - {to: "tom", message: "hey Tom!"} #not allowed becuase from is missing
+
+  type: object
+  properties:
+    users: # the users subtree is a collection of users
+      type: object
+      $userid: #wildchild expression of many children
+        type: object
+        properties: #each user has an optional inbox and outbox
+          inbox:
+            type: object
+            $message: {$ref: "#/definitions/message"}
+
+          outbox:
+            type: object
+            $message: {$ref: "#/definitions/message"}
+
+  additionalProperties: false
+
+
+access:
+  #append only write is granted to anyone's inbox,
+  #so users can send messages to strangers
+  - location: users/$userid/inbox/
+    write:    createOnly() && isLoggedIn()
+
+  #the inbox owner can delete their incoming mail
+  - location: users/$userid/inbox/
+    write:    deleteOnly() && $userid === auth.username
+
+  #write and delete is given to owners outbox
+  #note that because only box owners can delete messages,
+  #other users cannot use this entry point
+  - location: users/$userid/outbox/
+    write:    true
+
+  #owners can read everything in their inbox and outbox
+  - location: users/$userid
+    read:    $userid === auth.username
+
+
+id: "http://firebase.com/schema/types/object#"
+$schema: "http://firebase.com/schema/types/object#"
+
+properties:
+
+  type: {type: string}
+  constraint:
+    anyOf:
+      - {type: string}
+      - {type: boolean}
+  examples:
+    type: array
+    minItems: 1
+    uniqueItems: true
+
+  nonexamples:
+    type: array
+    minItems: 1
+    uniqueItems: true
+
+  additionalProperties: {type: boolean}
+
+  required:
+    type: array
+    items: { type: string }
+    minItems: 1
+    uniqueItems: true
+
+  properties:
+    type: object
+    additionalProperties: {$ref: "http://firebase.com/schema#"}
+    default: {}
+
+
+  definitions:
+    type: object
+    additionalProperties: {$ref: "http://firebase.com/schema#"}
+    default: {}
+
+patternProperties: #wildchild support, starts with dollar
+  \$.+:
+    {$ref: "http://firebase.com/schema#"}
+
