@@ -22,6 +22,9 @@ see the big <a href="#example">example</a>
   - removed trailing /* from access location syntax
   - allowed untyped schema if type is not specified
 
+- 14th July 2014:
+  - improved error reporting
+
 ## Install
 
 requires node.js and npm, but it's not in npm yet.
