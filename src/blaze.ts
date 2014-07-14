@@ -49,7 +49,6 @@ export function validate_rules(rules: Json.JValue): boolean{
     tv4.addSchema("http://json-schema.org/draft-04/schema#", fs.readFileSync(root + "schema/jsonschema", {encoding: 'utf8'}).toString());
 
     var valid: boolean =  tv4.validate(rules.toJSON(), this.rules_schema.toJSON(), true, true);
-
     if (!valid){
         throw error.validation(
             rules,

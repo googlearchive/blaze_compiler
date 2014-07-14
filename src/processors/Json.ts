@@ -319,8 +319,12 @@ export function parse(text: string): JValue{
 
 export function parse_yaml(text: string): JValue{
     current_text = new SourceFile(text);
-    var json_text = JSON.stringify(js_yaml.load(text, 'utf8'));
-    return parse(json_text)
+    var plain_json = js_yaml.load(text, 'utf8');
+    //var jsyaml_json = js_yaml.loader.last_popped.toJSON();
+    //console.log(JSON.stringify(plain_json));
+    //console.log(JSON.stringify(jsyaml_json));
+    return js_yaml.loader.last_popped;
+    //return parse(JSON.stringify(plain_json))
 }
 
 export function parse_yaml_collection(text: string, callback: (json: JValue) => any) {
