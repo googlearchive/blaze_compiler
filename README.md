@@ -24,10 +24,11 @@ see the big <a href="#example">example</a>
 
 - 14th July 2014:
   - improved error reporting
-
+  - updated installation
+  
 ## Install
 
-requires node.js and npm, but it's not in npm yet.
+For exploration of the examples, running tests, and staying up to date it's probably best to clone the git repo and link symbolically
 
 ```
 git clone https://github.com/firebase/blaze_compiler.git
@@ -36,14 +37,30 @@ npm install
 npm link
 ```
 
+However if you want to quickly try it out then you can install from npm too
+
+```
+npm install -g blaze_compiler
+```
+
 <a id="run"></a>
 ## Run
 ```
 blaze examples/structure.yaml
+blaze -v /usr/local/lib/node_modules/blaze_compiler/examples/mail_example.yaml
+blaze -v <your blaze file>
 ```
-this will save a rules.json in the current directory
 
-## Rules specified in YAML (or JSON)
+this will save a rules.json in the current directory which you can upload to the Firebase website
+
+## Tests
+
+```
+grunt nodeunit:all
+```
+
+## Rules specified in YAML
+
 
 JSON is sometimes fiddly to get syntactically right. Forgetting to quote keys or leaving a trailing comma is a common cause of parsing errors. So for the blaze compiler, the input language is YAML. As YAML is a strict superset of JSON, you can still write all your rules in JSON if you prefer, however YAML has many nice features
 
@@ -94,6 +111,8 @@ would be compiled to the following JSON (you can think of YAML as just a compact
 ```
 
 The space after a colon is important! All indentation to denote keys or arrays is 2 spaces.
+
+You can work in JSON though if you prefer, just make sure your input file ends with ".json"
 
 ## Terser Expression Syntax
 
