@@ -21,6 +21,7 @@ access:
   - location: "/"
     read:  true
     write: true & isLoggedIn()
+
 ```
 
 now compile it from the commandline with
