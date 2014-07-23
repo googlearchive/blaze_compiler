@@ -7,12 +7,11 @@ The blaze compiler simplifies building security rules for Firebase. It drastical
 
 ```
 npm install -g blaze_compiler
-
 ```
 
 create a rules.yaml containing the following code
 
-```
+```YAML
 predicates:
   - isLoggedIn(): auth.id !== null
 
@@ -22,7 +21,6 @@ access:
   - location: "/"
     read:  true
     write: true & isLoggedIn()
-
 ```
 
 now compile it from the commandline with
@@ -39,11 +37,10 @@ find more about the [predicates](#predicates), [simpler rule expressions](#simpl
 
 Common expressions for reuse are defined in the *predicates* list. A predicate can take arguments (they are functions).
 
-```
+```YAML
 predicates:
   - isLoggedIn():          auth.username !== null
   - isUser(username):      auth.username === username
-
 ```
 
 You can then use them anywhere a security expression would be expected, for example, in the access control section:-
@@ -101,7 +98,7 @@ The schema section describes the layout of the data tree.
 
 A Firebase schema node is either a leaf type (*string*, *number*, *boolean*) or an *object* which contains more child schema nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
 
-```
+```YAML
 schema:
   type: object
   properties:
@@ -119,7 +116,7 @@ You can leave a schema unspecified with {} or with type: "any".
 
 The required keyword states which children **must** be present. The required keyword is only valid for schema nodes with object types.
 
-```
+```YAML
 schema:
   type: object
   required: [child1, child2]
@@ -129,7 +126,7 @@ schema:
 
 By default, objects can have additional children not mentioned. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object and non-typed schemas.
 
-```
+```YAML
 schema:
   type: object
   additionalProperties: false
@@ -143,7 +140,7 @@ would not accept `{number_child: 5}` in the root, but without additionalProperti
 
 The enum keyword constrains the value of a string types to be one of the predefined array elements.
 
-```
+```YAML
 schema:
   type: string
   enum: [yes, no, maybe]
@@ -153,7 +150,7 @@ schema:
 
 An object can have many children bound to a path variable denoted with a keyword starting with $. Note that wildchilds are not put in the properties definition. The following shows how to accept many objects as children of "/users/"
 
-```
+```YAML
 schema:
   type: object
   properties:
@@ -168,7 +165,7 @@ The semantics of enforcing data integrity is different from the original rules. 
 
 The following example, fixes the id of a user to equal the key, and makes the account writable only at creation time.
 
-```
+```YAML
 schema:
   type: object
   properties:
@@ -181,7 +178,6 @@ schema:
             constraint: next == $userid
 
         constraint: (!prev.exists())
-
 ```
 
 You can be sure all constraints above and below evaluate to true for a write to be allowed. The only quirk is related to wildchilds. You can't write anything above a wildchild that includes the wildchild as a descendant. They do inherit their parents constraints though, as do their siblings, so the use of wildchilds **never** makes the Firebase less constrained accidentally.
@@ -192,7 +188,7 @@ Denormalization of data requires replicating a model in multiple places in a sch
 
 Model definitions are declared in the keyword definitions object, and references are made using the $ref keyword as follows:
 
-```
+```YAML
 schema:
   definitions:
     stamped_value:
@@ -220,7 +216,7 @@ of nested schema at compile time.
 
 These inline tests are good for documenting intent and providing fast feedback when authoring a new schema.
 
-```
+```YAML
 schema:
   type: object
   properties:
@@ -242,14 +238,13 @@ schema:
     - {boolean: "true"}
     - {number:  "4.6"}
     - {extra:   "4.6"} #additionProperties is false, so no unexpected properties allowed
-
 ```
 
 ## Access Control
 
 The schema portion of the rules YAML file is for specifying the data layout and constraints. Read/write access is described in a separate access control list under "access". For each entry, the scope of the rule is a subtree at, or below, the path indicated in the *location* field. Read access is granted to that subtree if the *read* expression evaluates to true, and write access is granted if the *write* expression evaluates to true.
 
-```
+```YAML
 predicates:
   - isLoggedIn():   auth !== null
 ...
@@ -267,8 +262,7 @@ Only one access control entry needs to evaluate to true for an operation to be p
 
 This is an example that exploits most of the new features. It is a messaging system where users can send messages to each other, by posting to other user's inboxes
 
-```
-
+```YAML
 predicates:            #reusable boolean functions
   - isLoggedIn():      auth.username !== null
   - createOnly():      next.exists() && !prev.exists()
