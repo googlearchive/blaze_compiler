@@ -33,7 +33,7 @@ blaze rules.yaml
 
 A rules.json will be generated which you can upload to Firebase!
 
-find more about the [predicates](Predicates), [simpler rule expressions](Simple Security Expressions), the [schema definitions](Schema), [access control](Access Control) or [inline tests](Inline testing).
+find more about the [predicates](#Predicates), [#simpler-rule-expressions](Simple Security Expressions), the [schema definitions](#Schema), [access control](#Access Control) or [inline tests](#Inline testing).
 
 ## Predicates
 
