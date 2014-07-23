@@ -1,122 +1,62 @@
-# Blaze compiler for Firebase
+# Blaze Security Compiler for Firebase
 
-The blaze compiler presents a higher level interface to Firebase security rules.
+The blaze compiler simplifies building security rules for Firebase. It drastically reduces the amount of copy and pasting involved. Blaze compiler security rules are shorter, and the syntax is less fussy.
 
-- write rules in <a href="#rules-specified-in-yaml">YAML</a>, trailing commas, unquoted strings and comments with tool support
-- terser security <a href="#terser-expression-syntax">expression</a> syntax
-- create reusable <a href="#predicates">predicates</a> (boolean functions)
-- specify Firebase layout with typed JSON <a href="#schema">schema models</a>
-- embed global functional <a href="#constraints">constraints</a> in the schema
-- <a href="#model-reuse">reuse</a> models in multiple locations in the data tree
-- <a href="#inline-testing">inline tests</a> to check and document what form data can be to be inserted
-- describe <a href="#access-control">access control</a> as a separate concern
 
-see the big <a href="#example">example</a>
-
-##  Changelog
-
-- 9th July 2014:
-  - support for rules in JSON
-
-- 30th June 2014:
-  - removed trailing /* from access location syntax
-  - allowed untyped schema if type is not specified
-
-- 14th July 2014:
-  - improved error reporting
-  - updated installation
-  
-## Install
-
-For exploration of the examples, running tests, and staying up to date it's probably best to clone the git repo and link symbolically
-
-```
-git clone https://github.com/firebase/blaze_compiler.git
-npm install -g grunt-cli
-npm install
-npm link
-```
-
-However if you want to quickly try it out then you can install from npm too
+##  Getting started
 
 ```
 npm install -g blaze_compiler
-```
-
-<a id="run"></a>
-## Run
-```
-blaze examples/structure.yaml
-blaze -v /usr/local/lib/node_modules/blaze_compiler/examples/mail_example.yaml
-blaze -v <your blaze file>
-```
-
-this will save a rules.json in the current directory which you can upload to the Firebase website
-
-## Tests
-
-```
-grunt nodeunit:all
-```
-
-## Rules specified in YAML
-
-
-JSON is sometimes fiddly to get syntactically right. Forgetting to quote keys or leaving a trailing comma is a common cause of parsing errors. So for the blaze compiler, the input language is YAML. As YAML is a strict superset of JSON, you can still write all your rules in JSON if you prefer, however YAML has many nice features
-
-- automatic quoting of keys
-- automatic quoting of string, and detection of multi-line strings
-- objects optionally defined without "{" using indentation instead
-- array syntax with -
-- comments with #
-
-For example, the following yaml
 
 ```
 
-my_object: #my_object will be the first and only propery of the root document object
-  object_child: {"key":"value"}
-  string_child: "you can quote strings if you want..."
-  multiline_string:
-    this is a
-    multi-line string with no quotes
+create a rules.yaml containing the following code
 
-  array_child:
-    - element1: {}
-    - "element2"
-    - element3   # also a string
+```
+predicates:
+  - isLoggedIn(): auth.id !== null
 
+schema: {}
+
+access:
+  - location: "/"
+    read:  true
+    write: true & isLoggedIn()
 
 ```
 
-would be compiled to the following JSON (you can think of YAML as just a compact way of specifying JSON)
+now compile it from the commandline with
 
 ```
-{
-  "my_object": {
-    "object_child": {
-      "key": "value"
-    },
-    "string_child": "you can quote strings if you want...",
-    "multiline_string": "this is a multi-line string with no quotes",
-    "array_child": [
-      {
-        "element1": {}
-      },
-      "element2",
-      "element3"
-    ]
-  }
-}
+blaze rules.yaml
 ```
 
-The space after a colon is important! All indentation to denote keys or arrays is 2 spaces.
+A rules.json will be generated which you can upload to Firebase!
 
-You can work in JSON though if you prefer, just make sure your input file ends with ".json"
+find more about the [predicates](Predicates), [simpler rule expressions](Simple Security Expressions), the [schema definitions](Schema), [access control](Access Control) or [inline tests](Inline testing).
 
-## Terser Expression Syntax
+## Predicates
 
-Security expressions are the values that used to go in write/read/validate portions of the old security rules. Blaze expressions have similar semantics but terser syntax.
+Common expressions for reuse are defined in the *predicates* list. A predicate can take arguments (they are functions).
+
+```
+predicates:
+  - isLoggedIn():          auth.username !== null
+  - isUser(username):      auth.username === username
+
+```
+
+You can then use them anywhere a security expression would be expected, for example, in the access control section:-
+
+```
+access:
+  location: /users/$userid/
+  write:    isUser($userid)
+```
+
+## Simple Security Expressions
+
+Security expressions are the strings that used to go in write/read/validate portions of the old security rules. Blaze expressions have similar semantics but shorter syntax.
 
 #### Variables renamed
 
@@ -151,32 +91,15 @@ is simplified to just
 next.counter == prev.counter + 1
 ```
 
-## Predicates
 
-To reduce repetition of common expressions, you can create reusable boolean functions with meaningful names to snippets of expression logic. The boolean functions are called predicates and are expressed as an array child of a top level key *predicates*.
-
-```
-predicates:
-  - isLoggedIn():          auth.username !== null
-  - isUser(username):      auth.username === username
-
-```
-
-predicates can then be used in other expressions elsewhere:
-
-```
-access:
-  location: /users/$userid/
-  write:    isUser($userid)
-```
 
 ## Schema
 
-We have separated out access control concerns (read/write) from describing the static structure of the Firebase. The schema portion of the blaze rules YAML file is for specifying the shape of valid data, **not** who can access it. The semantics are a subset of JSON schema v4.
+The schema section describes the layout of the data tree.
 
 #### Types
 
-A Firebase node is either a primitive leaf type (*string*, *number*, *boolean*) or an *object* which can have further child nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
+A Firebase schema node is either a leaf type (*string*, *number*, *boolean*) or an *object* which contains more child schema nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
 
 ```
 schema:
@@ -185,15 +108,16 @@ schema:
     string_child:  {type: string}
     boolean_child: {type: boolean}
     number_child:  {type: number}
+    anything_child: {}
 ```
 
 In the above example you could set `{string_child: "blah"}` at the root of the Firebase but not `{string_child: true}`
 
-You can leave a schema untyped by not specifying anything. The non-typed schema will allow primative or object types to be written at that location.
+You can leave a schema unspecified with {} or with type: "any". 
 
 #### required
 
-The required keyword states which children **must** be present for the parent object to be valid. Its value is an array. Required children do not *need* to be specified in the properties (although that would be good practice typically). The required keyword is only valid for object schemas.
+The required keyword states which children **must** be present. The required keyword is only valid for schema nodes with object types.
 
 ```
 schema:
@@ -203,7 +127,7 @@ schema:
 
 #### additionalProperties
 
-By default, values not constrained by the schema are considered valid. So objects, by default, accept children not explicitly mentioned in the schema. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object and non-typed schemas.
+By default, objects can have additional children not mentioned. If additionalProperties is set to false, however, only children explicitly mentioned in the properties are allowed. The additionalProperties keyword is only valid for object and non-typed schemas.
 
 ```
 schema:
@@ -217,7 +141,7 @@ would not accept `{number_child: 5}` in the root, but without additionalProperti
 
 #### enum
 
-The enum keyword constrains string types to be one of the mentioned array elements. enum keyword is only valid for string types.
+The enum keyword constrains the value of a string types to be one of the predefined array elements.
 
 ```
 schema:
@@ -240,7 +164,7 @@ schema:
 
 #### Constraints
 
-The semantics of enforcing data integrity is quite different from the original rules. There is no overriding of constraints, nor separate read/write/validate expressions. There is just one field for expressing data integrity named *constraint*. All ancestors and descendant constraints must evaluate to true for a write to be allowed.
+The semantics of enforcing data integrity is different from the original rules. There is no overriding of constraints, nor separate read/write/validate expressions. There is just one field for expressing data integrity named *constraint*. All ancestors and descendant constraints must evaluate to true for a write to be allowed.
 
 The following example, fixes the id of a user to equal the key, and makes the account writable only at creation time.
 
@@ -256,9 +180,7 @@ schema:
             type: string
             constraint: next == $userid
 
-        #The ! character has special meaning in YAML
-        #so expression starting with ! have to be quoted
-        constraint: "!prev.exists()"
+        constraint: (!prev.exists())
 
 ```
 
@@ -325,7 +247,7 @@ schema:
 
 ## Access Control
 
-The schema portion of the rules YAML file is for denoting integrity constraints. Read/write access is described in a separate access control list under "access". For each entry, the scope of the rule is a subtree at, or below, the path indicated in the *location* field. Read access is granted to that subtree if the *read* expression evaluates to true, and write access is granted if the *write* expression evaluates to true.
+The schema portion of the rules YAML file is for specifying the data layout and constraints. Read/write access is described in a separate access control list under "access". For each entry, the scope of the rule is a subtree at, or below, the path indicated in the *location* field. Read access is granted to that subtree if the *read* expression evaluates to true, and write access is granted if the *write* expression evaluates to true.
 
 ```
 predicates:
@@ -407,8 +329,6 @@ access:
     write:    deleteOnly() && $userid === auth.username
 
   #write and delete is given to owners outbox
-  #note that because only box owners can delete messages,
-  #other users cannot use this entry point (see message constraint)
   - location: users/$userid/outbox/
     write:    true
 
@@ -416,3 +336,17 @@ access:
   - location: users/$userid/
     read:    $userid === auth.username
 ```
+
+
+##  Changelog
+
+- 9th July 2014:
+  - support for rules in JSON
+
+- 30th June 2014:
+  - removed trailing /* from access location syntax
+  - allowed untyped schema if type is not specified
+
+- 14th July 2014:
+  - improved error reporting
+  - updated installation
