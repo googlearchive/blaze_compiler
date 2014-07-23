@@ -18,10 +18,9 @@ predicates:
 schema: {}
 
 access:
-  - location: "/"
+  - location: /
     read:  true
-    write: true & isLoggedIn()
-
+    write: true && isLoggedIn()
 ```
 
 now compile it from the commandline with
