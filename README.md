@@ -334,6 +334,10 @@ access:
 
 ##  Changelog
 
+- 14th July 2014:
+  - improved error reporting
+  - updated installation
+
 - 9th July 2014:
   - support for rules in JSON
 
@@ -341,6 +345,4 @@ access:
   - removed trailing /* from access location syntax
   - allowed untyped schema if type is not specified
 
-- 14th July 2014:
-  - improved error reporting
-  - updated installation
+
