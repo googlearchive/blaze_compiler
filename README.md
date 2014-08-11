@@ -344,5 +344,3 @@ access:
 - 30th June 2014:
   - removed trailing /* from access location syntax
   - allowed untyped schema if type is not specified
-
-
