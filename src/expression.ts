@@ -1,11 +1,12 @@
 /// <reference path="../types/node.d.ts" />
+/// <reference path="../node_modules/source-processor/index.d.ts" />
 require('source-map-support').install();
 var falafel = require("falafel");
 
 var XRegExp = require('xregexp').XRegExp;
 
-import Json = require('./processors/Json');
-import error = require('./error');
+import Json = require('source-processor');
+import error = require('source-processor');
 import optimizer = require('../src/optimizer');
 
 //todo

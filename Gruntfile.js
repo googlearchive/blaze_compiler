@@ -12,11 +12,10 @@ module.exports = function(grunt) {
             expressions: ['test/expressions_test.js'],
             optimize: ['test/optimize_test.js'],
             mail: ['test/mail_example_test.js'],
-            parse: ['test/parse_test.js'],
-            json: ['test/json/parser_test.js']
+            parse: ['test/parse_test.js']
 		},typescript: {
           base: {
-            src: ['**/*.ts'],
+            src: ['src/**/*.ts', 'test/**/*.ts'],
             dest: '.',
             options: {
               module: 'commonjs',
@@ -32,12 +31,10 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-nodeunit');
     grunt.loadNpmTasks('grunt-typescript');
 
-
 	// Default task(s).
 	grunt.registerTask('default', ['nodeunit']);
 
     //default test
     grunt.registerTask('test',   ["nodeunit:all"]);
     grunt.registerTask('compile',["typescript:base"]);
-
 };

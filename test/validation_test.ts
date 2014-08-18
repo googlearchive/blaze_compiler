@@ -6,7 +6,7 @@ import fs = require("fs");
 import expression = require('../src/expression');
 import blaze      = require('../src/blaze');
 import compiler   = require('../src/compiler');
-import Json       = require('../src/processors/Json');
+import Json       = require('source-processor');
 import tv4 = require("tv4");
 
 

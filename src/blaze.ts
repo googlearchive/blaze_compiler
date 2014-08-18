@@ -1,7 +1,7 @@
 /// <reference path="../types/js-yaml.d.ts" />
 /// <reference path="../types/node.d.ts" />
-/// <reference path="../types/tv4.d.ts" />
 /// <reference path="../src/expression.ts" />
+/// <reference path="../node_modules/source-processor/index.d.ts" />
 require('source-map-support').install();
 
 import fs = require("fs");
@@ -9,8 +9,8 @@ import tv4 = require('tv4');
 import expression = require('../src/expression');
 import schema = require('../src/schema');
 import path = require('path');
-import Json = require('./processors/Json');
-import error = require('./error');
+import Json = require('source-processor');
+import error = require('source-processor');
 
 export var debug = false;
 /**

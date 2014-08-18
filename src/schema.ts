@@ -4,8 +4,8 @@ import blaze = require('./blaze');
 import expression = require('../src/expression');
 import tv4 = require('tv4');
 import fs = require('fs');
-import Json  = require('./processors/Json');
-import error  = require('./error');
+import Json  = require('source-processor');
+import error  = require('source-processor');
 
 //todo
 //refactor out traversals

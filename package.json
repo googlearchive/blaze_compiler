@@ -4,27 +4,31 @@
   "description": "Transpiles extendable, schema orientated definitions into Firebase security rules",
   "author": "Tom Larkworthy",
   "license": "private",
-
-
   "main": "blaze.js",
-  "bin" : { "blaze" : "./bin/blaze.js" },
+  "bin": {
+    "blaze": "./bin/blaze.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/firebase/blaze_compiler"
+  },
   "scripts": {
     "prepublish": "grunt compile"
   },
-  "dependencies":{
+  "dependencies": {
     "optimist": "~0.6.1",
     "xregexp": "2.0.0",
-    "js-yaml": "3.0.2",
+    "source-processor": "0.0.2",
     "tv4": "1.0.16",
     "falafel": "0.3.1",
     "source-map-support": "0.2.7"
   },
   "devDependencies": {
-      "firebase": "1.0",
-      "firebase-token-generator": "0.1.4",
-      "grunt": "~0.4.2",
-      "grunt-contrib-nodeunit": "~0.2.0",
-      "grunt-typescript": "0.3.5",
-      "async": "0.7.0"
+    "async": "0.7.0",
+    "firebase": "1.0",
+    "firebase-token-generator": "0.1.4",
+    "grunt": "~0.4.2",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-typescript": "0.3.5"
   }
 }

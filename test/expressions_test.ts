@@ -1,7 +1,7 @@
 /// <reference path="../types/nodeunit.d.ts" />
 /// <reference path="../src/expression.ts" />
 import expressions = require('../src/expression');
-import Json = require('../src/processors/Json');
+import Json = require('source-processor');
 
 function translationTestCase(from:string, to:string, predicates: expressions.Predicates, test:nodeunit.Test){
     var expr = expressions.Expression.parse(from);
