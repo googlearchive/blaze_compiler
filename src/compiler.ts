@@ -1,3 +1,4 @@
+/// <reference path="../node_modules/source-processor/index.d.ts" />
 require('source-map-support').install();
 import schema = require('../src/schema');
 import blaze = require('./blaze');
@@ -73,7 +74,7 @@ export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
         var msg: string = error.message;
 
         if (source) {
-            console.error("error line " + source.start.row + ":" + source.start.col);
+            console.error("error line " + source.start.row() + ":" + source.start.col());
             console.error(source.toJSON());
         }
 
