@@ -1,5 +1,5 @@
 definitions:
-  predicate:
+  function:
     type: object
     patternProperties:
       ".*\\(.*\\)": {type: string}
@@ -8,9 +8,9 @@ definitions:
     maxProperties: 1
 
 
-  predicates:
+  functions:
     type: array
-    items: {$ref: "#/definitions/predicate"}
+    items: {$ref: "#/definitions/function"}
 
 
   access_entry:
@@ -33,7 +33,7 @@ definitions:
     items: {$ref: "#/definitions/access_entry"}
 
 properties:
-  predicates: {$ref: "#/definitions/predicates"}
+  functions: {$ref: "#/definitions/functions"}
   schema: {$ref: "http://firebase.com/schema#"}
   access: {$ref: "#/definitions/access"}
 

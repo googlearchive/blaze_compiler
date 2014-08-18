@@ -16,9 +16,9 @@ export function testString(test:nodeunit.Test):void{
     ], test.done.bind(null));
 }
 
-export function testPredicate_access(test:nodeunit.Test):void{
+export function testFunction_access(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/predicate_access.yaml", true).code),
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/function_access.yaml", true).code),
         test_utils.assert_cant_write.bind(null,  "tom", "/", "string", test),
         test_utils.assert_can_write.bind (null,  "not", "/", "string", test),
         test_utils.assert_cant_read.bind (null,  "not", "/", test),

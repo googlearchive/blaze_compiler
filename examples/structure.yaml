@@ -1,4 +1,4 @@
-predicates:
+functions:
   - isLoggedIn( ): auth.id !== null
 
 schema:

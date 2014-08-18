@@ -12,7 +12,7 @@ import optimizer = require('../src/optimizer');
 //todo
 //implement explicit types rather than ad hoc string
 
-export class Predicate{
+export class Function {
     identifier: string; //the function name
     signature: string; //the function name, and the number of params, e.g. f(x) signature is f(0)
     parameter_map: {[pos:number]:string;};//maps the position of the param to a string value
@@ -27,7 +27,7 @@ export class Predicate{
 
     constructor(declaration: string, expression: Json.JString) {
         //break the function declaration into its parts
-        var match = XRegExp.exec(declaration, Predicate.DECLARATION_FORMAT);
+        var match = XRegExp.exec(declaration, Function.DECLARATION_FORMAT);
         var params = XRegExp.split(match.paramlist, /\s*,\s*/);
 
         //bug fix for weird split behaviour (preserved in XRegExp)
@@ -43,52 +43,52 @@ export class Predicate{
         this.expression = Expression.parseUser(expression);
     }
 
-    static parse(json: Json.JValue): Predicate{
-        //console.log("Predicate.parse:", json);
-        var predicate: Predicate;
+    static parse(json: Json.JValue): Function {
+        //console.log("Function.parse:", json);
+        var fun: Function;
 
         //there should only be one entry
         json.asObject().forEach(function(key: Json.JString, val: Json.JValue) {
-             predicate = new Predicate(key.asString().value, val.coerceString());
+             fun = new Function(key.asString().value, val.coerceString());
         });
 
-        return predicate
+        return fun
     }
 }
 
 /**
- * instances support indexing like arrays, which maps cannocal predicate declarations to Predicate definitions
+ * instances support indexing like arrays, which maps cannocal function declarations to Function definitions
  */
-export class Predicates{
-    [index: string]: Predicate;
+export class Functions {
+    [index: string]: Function;
 
-    static parse(json: Json.JValue):Predicates{
-        //console.log("Predicates.parse:", json);
-        var predicates = new Predicates();
-        if (json == null) return predicates;
+    static parse(json: Json.JValue): Functions{
+        //console.log("Functions.parse:", json);
+        var functions = new Functions();
+        if (json == null) return functions;
 
         json.asArray().forEach(function(val: Json.JValue) {
-            var predicate:Predicate = Predicate.parse(val);
-            predicates[predicate.identifier] = predicate;
+            var fun: Function = Function.parse(val);
+            functions[fun.identifier] = fun;
         });
-        return predicates
+        return functions
     }
 }
 
 export class Symbols{
-    predicates: {[index: string]: Predicate} = {};
-    variables:  {[index: string]: any}    = {}; //string->AST node
+    functions: {[index: string]: Function} = {};
+    variables: {[index: string]: any}      = {}; //string->AST node
 
     clone():Symbols{
-        var clone:Symbols =  new Symbols()
-        for(var p in this.predicates)clone.predicates[p] = this.predicates[p];
+        var clone: Symbols =  new Symbols();
+        for(var p in this.functions) clone.functions[p] = this.functions[p];
         for(var v in this.variables) clone.variables[v] = this.variables[v];
         return clone;
     }
 
-    loadPredicate(predicates:Predicates){
-        for(var identifier in predicates){
-            this.predicates[identifier] = predicates[identifier];
+    loadFunction(functions: Functions){
+        for(var identifier in functions){
+            this.functions[identifier] = functions[identifier];
         }
     }
 }
@@ -150,7 +150,7 @@ export class Expression{
         return <string>falafel(this.raw, {}, falafel_visitor);
     }
 
-    generate(symbols:Symbols):string {
+    generate(symbols: Symbols):string {
         //the falafel visitor function replaces source with a different construction
         var falafel_visitor = function(node){
 
@@ -171,7 +171,7 @@ export class Expression{
                     node.expr_type = "value"
                 }else if(node.name == "auth"){
                     node.expr_type = "map"
-                }else if(symbols.predicates[node.name]){
+                }else if(symbols.functions[node.name]){
                     node.expr_type = "pred"
                 }else if(symbols.variables[node.name]){
                     node.update(symbols.variables[node.name].source());
@@ -296,20 +296,20 @@ export class Expression{
                     node.expr_type = "value";
                 }else if(node.callee.expr_type === "pred"){
                     //console.log(node)
-                    //we are calling a user defined predicate
-                    var predicate:Predicate = symbols.predicates[node.callee.name];
+                    //we are calling a user defined function
+                    var fun: Function = symbols.functions[node.callee.name];
 
                     //clone the global symbol table and populate with binding to parameters
-                    var predicate_symbols = symbols.clone();
+                    var function_symbols = symbols.clone();
 
                     var params = node.arguments;
                     for(var p_index in params){
                         var p_node = params[p_index];
-                        var local_name = predicate.parameter_map[p_index];
-                        predicate_symbols.variables[local_name] = p_node;
+                        var local_name = fun.parameter_map[p_index];
+                        function_symbols.variables[local_name] = p_node;
                     }
 
-                    var expansion = predicate.expression.generate(predicate_symbols);
+                    var expansion = fun.expression.generate(function_symbols);
 
                     node.update("(" + expansion + ")");
                     node.expr_type = "value";

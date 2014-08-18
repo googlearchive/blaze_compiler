@@ -53,12 +53,12 @@ export function generateRules(model:blaze.Rules){
     buffer.push('  "rules":');
 
     var symbols = new expression.Symbols();
-    symbols.loadPredicate(model.predicates);
+    symbols.loadFunction(model.functions);
 
     model.schema.root.generate(symbols, "  ", buffer);
     buffer.push('}\n');
     //convert buffer into big string
-    var code:string = buffer.join('');
+    var code: string = buffer.join('');
     return code;
 }
 
@@ -396,7 +396,7 @@ export function fetchRef(url:string, model:blaze.Rules): Json.JValue{
     return schema;
 }
 /**
- * provides hooks for meta-data to pragmatically generate constraints and predicates
+ * provides hooks for meta-data to pragmatically generate constraints and functions
  */
 export class SchemaAPI{
     metaschema:{[name:string]:MetaSchema} = {};

@@ -34,7 +34,7 @@ export function testStructureParsing(test: nodeunit.Test){
     var rule = blaze.Rules.parse(structure_example.asObject());
     console.log(rule);
     test.ok(rule.schema != null);
-    test.ok(rule.predicates["isLoggedIn"] != null);
+    test.ok(rule.functions["isLoggedIn"] != null);
     test.done();
 }
 

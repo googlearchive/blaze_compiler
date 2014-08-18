@@ -1,5 +1,5 @@
 #taken from access.md
-predicates:
+functions:
   - red():   auth.username == 'red'
   - black(): auth.username == 'black'
 

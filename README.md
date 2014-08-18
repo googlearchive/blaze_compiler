@@ -12,7 +12,7 @@ npm install -g blaze_compiler
 create a rules.yaml containing the following code
 
 ```YAML
-predicates:
+functions:
   - isLoggedIn(): auth.id !== null
 
 schema: {}
@@ -31,14 +31,14 @@ blaze rules.yaml
 
 A rules.json will be generated which you can upload to Firebase!
 
-find more about the [predicates](#predicates), [simpler rule expressions](#simple-security-expressions), the [schema definitions](#schema), [access control](#access-control) or [inline tests](#inline-testing).
+find more about the [functions](#functions), [simpler rule expressions](#simple-security-expressions), the [schema definitions](#schema), [access control](#access-control) or [inline tests](#inline-testing).
 
-## Predicates
+## Functions
 
-Common expressions for reuse are defined in the *predicates* list. A predicate can take arguments (they are functions).
+Common expressions for reuse are defined in the *functions* list. A function can take arguments (they are functions).
 
 ```YAML
-predicates:
+functions:
   - isLoggedIn():          auth.username !== null
   - isUser(username):      auth.username === username
 ```
@@ -245,7 +245,7 @@ schema:
 The schema portion of the rules YAML file is for specifying the data layout and constraints. Read/write access is described in a separate access control list under "access". For each entry, the scope of the rule is a subtree at, or below, the path indicated in the *location* field. Read access is granted to that subtree if the *read* expression evaluates to true, and write access is granted if the *write* expression evaluates to true.
 
 ```YAML
-predicates:
+functions:
   - isLoggedIn():   auth !== null
 ...
 access:
@@ -263,7 +263,7 @@ Only one access control entry needs to evaluate to true for an operation to be p
 This is an example that exploits most of the new features. It is a messaging system where users can send messages to each other, by posting to other user's inboxes
 
 ```YAML
-predicates:            #reusable boolean functions
+functions:            #reusable boolean functions
   - isLoggedIn():      auth.username !== null
   - createOnly():      next.exists() && !prev.exists()
   - deleteOnly():      prev.exists() && !next.exists()
@@ -333,7 +333,9 @@ access:
 
 
 ##  Changelog
-
+- 18th August 2014:
+  - predicates renamed to functions
+  
 - 14th July 2014:
   - improved error reporting
   - updated installation

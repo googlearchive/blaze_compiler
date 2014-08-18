@@ -144,7 +144,7 @@ export class Access {
 }
 
 export class Rules{
-    predicates: expression.Predicates;
+    functions: expression.Functions;
     schema:     SchemaRoot;
     access:     Access;
 
@@ -152,7 +152,7 @@ export class Rules{
 
     static parse(json: Json.JObject):Rules{
         var rules = new Rules();
-        rules.predicates = expression.Predicates.parse(json.getOrNull("predicates"));
+        rules.functions = expression.Functions.parse(json.getOrNull("functions"));
         rules.schema     = SchemaRoot.parse(json.getOrThrow("schema", "no schema defined"));
         rules.access     = Access.parse(json.getOrWarn("access", "no access list defined, this Firebase will be inactive"));
         return rules
