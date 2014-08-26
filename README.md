@@ -31,7 +31,7 @@ blaze rules.yaml
 
 A rules.json will be generated which you can upload to Firebase!
 
-find more about the [functions](#functions), [simpler rule expressions](#simple-security-expressions), the [schema definitions](#schema), [access control](#access-control) or [inline tests](#inline-testing).
+You can find more about the [functions](#functions), [simpler rule expressions](#simple-security-expressions), the [schema definitions](#schema), [access control](#access-control) or [inline tests](#inline-testing).
 
 ## Functions
 
