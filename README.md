@@ -161,7 +161,7 @@ schema:
 
 The use of a wildchild prevents all ascendents from being writable.  
 
-#### $wilderchild
+#### ~$wilderchild
 
 ```YAML
 schema:
