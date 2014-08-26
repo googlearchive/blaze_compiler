@@ -55,7 +55,7 @@ export function generateRules(model:blaze.Rules){
     var symbols = new expression.Symbols();
     symbols.loadFunction(model.functions);
 
-    model.schema.root.generate(symbols, "  ", buffer);
+    model.schema.root.generate(symbols, "  ", buffer, false);
     buffer.push('}\n');
     //convert buffer into big string
     var code: string = buffer.join('');
@@ -87,12 +87,21 @@ export class SchemaNode{
         return Object.keys(this.properties).length == 0;
     }
 
-    generate(symbols:expression.Symbols, prefix:string, buffer:string[]):string[]{
+    generate(symbols: expression.Symbols, prefix: string, buffer: string[], use_validation: boolean): string[]{
         buffer.push('{\n');
 
         buffer.push(prefix + '  ".write":"');
         buffer.push(this.write.generate(symbols));
         buffer.push('",\n');
+
+        if (use_validation) {
+            //validation is repeated for wilderchilds, so the child constraints fire (when not null)
+            //even when parent is set
+            buffer.push(prefix + '  ".validate":"');
+            buffer.push(this.write.generate(symbols));
+            buffer.push('",\n');
+        }
+
         buffer.push(prefix + '  ".read":"');
         buffer.push(this.read.generate(symbols));
         buffer.push('",\n');
@@ -100,9 +109,18 @@ export class SchemaNode{
         var comma_in_properties = false;
         //recurse
         for (var property in this.properties){
-            buffer.push(prefix + '  "' + property + '": ');
-            this.properties[property].generate(symbols, prefix + "  ", buffer)
+            if (property.indexOf("~$") == 0) {
+                //nullable wildchild
+                var name = property.substr(1);
+                var use_validation_child = true;
+            } else {
+                //normal wildchilds and fixed properties
+                var name = property;
+                var use_validation_child = false;
+            }
 
+            buffer.push(prefix + '  "' + name + '": ');
+            this.properties[property].generate(symbols, prefix + "  ", buffer, use_validation_child);
             buffer.pop(); //pop closing brace and continue with comma
             buffer.push('},\n');
             comma_in_properties = true;
@@ -110,7 +128,7 @@ export class SchemaNode{
 
         if (!this.additionalProperties){
             buffer.push(prefix + '  "$other":{".validate":"false"');
-            buffer.push('GETS REMOVED');
+            buffer.push('GETS REMOVED BY CODE BELOW');
             comma_in_properties = true;
         }
 
@@ -247,7 +265,7 @@ export class MetaSchema{
 
 
 function annotate_schema(node: Json.JValue, parent: any, key: string, api: SchemaAPI, model: blaze.Rules):SchemaNode {
-    if(node.has("$ref")) {
+    if (node.has("$ref")) {
         //we should replace this node with its definition
         node = fetchRef(node.getOrThrow("$ref", "").coerceString().value, model);
     }
@@ -255,17 +273,17 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
     var annotation = new SchemaNode(node);
 
     //recurse to children first in bottom up
-    if(node.has("properties")) {
+    if (node.has("properties")) {
         node.getOrThrow("properties", "").asObject().forEach(
             function(name: Json.JString, child: Json.JValue){
                 annotation.properties[name.value] = annotate_schema(child, node, key, api, model);
             });
     }
 
-    if(debug) console.log("annotate_schema", node.toJSON());
+    if (debug) console.log("annotate_schema", node.toJSON());
 
     //wildchilds need special treatment as they are not normal properties but still schema nodes
-    if(getWildchild(node)){
+    if (getWildchild(node)){
         //add them as a property annotation
         var wildname = getWildchild(node).value;
         var wildkey  = getWildchild(node);
@@ -294,8 +312,8 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
     api.setContext(node, parent, annotation, model);
     annotation.type = node.has("type") ? node.getOrThrow("type", "").asString().value: "any";
 
-    if(!node.has("constraint")) {
-         node.asObject().put( //synthetically place a constraint in the user source so the SchemaAPI sees it
+    if (!node.has("constraint")) {
+         node.asObject().put( //synthetically place a constraint in the user source so the SchemaAPI can extend it
              new Json.JString("constraint", 0,0),
              new Json.JString("true", 0,0)
          )
@@ -313,13 +331,13 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
 
     //using type information, the metaschema is given an opportunity to customise the node with type specific keywords
 
-    if(api.metaschema[annotation.type] != undefined){
-        if(api.metaschema[annotation.type].validate(node)){
+    if (api.metaschema[annotation.type] != undefined){
+        if (api.metaschema[annotation.type].validate(node)){
             //the user compile could actually add more nodes, see schemaAPI.addProperty
             //if this happens annotate_schema needs to be called for new nodes
             //entering the system pragmatically in compile (done in addProperty)
             api.metaschema[annotation.type].compile(api);
-        }else{
+        } else {
             throw error.validation(
                 node,
                 api.metaschema[annotation.type].validator,
@@ -328,7 +346,7 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
                 tv4.error
             ).on(new Error());
         }
-    }else{
+    } else {
         throw error.source(node).message("unknown type '" + annotation.type + "' no metaschema to validate it").on(new Error());
     }
 
@@ -359,7 +377,6 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
             throw error.message("nonexample erroneously passed").source(nonexample).on(new Error());
         }
     });
-
 
     return annotation;
 }
@@ -502,7 +519,7 @@ export class SchemaAPI{
      * call getField(getWildchild()) if you want the wildchilds schema node
      * @returns {string}
      */
-    getWildchild():string{
+    getWildchild(): string{
         return getWildchild(this.node).value
     }
 }
@@ -512,7 +529,7 @@ function getWildchild(node: Json.JValue): Json.JString{
     node.asObject().forEach(
         function(keyword: Json.JString, child: Json.JValue){
             var name: string = keyword.value;
-            if (name.indexOf("$") == 0) {
+            if (name.indexOf("$") == 0 || name.indexOf("~$") == 0) {
                 if(wildchild == null) wildchild = keyword;
                 else{
                     throw error.message("multiple wildchilds defined:\n").source(node).on(new Error())

@@ -135,7 +135,8 @@ export class Expression{
      * represented as "false"
      */
     rewriteForParent(child_name): string{
-        if(child_name.indexOf("$") == 0) return "false"; //wildchilds can't be pushed up
+        if(child_name.indexOf("$") == 0)  return "false"; //wildchilds can't be pushed up
+        if(child_name.indexOf("~$") == 0) return "true";  //wilderchilds can't be pushed up
 
         var falafel_visitor = function(node){
             if(node.type == "Identifier"){

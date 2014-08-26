@@ -6,6 +6,7 @@ import firebase_io = require('./firebase_io');
 import compiler = require('../src/compiler');
 import async = require('async');
 
+
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/string.yaml", true).code),
@@ -100,27 +101,6 @@ export function testRequired(test:nodeunit.Test):void{
     ], test.done.bind(null));
 }
 
-export function testWildchild(test:nodeunit.Test):void{
-    async.series([
-        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/wildchild.yaml", true).code),
-
-        test_utils.assert_admin_can_write.bind(null, "/",{}, test),
-
-
-        test_utils.assert_can_write_mock.bind(null, "any","/chld1", "Y", test),
-        test_utils.assert_can_write_mock.bind(null, "any","/chld2", "Y", test),
-        test_utils.assert_cant_write.bind(null,     "any","/chld2", "N", test),
-        test_utils.assert_cant_write.bind(null,     "any","/chld2", "N", test),
-
-        test_utils.assert_cant_write.bind(null, "any","/", {chld1:"Y", chld2:"Y"}, test),
-
-
-        test_utils.assert_can_write.bind(null, "any","/extra", "N", test)
-
-
-    ], test.done.bind(null));
-}
-
 export function testTypes(test:nodeunit.Test):void{
     async.series([
         firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/types.yaml", true).code),
@@ -185,6 +165,53 @@ export function testAny(test: nodeunit.Test):void{
         test_utils.assert_can_write_mock.bind(null, "any","/",  {chld_str: "a", chld_bool: true}, test),
 
         test_utils.assert_cant_write.bind(null, "any","/", {chld_str: false, chld_bool: true}    , test),
+
+    ], test.done.bind(null));
+}
+export function testWildchild(test:nodeunit.Test):void{
+    async.series([
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/wildchild.yaml", true).code),
+
+        test_utils.assert_admin_can_write.bind(null, "/wildchild/",{}, test),
+
+
+        test_utils.assert_can_write_mock.bind(null, "any","/wildchild/chld1", "Y", test),
+        test_utils.assert_can_write_mock.bind(null, "any","/wildchild/chld2", "Y", test),
+        test_utils.assert_cant_write.bind(null,     "any","/wildchild/chld1", "N", test),
+        test_utils.assert_cant_write.bind(null,     "any","/wildchild/chld2", "N", test),
+
+        test_utils.assert_cant_write.bind(null, "any","/wildchild/", {chld1:"Y", chld2:"Y"}, test),
+
+
+        test_utils.assert_can_write.bind(null, "any","/wildchild/extra", "N", test),
+
+
+        test_utils.assert_can_write.bind(null, "any", "/wildchild/real", "Y", test),
+        test_utils.assert_cant_write.bind(null, "any", "/wildchild/real", null, test),
+
+
+    ], test.done.bind(null));
+}
+
+export function testWilderchild(test:nodeunit.Test):void{
+    async.series([
+        firebase_io.setValidationRules.bind(null, compiler.compile("test/cases/wildchild.yaml", true).code),
+
+        test_utils.assert_admin_can_write.bind(null, "/wilderchild/",{}, test),
+
+
+        test_utils.assert_can_write_mock.bind(null, "any","/wilderchild/chld1", "Y", test),
+        test_utils.assert_can_write_mock.bind(null, "any","/wilderchild/chld2", "Y", test),
+        test_utils.assert_cant_write.bind(null,     "any","/wilderchild/chld1", "N", test),
+        test_utils.assert_cant_write.bind(null,     "any","/wilderchild/chld2", "N", test),
+
+        test_utils.assert_can_write.bind (null, "any","/wilderchild/", {chld1:"Y", chld2:"Y"}, test),
+        test_utils.assert_cant_write.bind(null, "any","/wilderchild/", {chld1:"N", chld2:"Y"}, test),
+
+        test_utils.assert_can_write.bind(null, "any","/wilderchild/extra", "N", test),
+
+        test_utils.assert_can_write.bind(null, "any", "/wilderchild/real", "Y", test),
+        test_utils.assert_can_write.bind(null, "any", "/wilderchild/real", null, test), //danger introduced by wilder childs
 
     ], test.done.bind(null));
 }

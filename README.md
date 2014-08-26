@@ -159,6 +159,22 @@ schema:
       $userid: {}
 ```
 
+The use of a wildchild prevents all ascendents from being writable.  
+
+#### $wilderchild
+
+```YAML
+schema:
+  type: object
+  properties:
+    users:
+      type: object
+      ~$userid: {type: string, constraint: next != null}
+```
+
+Wilderchilds are an unsafe but more flexible wildchild. Use them with caution. Wilderchilds do not lock the parent against writing. Wilderchildren's constraints are respected only when next!=null. This implies wilderchild can be set to null whenever user has write access to them, either by writing to the parent or the wilderchild location directly. In the above example, despite the guard against being set to null in the constraint, the constraint is not evaluated when the wilder child is set to null and thus has no effect. Wilderchilds are useful because their enclosing location can still be written, but be aware of the drawbacks.
+
+
 #### Constraints
 
 The semantics of enforcing data integrity is different from the original rules. There is no overriding of constraints, nor separate read/write/validate expressions. There is just one field for expressing data integrity named *constraint*. All ancestors and descendant constraints must evaluate to true for a write to be allowed.
@@ -333,6 +349,9 @@ access:
 
 
 ##  Changelog
+- 26th August 2014:
+  - wilderchilds introduced ~$ allows nullable wildchilds whose parents can be written to.
+
 - 18th August 2014:
   - predicates renamed to functions
   

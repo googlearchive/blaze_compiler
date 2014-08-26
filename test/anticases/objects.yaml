@@ -13,3 +13,8 @@ schema:
 schema:
   type: object
   nonkeyword: object   #can't use invalid keywords
+
+---
+schema:
+  type: object
+  non$keword: object   #can't use invalid keywords even with dollars in them

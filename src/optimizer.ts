@@ -33,6 +33,13 @@ export function simplify(javascript_str: string):string{
     return falafel(javascript_str.toString(), {}, simplify_fn).toString();
 }
 
+/**
+ * changes double quotes to single quotes
+ */
+export function sanatize() {
+
+}
+
 
 var isCommunicativeUniquePrecedence = function(token:string):boolean{
     switch (token) {

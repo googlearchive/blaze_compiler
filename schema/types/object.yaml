@@ -41,7 +41,10 @@ properties:
     additionalProperties: {$ref: "http://firebase.com/schema#"}
     default: {}
 
-patternProperties: #wildchild support, starts with dollar
-  \$.+:
+patternProperties:
+  ^\$.+$: #wildchild support, starts with dollar
+    {$ref: "http://firebase.com/schema#"}
+
+  ^~\$.+$: #nullable wildchild, starts with ~$
     {$ref: "http://firebase.com/schema#"}
 
