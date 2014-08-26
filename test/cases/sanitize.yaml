@@ -1,0 +1,8 @@
+schema: {}
+access:
+  - location: /
+    read:    auth.id == ''
+    write:   auth.id == ""
+
+  - location: /
+    read:    auth.id == "'"

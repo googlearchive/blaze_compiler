@@ -1,5 +1,5 @@
 functions:
-  - isLoggedIn(): auth.username == "tom"
+  - isLoggedIn(): auth.username == 'tom'
 
 schema:
   type: string

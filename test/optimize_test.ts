@@ -27,3 +27,65 @@ export function testSimplify3(test:nodeunit.Test):void{
     test.equal(optimized, "5/6*7");
     test.done();
 }
+
+export function testSanitizeQuotes0(test:nodeunit.Test): void{
+    //single quote string are fine as is
+    var unoptimized: string = "a == ''";
+    var optimized = optimizer.sanitizeQuotes(unoptimized);
+    test.equal(optimized, "a == ''");
+    test.done();
+}
+
+export function testSanitizeQuotes1(test:nodeunit.Test): void{
+    //double quote needs to be moved into a single quote string
+    var unoptimized: string = "a == \"\"";
+    var optimized = optimizer.sanitizeQuotes(unoptimized);
+    test.equal(optimized, "a == ''");
+    test.done();
+}
+
+export function testSanitizeQuotes2(test:nodeunit.Test): void{
+    //unescaped single quote needs to be escaped when moved into a single quote string
+    var unoptimized: string = "a == \"'\"";
+    var optimized = optimizer.sanitizeQuotes(unoptimized);
+    test.equal(optimized, "a == '\\''");
+    test.done();
+}
+
+export function testSanitizeQuotes3(test:nodeunit.Test): void{
+    //escaped double quote can stay as is
+    var unoptimized: string = 'a == "\\""';
+    var optimized = optimizer.sanitizeQuotes(unoptimized);
+    //test.equal(optimized, "a == '\\\"'");  <- what I expected by falafel must be processing
+    test.equal(optimized, "a == '\"'");    //<-- still valid construction though
+    test.done();
+}
+
+export function testSanitizeQuotes4(test:nodeunit.Test): void{
+    //escaped double quote can stay as is
+    var unoptimized: string = 'a == "" || b == \'\'';
+    var optimized = optimizer.sanitizeQuotes(unoptimized);
+    test.equal(optimized, "a == '' || b == ''");
+    test.done();
+}
+
+export function testSanitizeQuotes5(test:nodeunit.Test): void{
+    //escaped double quote can stay as is
+    var unoptimized: string = 'a == "\'\'"';
+    var optimized = optimizer.sanitizeQuotes(unoptimized);
+    test.equal(optimized, "a == '\\'\\''");
+    test.done();
+}
+
+export function testEscapeQuotes1(test:nodeunit.Test): void{
+    //single quotes must be escaped
+    test.equal(optimizer.escapeSingleQuotes("'"), "\\'");
+    test.done();
+}
+
+export function testEscapeQuotes2(test:nodeunit.Test): void{
+    //single quotes must be escaped
+    test.equal(optimizer.escapeSingleQuotes("''"), "\\'\\'");
+    test.done();
+}
+

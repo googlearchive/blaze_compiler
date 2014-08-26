@@ -35,12 +35,14 @@ export function setValidationRules(rules_str, cb){
 	  res.on('data', function(d) {
 		process.stdout.write(d);
 		var data =  JSON.parse(d); //check the return json's status that Firebase writes
+
+
 		if (data.status == "ok"){
 			//so Firebase says it uploaded ok
             cb(null);
-		}else{
+		} else {
             //went wrong
-	        cb(data.status);
+	        cb (data);
 		}		
 	  });
 	});
@@ -52,6 +54,17 @@ export function setValidationRules(rules_str, cb){
 	  console.error(e);//the whole request went bad which is not a good
 	  cb(e, null);
 	});
+}
+
+export function assertSetValidationRules(rules_str, test, cb){
+    setValidationRules(rules_str, function(err){
+        if (err) {
+            test.ok(false);
+        } else {
+            test.ok(true);
+        }
+        cb(err);
+    })
 }
 
 /**

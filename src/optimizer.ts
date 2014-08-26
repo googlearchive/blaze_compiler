@@ -33,13 +33,39 @@ export function simplify(javascript_str: string):string{
     return falafel(javascript_str.toString(), {}, simplify_fn).toString();
 }
 
+var singleQuoteRegex = new RegExp("'", "g");
 /**
- * changes double quotes to single quotes
+ * backslash is inserted before every single quote, intended to be run within a string context
  */
-export function sanatize() {
-
+export function escapeSingleQuotes(string_literal: string): string {
+    string_literal = string_literal.replace(singleQuoteRegex, "\\'");
+    return string_literal
 }
 
+var escapeRegex = new RegExp("\\\\", "g");
+/**
+ * backslash is inserted before every backslash, intended to be run within a string context, when placing an existing
+ * escaped string within another
+ */
+export function escapeEscapes(string_literal: string): string {
+    string_literal = string_literal.replace(escapeRegex, "\\\\");
+    return string_literal
+}
+
+/**
+ * changes double quotes to single quotes
+ * might have been easier just to escape the existing double quotes
+ */
+export function sanitizeQuotes(javascript_str: string) {
+    var simplify_fn = function(node){
+        if (node.type == "Literal") {
+            //double quoted string needs to be changed to single quotes
+            if (node.raw.indexOf('"') == 0) node.update("'" + escapeSingleQuotes(node.value) + "'")
+        }
+    };
+
+    return falafel(javascript_str.toString(), {}, simplify_fn).toString();
+}
 
 var isCommunicativeUniquePrecedence = function(token:string):boolean{
     switch (token) {

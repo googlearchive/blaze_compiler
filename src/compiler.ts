@@ -6,7 +6,7 @@ import Json  = require('source-processor');
 import expression = require('../src/expression');
 import fs = require('fs');
 
-var debug_intermediates = false;
+var debug_intermediates = true;
 /**
  * compiles a json object into an annotated model of rules, then writes it to file in rules.json
  * return null if failed, or the model
@@ -82,6 +82,7 @@ export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
         else{
             console.error(msg);
         }
+
         return null;
     }
 }

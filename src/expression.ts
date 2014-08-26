@@ -86,7 +86,7 @@ export class Symbols{
         return clone;
     }
 
-    loadFunction(functions: Functions){
+    loadFunction(functions: Functions) {
         for(var identifier in functions){
             this.functions[identifier] = functions[identifier];
         }
@@ -109,7 +109,7 @@ export class Expression{
     }
 
     static parseUser(json: Json.JString): Expression{
-        return new Expression(json.value, json);
+        return new Expression(optimizer.sanitizeQuotes(json.value), json);
     }
 
     /**
@@ -151,7 +151,9 @@ export class Expression{
         return <string>falafel(this.raw, {}, falafel_visitor);
     }
 
-    generate(symbols: Symbols):string {
+    generate(symbols: Symbols): string {
+        var self: Expression = this;
+
         //the falafel visitor function replaces source with a different construction
         var falafel_visitor = function(node){
 
@@ -277,8 +279,7 @@ export class Expression{
                 }
 
                 if(node.expr_type == null){
-                    console.error(node);
-                    throw Error("unexpected situation in type system " + node.object.expr_type + " " + node.property.expr_type)
+                    throw error.message("Bug: Unexpected situation in type system " + node.object.expr_type + " " + node.property.expr_type).source(self.source).on(new Error());
                 }
 
 
@@ -315,8 +316,7 @@ export class Expression{
                     node.update("(" + expansion + ")");
                     node.expr_type = "value";
                 }else{
-                    console.error(node);
-                    throw Error("unexpected situation in call expression " + node.callee.expr_type)
+                    throw error.message("Bug: Unexpected situation in type system " + node.object.expr_type).source(self.source).on(new Error());
                 }
             }else if(node.type == "BinaryExpression" || node.type == "BooleanExpression" || node.type == "LogicalExpression"){
                 //coersion to value, if a rule (i.e. appending .val() when in a binary operator as ruleSnapshots don't support any binary operators)
@@ -335,13 +335,12 @@ export class Expression{
             }else if(node.type == "ExpressionStatement"){
             }else if(node.type == "Program"){
             }else{
-                console.log("error ", node.type);
-                throw "Unrecognised Type";
+                throw error.message("Bug: Unrecognised Type In Expression Parser: " + node.type).source(self.source).on(new Error());
             }
         };
 
-        var code:string = falafel(this.raw, {}, falafel_visitor).toString();
+        var code: string = falafel(this.raw, {}, falafel_visitor).toString();
 
-        return optimizer.simplify(code);
+        return optimizer.escapeEscapes(optimizer.simplify(code));
     }
 }

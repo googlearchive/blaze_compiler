@@ -350,7 +350,8 @@ access:
 
 ##  Changelog
 - 26th August 2014:
-  - wilderchilds introduced ~$ allows nullable wildchilds whose parents can be written to.
+  - wilderchilds introduced, ~$ allows nullable wildchilds whose parents can be written to.
+  - sanitized expressions bug fix
 
 - 18th August 2014:
   - predicates renamed to functions
