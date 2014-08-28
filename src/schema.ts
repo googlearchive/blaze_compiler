@@ -492,7 +492,7 @@ export class SchemaAPI{
      */
     getField(name:string, type: string): any{
         if(debug) console.log("getField on", name, "result:", this.node[name], this.node);
-        if(this.node[name] == null) return;
+        if(this.node[name] == null) return null;
 
         //so the field is present, now we check the type
         if (type !== undefined) {

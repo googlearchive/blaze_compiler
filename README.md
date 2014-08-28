@@ -146,6 +146,25 @@ schema:
   enum: [yes, no, maybe]
 ```
 
+#### ranges
+
+The minimum keyword constrains the minimum value of a number type. You set exclusiveMinimum to true, otherwise the
+minimum is inclusive. Maximum and exclusiveMaximum follow the pattern
+
+```YAML
+schema:
+  type: number
+  minimum:  0
+  maximum: 10
+  exclusiveMaximum: true
+  
+  examples:
+    - 0
+    - 9.9
+  nonexamples:
+    - 10
+'''
+
 #### $wildchild
 
 An object can have many children bound to a path variable denoted with a keyword starting with $. Note that wildchilds are not put in the properties definition. The following shows how to accept many objects as children of "/users/"

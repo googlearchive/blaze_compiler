@@ -10,4 +10,9 @@ properties:
   examples: {}
   nonexamples: {}
 
+  minimum: {type: number}
+  maximum: {type: number}
+  exclusiveMinimum: {type: boolean}
+  exclusiveMaximum: {type: boolean}
+
 additionalProperties: false

@@ -6,7 +6,6 @@ import firebase_io = require('./firebase_io');
 import compiler = require('../src/compiler');
 import async = require('async');
 
-
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.assertSetValidationRules.bind(null, compiler.compile("test/cases/string.yaml", true).code, test),
@@ -14,6 +13,33 @@ export function testString(test:nodeunit.Test):void{
         test_utils.assert_cant_write.bind(null, "any", "/", "incorrect", test), //not in enum
         test_utils.assert_cant_write.bind(null, "any", "/", {"child":"correct"}, test),
         test_utils.assert_can_read.bind  (null, "any", "/", "correct", test)
+    ], test.done.bind(null));
+}
+
+export function testNumber(test:nodeunit.Test):void{
+    async.series([
+        firebase_io.assertSetValidationRules.bind(null, compiler.compile("test/cases/number.yaml", true).code, test),
+
+        test_utils.assert_can_write.bind (null, "any", "/plain_number", 4, test),
+        test_utils.assert_can_write.bind (null, "any", "/plain_number", 4.2, test),
+        test_utils.assert_can_write.bind (null, "any", "/plain_number", -5, test),
+        test_utils.assert_cant_write.bind (null, "any", "/plain_number", "str", test),
+        test_utils.assert_cant_write.bind (null, "any", "/plain_number", {"a":5}, test),
+
+        test_utils.assert_can_write.bind (null, "any",  "/min_number", 5, test),
+        test_utils.assert_cant_write.bind (null, "any", "/min_number", 4.9, test),
+
+        test_utils.assert_can_write.bind (null, "any",  "/exclusive_min_number", 5.1, test),
+        test_utils.assert_cant_write.bind (null, "any", "/exclusive_min_number", 5, test),
+
+
+        test_utils.assert_can_write.bind (null, "any",  "/max_number", 0, test),
+        test_utils.assert_cant_write.bind (null, "any", "/max_number", 0.1, test),
+
+        test_utils.assert_can_write.bind (null, "any",  "/exclusive_max_number", -.1, test),
+        test_utils.assert_cant_write.bind (null, "any", "/exclusive_max_number", 0, test),
+
+
     ], test.done.bind(null));
 }
 

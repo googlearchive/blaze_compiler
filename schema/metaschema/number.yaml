@@ -3,3 +3,19 @@ validator: {$ref: "http://firebase.com/schema/types/number#"}
 compile:
   console.log("compile number");
   api.addConstraint("!next.exists() || next.isNumber()")
+
+  if (api.getField("minimum") != null) {
+    if (api.getField("exclusiveMinimum") == true) {
+      api.addConstraint("next > "  + api.getField("minimum"))
+    } else {
+      api.addConstraint("next >= " + api.getField("minimum"))
+    }
+  }
+
+  if (api.getField("maximum") != null) {
+    if (api.getField("exclusiveMaximum") == true) {
+      api.addConstraint("next < "  + api.getField("maximum"))
+    } else {
+      api.addConstraint("next <= " + api.getField("maximum"))
+    }
+  }

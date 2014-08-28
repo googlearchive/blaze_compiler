@@ -81,6 +81,7 @@ export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
         if (debug) console.error(error.stack); //includes writing message
         else{
             console.error(msg);
+            console.error("run with -v option for fuller error messages")
         }
 
         return null;

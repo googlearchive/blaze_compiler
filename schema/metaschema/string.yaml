@@ -5,9 +5,9 @@ compile:
   api.addConstraint("!next.exists() || next.isString()")
 
 
-  if(api.getField("enum")){
+  if (api.getField("enum") != null){
     var enum_constraint = "!next.exists()";
-    for(var idx in api.getField("enum")){
+    for (var idx in api.getField("enum")){
       var enum_option = api.getField("enum")[idx];
       enum_constraint = enum_constraint + "||next === '" + enum_option + "'";
     }

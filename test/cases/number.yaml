@@ -1,0 +1,66 @@
+schema:
+  type: object
+  properties:
+
+    plain_number:
+      type: number
+      examples:
+        - -4
+        - 1
+        - 1.2
+
+      nonexamples:
+        - true
+        - {a: 6}
+
+
+    min_number:
+      type: number
+      minimum: 5
+      examples:
+        - 5
+      nonexamples:
+        - 4.9
+        - -2
+
+    exclusive_min_number:
+      type: number
+      minimum: 5
+      exclusiveMinimum: true
+      examples:
+        - 5.1
+      nonexamples:
+        - 5
+
+    max_number:
+      type: number
+      maximum: 0
+      examples:
+        - 0
+      nonexamples:
+        - .1
+
+    exclusive_max_number:
+      type: number
+      maximum: 0
+      exclusiveMaximum: true
+      examples:
+        - -0.1
+      nonexamples:
+        - 0
+
+    readme_example:
+      type: number
+      minimum:  0
+      maximum: 10
+      exclusiveMaximum: true
+      examples:
+        - 0
+        - 9.9
+      nonexamples:
+        - 10
+
+access:
+  - location: "/"
+    read:  "true"
+    write: "true"
