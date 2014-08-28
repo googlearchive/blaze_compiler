@@ -1,4 +1,5 @@
 .idea/*
+examples/rules.yaml
 node_modules/*
 rules.json
 model.java

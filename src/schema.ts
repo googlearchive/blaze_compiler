@@ -383,7 +383,6 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
 
 export function fetchRef(url:string, model:blaze.Rules): Json.JValue{
     //todo: this should probably be routed through tv4's getSchema method properly
-    if (debug) console.log("fetchRef" + url);
 
     //code nicked from tv4.getSchema:
     var baseUrl = url; //not interested in yet
@@ -395,7 +394,7 @@ export function fetchRef(url:string, model:blaze.Rules): Json.JValue{
     var pointerPath = decodeURIComponent(fragment);
 
     if (pointerPath.charAt(0) !== "/") {
-        return undefined;
+        throw error.message("$ref URL not starting with / or #/ " + url).on(new Error())
     }
 
     var parts = pointerPath.split("/").slice(1);
@@ -410,6 +409,9 @@ export function fetchRef(url:string, model:blaze.Rules): Json.JValue{
 
             ].join("\n"))
     }
+
+    if (debug) console.log("fetchRef" + url + " retrieved " + JSON.stringify(schema.toJSON()));
+
     return schema;
 }
 /**
