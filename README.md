@@ -163,7 +163,7 @@ schema:
     - 9.9
   nonexamples:
     - 10
-'''
+```
 
 #### $wildchild
 
@@ -368,6 +368,9 @@ access:
 
 
 ##  Changelog
+- 28th August 2014:
+  - range constraints for number type added
+  
 - 26th August 2014:
   - wilderchilds introduced, ~$ allows nullable wildchilds whose parents can be written to.
   - sanitized expressions bug fix
