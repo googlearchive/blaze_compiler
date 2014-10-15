@@ -2,7 +2,6 @@
 /// <reference path="../src/expression.ts" />
 import optimizer = require('../src/optimizer');
 
-//var unoptimized:string = "true&&(true&&(true&&(!newData.child('chld1').child('grnd1').parent().parent().exists()||!(newData.child('chld1').child('grnd1').parent().parent().isString()||newData.child('chld1').child('grnd1').parent().parent().isNumber()||newData.child('chld1').child('grnd1').parent().parent().isBoolean()))&&(auth.username=='red'&&(!newData.child('chld1').child('grnd1').parent().exists()||!(newData.child('chld1').child('grnd1').parent().isString()||newData.child('chld1').child('grnd1').parent().isNumber()||newData.child('chld1').child('grnd1').parent().isBoolean())))&&((auth.username=='red'||auth.username=='black')&&(!newData.child('chld1').child('grnd1').exists()||newData.child('chld1').child('grnd1').isString())))&&(true&&(!newData.child('chld1').child('grnd2').parent().parent().exists()||!(newData.child('chld1').child('grnd2').parent().parent().isString()||newData.child('chld1').child('grnd2').parent().parent().isNumber()||newData.child('chld1').child('grnd2').parent().parent().isBoolean()))&&(auth.username=='red'&&(!newData.child('chld1').child('grnd2').parent().exists()||!(newData.child('chld1').child('grnd2').parent().isString()||newData.child('chld1').child('grnd2').parent().isNumber()||newData.child('chld1').child('grnd2').parent().isBoolean())))&&(true&&(!newData.child('chld1').child('grnd2').exists()||newData.child('chld1').child('grnd2').isString()))))&&(true&&(true&&(!newData.child('chld2').child('grnd3').parent().parent().exists()||!(newData.child('chld2').child('grnd3').parent().parent().isString()||newData.child('chld2').child('grnd3').parent().parent().isNumber()||newData.child('chld2').child('grnd3').parent().parent().isBoolean()))&&(true&&(!newData.child('chld2').child('grnd3').parent().exists()||!(newData.child('chld2').child('grnd3').parent().isString()||newData.child('chld2').child('grnd3').parent().isNumber()||newData.child('chld2').child('grnd3').parent().isBoolean())))&&(auth.username=='black'&&(!newData.child('chld2').child('grnd3').exists()||newData.child('chld2').child('grnd3').isString())))&&(true&&(!newData.child('chld2').child('grnd4').parent().parent().exists()||!(newData.child('chld2').child('grnd4').parent().parent().isString()||newData.child('chld2').child('grnd4').parent().parent().isNumber()||newData.child('chld2').child('grnd4').parent().parent().isBoolean()))&&(true&&(!newData.child('chld2').child('grnd4').parent().exists()||!(newData.child('chld2').child('grnd4').parent().isString()||newData.child('chld2').child('grnd4').parent().isNumber()||newData.child('chld2').child('grnd4').parent().isBoolean())))&&((auth.username=='red'||auth.username=='black')&&(!newData.child('chld2').child('grnd4').exists()||newData.child('chld2').child('grnd4').isString()))))&&(false||auth.username=='black')";
 
 export function testSimplify1(test:nodeunit.Test):void{
     var unoptimized:string = "true && (false && (true && false) && (true && false) && true)";
@@ -86,6 +85,46 @@ export function testEscapeQuotes1(test:nodeunit.Test): void{
 export function testEscapeQuotes2(test:nodeunit.Test): void{
     //single quotes must be escaped
     test.equal(optimizer.escapeSingleQuotes("''"), "\\'\\'");
+    test.done();
+}
+
+export function testPrune(test:nodeunit.Test): void{
+    test.equal(optimizer.pruneBooleanLiterals("!true"), "false");
+    test.equal(optimizer.pruneBooleanLiterals("!false"), "true");
+
+    test.equal(optimizer.pruneBooleanLiterals("true && true"), "true");
+    test.equal(optimizer.pruneBooleanLiterals("true && false"), "false");
+    test.equal(optimizer.pruneBooleanLiterals("false && true"), "false");
+    test.equal(optimizer.pruneBooleanLiterals("false && false"), "false");
+
+    test.equal(optimizer.pruneBooleanLiterals("true && f"), "(f)");
+    test.equal(optimizer.pruneBooleanLiterals("f && true"), "(f)");
+    test.equal(optimizer.pruneBooleanLiterals("false && f"), "false");
+    test.equal(optimizer.pruneBooleanLiterals("f && false"), "false");
+
+
+    test.equal(optimizer.pruneBooleanLiterals("true || f"), "true");
+    test.equal(optimizer.pruneBooleanLiterals("f || true"), "true");
+    test.equal(optimizer.pruneBooleanLiterals("false || f"), "(f)");
+    test.equal(optimizer.pruneBooleanLiterals("f || false"), "(f)");
+
+    test.done();
+}
+
+export function testChildParentAnnihilation(test:nodeunit.Test): void{
+    test.equal(optimizer.childParentAnnihilation("data.child('x').parent().val()"), "data.val()");
+
+    test.done();
+}
+
+export function testClauseRepetitionElimination(test:nodeunit.Test): void{
+    test.equal(optimizer.clauseRepetitionElimination("a && a"), "((a))"); //bit weird with parenthesis
+    test.equal(optimizer.clauseRepetitionElimination("a || a"), "((a))");
+    test.equal(optimizer.clauseRepetitionElimination("a && b && a"), "(a&&b)");
+    test.equal(optimizer.clauseRepetitionElimination("a && b && b && a && c && a"), "(a&&b&&c)");
+    test.equal(optimizer.clauseRepetitionElimination("d && b && b && a && c && a"), "(d&&b&&a&&c)");
+    test.equal(optimizer.clauseRepetitionElimination("d || b || b || a || c || a"), "(d||b||a||c)");
+
     test.done();
 }
 

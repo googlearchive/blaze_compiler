@@ -39,7 +39,30 @@ schema:
         - {chldX: true} #types are checked by the examples though, as that is part of core JSON schema
         - "root strings not allowed"
 
+    nested:
+      type: object
+      $chld:
+        type: object
+        $gchld:
+          type: object
+          constraint: next.val() != null
+          properties:
+            data: {type: string}
+
 access:
-  - location: "/"
-    read:  "true"
-    write: "true"
+  - location: wildchild
+    read:  true
+    write: true
+
+  - location: wilderchild
+    read:  true
+    write: true
+
+
+  - location: nested
+    read:  auth != null
+    write: auth != null
+  - location: nested/$chld/$gchld
+    read:  true
+    write: true
+

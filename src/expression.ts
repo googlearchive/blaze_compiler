@@ -341,6 +341,7 @@ export class Expression{
 
         var code: string = falafel(this.raw, {}, falafel_visitor).toString();
 
-        return optimizer.escapeEscapes(optimizer.simplify(code));
+        //return optimizer.escapeEscapes(optimizer.simplify(code));
+        return optimizer.escapeEscapes(optimizer.optimize(code));
     }
 }

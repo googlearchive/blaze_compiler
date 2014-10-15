@@ -248,3 +248,21 @@ export function testSanitize(test:nodeunit.Test):void{
         firebase_io.assertSetValidationRules.bind(null, compiler.compile("test/cases/sanitize.yaml", true).code, test)
     ], test.done.bind(null));
 }
+
+
+export function testNestedWildchilds(test:nodeunit.Test):void{
+    async.series([
+        firebase_io.assertSetValidationRules.bind(null, compiler.compile("test/cases/wildchild.yaml", true).code, test),
+
+        test_utils.assert_admin_can_write.bind(null, "/nested/",{}, test),
+
+
+        //anyone can write to grandchildren
+        test_utils.assert_can_write.bind(null, null,"/nested/a/a/data", "a", test),
+        //no-one can delete because of constraint
+        test_utils.assert_cant_write.bind(null, null,"/nested/a/a/data", null, test),
+
+        //authenticated have greater permissions (can't do at the moment)
+        //test_utils.assert_can_write.bind(null, "auth", "/nested/a", null, test),
+    ], test.done.bind(null));
+}
