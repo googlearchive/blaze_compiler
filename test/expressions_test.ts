@@ -349,6 +349,41 @@ export function testToUpperCase(test:nodeunit.Test):void{
     test.done();
 }
 
+
+
+export function testRegex1(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "/regex/",
+        "/regex/",
+        new expressions.Functions(),
+        test
+    );
+    test.done();
+}
+
+export function testRegex2(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "/\\\\d/",
+        "/\\\\d/",
+        new expressions.Functions(),
+        test
+    );
+    test.done();
+}
+
+export function testRegex3(test:nodeunit.Test):void{
+    //bit weird this works
+    translationTestCase(
+        "root.val().matches(/regex/)",
+        "root.val().matches(/regex/)",
+        new expressions.Functions(),
+        test
+    );
+    test.done();
+}
+
 function Function(dec: string, expr: string): expressions.Function {
     return new expressions.Function(dec, new Json.JString(expr, 0, 0))
 }

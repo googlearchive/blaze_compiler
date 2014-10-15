@@ -183,8 +183,11 @@ export class Expression{
 
             }else if(node.type == "Literal"){
                 //console.log("literal: ", node.value);
-
-                node.expr_type = "value";
+                if ((typeof node.value == 'string' || node.value instanceof String) && node.value.indexOf('/') == 0){
+                    node.expr_type = "regex";
+                } else {
+                    node.expr_type = "value";
+                }
             }else if(node.type == "ArrayExpression"){
                 //console.log("ArrayExpression", node);
                 node.expr_type = "value";
@@ -274,15 +277,14 @@ export class Expression{
                             node.expr_type = "fun():value"
                         }else if(node.property.name == 'endsWith'){
                             node.expr_type = "fun():value"
+                        }else if(node.property.name == 'matches'){
+                            node.expr_type = "fun(regex):value"
                         }
                     }
                 }
-
                 if(node.expr_type == null){
-                    throw error.message("Bug: Unexpected situation in type system " + node.object.expr_type + " " + node.property.expr_type).source(self.source).on(new Error());
+                    throw error.message("Bug: 3 Unexpected situation in type system " + node.object.expr_type + " " + node.property.expr_type).source(self.source).on(new Error());
                 }
-
-
             }else if(node.type == "CallExpression"){
                 if(node.callee.expr_type === "fun():rule"){
                     node.expr_type = "rule";
@@ -293,6 +295,8 @@ export class Expression{
                 }else if(node.callee.expr_type === "fun(value):value"){
                     node.expr_type = "value";
                 }else if(node.callee.expr_type === "fun(array):value"){
+                    node.expr_type = "value";
+                }else if(node.callee.expr_type === "fun(regex):value"){
                     node.expr_type = "value";
                 }else if(node.callee.expr_type === "fun(value,value):value"){
                     node.expr_type = "value";
@@ -316,7 +320,7 @@ export class Expression{
                     node.update("(" + expansion + ")");
                     node.expr_type = "value";
                 }else{
-                    throw error.message("Bug: Unexpected situation in type system " + node.object.expr_type).source(self.source).on(new Error());
+                    throw error.message("Bug: 4 Unexpected situation in type system " + node.callee.expr_type).source(self.source).on(new Error());
                 }
             }else if(node.type == "BinaryExpression" || node.type == "BooleanExpression" || node.type == "LogicalExpression"){
                 //coersion to value, if a rule (i.e. appending .val() when in a binary operator as ruleSnapshots don't support any binary operators)
@@ -335,7 +339,7 @@ export class Expression{
             }else if(node.type == "ExpressionStatement"){
             }else if(node.type == "Program"){
             }else{
-                throw error.message("Bug: Unrecognised Type In Expression Parser: " + node.type).source(self.source).on(new Error());
+                throw error.message("Bug: 5 Unrecognised Type In Expression Parser: " + node.type).source(self.source).on(new Error());
             }
         };
 
