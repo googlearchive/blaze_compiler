@@ -368,7 +368,11 @@ access:
 
 
 ##  Changelog
-- 28th August 2014:
+- 20th November 2014:
+  - optimizations added to reduce code bloat
+  - sensitization bug regarding regexes fixed
+  
+- 28th August 2014:ß
   - range constraints for number type added
   
 - 26th August 2014:

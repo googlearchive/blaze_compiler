@@ -239,7 +239,7 @@ export function escapeSingleQuotes(string_literal: string): string {
     return string_literal
 }
 
-var escapeRegex = new RegExp("\\\\", "g");
+var escapeRegex = new RegExp("\\\\", "g"); //detects a single backslash
 /**
  * backslash is inserted before every backslash, intended to be run within a string context, when placing an existing
  * escaped string within another

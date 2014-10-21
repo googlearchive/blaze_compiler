@@ -207,7 +207,6 @@ export function test$var3(test:nodeunit.Test):void{
 }
 
 export function test$var4(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "prev.$userid.val()",
         "data.child($userid).val()",
@@ -218,7 +217,6 @@ export function test$var4(test:nodeunit.Test):void{
 }
 
 export function testNow(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "next < now",
         "newData.val()<now",
@@ -229,7 +227,6 @@ export function testNow(test:nodeunit.Test):void{
 }
 
 export function testRoot(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "root.users[auth.id].active == true",
         "root.child('users').child(auth.id).child('active').val()==true",
@@ -240,7 +237,6 @@ export function testRoot(test:nodeunit.Test):void{
 }
 
 export function testHasChild(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "next.hasChild('name')",
         "newData.hasChild('name')",
@@ -251,7 +247,6 @@ export function testHasChild(test:nodeunit.Test):void{
 }
 
 export function testHasChildren1(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "next.hasChildren()",
         "newData.hasChildren()",
@@ -262,7 +257,6 @@ export function testHasChildren1(test:nodeunit.Test):void{
 }
 
 export function testHasChildren2(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "next.hasChildren(['name', 'age'])",
         "newData.hasChildren(['name', 'age'])",
@@ -273,7 +267,6 @@ export function testHasChildren2(test:nodeunit.Test):void{
 }
 
 export function testGetPriority(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "next.getPriority() != null",
         "newData.getPriority()!=null",
@@ -284,7 +277,6 @@ export function testGetPriority(test:nodeunit.Test):void{
 }
 
 export function testLength(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "next.isString()&&next.val().length>=10",
         "newData.isString()&&newData.val().length>=10",
@@ -295,7 +287,6 @@ export function testLength(test:nodeunit.Test):void{
 }
 
 export function testBeginsWith(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "auth.identifier.beginsWith('internal-')",
         "auth.identifier.beginsWith('internal-')",
@@ -306,7 +297,6 @@ export function testBeginsWith(test:nodeunit.Test):void{
 }
 
 export function testEndsWith(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "next.val().endsWith('internal-')",
         "newData.val().endsWith('internal-')",
@@ -317,7 +307,6 @@ export function testEndsWith(test:nodeunit.Test):void{
 }
 
 export function testReplace(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "root.users[auth.email.replace('.', ',')].exists()",
         "root.child('users').child(auth.email.replace('.', ',')).exists()",
@@ -328,7 +317,6 @@ export function testReplace(test:nodeunit.Test):void{
 }
 
 export function testToLowerCase(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "root.users[auth.identifier.toLowerCase()].exists()",
         "root.child('users').child(auth.identifier.toLowerCase()).exists()",
@@ -339,7 +327,6 @@ export function testToLowerCase(test:nodeunit.Test):void{
 }
 
 export function testToUpperCase(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "root.users[auth.identifier.toUpperCase()].exists()",
         "root.child('users').child(auth.identifier.toUpperCase()).exists()",
@@ -349,10 +336,7 @@ export function testToUpperCase(test:nodeunit.Test):void{
     test.done();
 }
 
-
-
 export function testRegex1(test:nodeunit.Test):void{
-    //bit weird this works
     translationTestCase(
         "/regex/",
         "/regex/",
@@ -363,7 +347,16 @@ export function testRegex1(test:nodeunit.Test):void{
 }
 
 export function testRegex2(test:nodeunit.Test):void{
-    //bit weird this works
+    translationTestCase(
+        "/\\d/",
+        "/\\d/",
+        new expressions.Functions(),
+        test
+    );
+    test.done();
+}
+
+export function testRegex3(test:nodeunit.Test):void{
     translationTestCase(
         "/\\\\d/",
         "/\\\\d/",
@@ -373,11 +366,10 @@ export function testRegex2(test:nodeunit.Test):void{
     test.done();
 }
 
-export function testRegex3(test:nodeunit.Test):void{
-    //bit weird this works
+export function testRegex4(test:nodeunit.Test):void{
     translationTestCase(
         "root.val().matches(/regex/)",
-        "root.val().matches(/regex/)",
+        "root.val().matches(/regex/)", //this second version needs to be safe inside a ""
         new expressions.Functions(),
         test
     );
@@ -407,8 +399,7 @@ export function testFunctionParsing3(test){
     test.done();
 }
 
-export function testFunction1(test:nodeunit.Test):void{
-    //bit weird this works
+export function testFunction1(test:nodeunit.Test):void {
     translationTestCase(
         "isLoggedIn()",
         "(auth.id==null)",
@@ -420,8 +411,7 @@ export function testFunction1(test:nodeunit.Test):void{
     test.done();
 }
 
-export function testFunction2(test:nodeunit.Test):void{
-    //bit weird this works
+export function testFunction2(test:nodeunit.Test):void {
     translationTestCase(
         "isEqual(prev, next.name)",
         "(data.val()==newData.child('name').val())",
@@ -433,8 +423,7 @@ export function testFunction2(test:nodeunit.Test):void{
     test.done();
 }
 
-export function testFunction3(test:nodeunit.Test):void{
-    //bit weird this works
+export function testFunction3(test:nodeunit.Test):void {
     translationTestCase(
         "isLoggedIn(auth)",
         "(auth.id=='yo')",
@@ -446,8 +435,7 @@ export function testFunction3(test:nodeunit.Test):void{
     test.done();
 }
 
-export function testUnary(test:nodeunit.Test):void{
-    //bit weird this works
+export function testUnary(test:nodeunit.Test):void {
     translationTestCase(
         "!isLoggedIn(auth)",
         "!(auth.id=='yo')",
@@ -459,8 +447,7 @@ export function testUnary(test:nodeunit.Test):void{
     test.done();
 }
 
-export function testSanitizeQuotes1(test:nodeunit.Test):void{
-    //bit weird this works
+export function testSanitizeQuotes1(test:nodeunit.Test):void {
     translationTestCase(
         "\"string\"=='string'",
         "\"string\"=='string'",
@@ -470,8 +457,7 @@ export function testSanitizeQuotes1(test:nodeunit.Test):void{
     test.done();
 }
 
-export function testSanitizeQuotes2(test:nodeunit.Test):void{
-    //bit weird this works
+export function testSanitizeQuotes2(test:nodeunit.Test):void {
     translationTestCase(
         "next['string'] == prev[\"string\"]",
         'newData.child(\'string\').val()==data.child("string").val()',

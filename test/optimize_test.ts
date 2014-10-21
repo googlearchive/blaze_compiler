@@ -88,6 +88,14 @@ export function testEscapeQuotes2(test:nodeunit.Test): void{
     test.done();
 }
 
+export function testEscapeEscapes1(test:nodeunit.Test): void{
+    //regex is escaped
+    var unoptimized: string = '/\\d/';
+    var optimized = optimizer.escapeEscapes(unoptimized);
+    test.equal(optimized, "/\\\\d/");
+    test.done();
+}
+
 export function testPrune(test:nodeunit.Test): void{
     test.equal(optimizer.pruneBooleanLiterals("!true"), "false");
     test.equal(optimizer.pruneBooleanLiterals("!false"), "true");

@@ -6,6 +6,7 @@ import tv4 = require('tv4');
 import fs = require('fs');
 import Json  = require('source-processor');
 import error  = require('source-processor');
+import optimizer = require('../src/optimizer');
 
 //todo
 //refactor out traversals
@@ -91,19 +92,19 @@ export class SchemaNode{
         buffer.push('{\n');
 
         buffer.push(prefix + '  ".write":"');
-        buffer.push(this.write.generate(symbols));
+        buffer.push(optimizer.escapeEscapes(this.write.generate(symbols)));
         buffer.push('",\n');
 
         if (use_validation) {
             //validation is repeated for wilderchilds, so the child constraints fire (when not null)
             //even when parent is set
             buffer.push(prefix + '  ".validate":"');
-            buffer.push(this.write.generate(symbols));
+            buffer.push(optimizer.escapeEscapes(this.write.generate(symbols)));
             buffer.push('",\n');
         }
 
         buffer.push(prefix + '  ".read":"');
-        buffer.push(this.read.generate(symbols));
+        buffer.push(optimizer.escapeEscapes(this.read.generate(symbols)));
         buffer.push('",\n');
 
         var comma_in_properties = false;
