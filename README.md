@@ -368,7 +368,7 @@ access:
 
 
 ##  Changelog
-- 20th November 2014:
+- 20th October 2014:
   - optimizations added to reduce code bloat
   - sensitization bug regarding regexes fixed
   
