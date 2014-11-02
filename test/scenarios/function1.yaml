@@ -1,0 +1,8 @@
+source:
+  functions:
+    - isWorkspaceRole(userId, workspaceId, role): root['/rels/workspaces/users'][workspaceId][userId]['role'] == role
+  schema: {}
+  access:
+    - location: /
+      read: isWorkspaceRole('a', 'b')
+expected: {"rules":{".write":"(false)",".read":"(root.child('/rels/workspaces/users').child('b').child('a').child('role').val()==role)"}}

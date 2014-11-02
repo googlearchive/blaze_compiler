@@ -370,7 +370,8 @@ access:
 ##  Changelog
 - 1st November 2014:
   - bugfix: wilderchild overwriting parent constraints bug fixed
-  - bugfix: access control constraints localised
+  - bugfix: access control constraints localised properly
+  - bugfix: regex detection firing erroneously on strings starting with '/' fixed
   
 - 20th October 2014:
   - optimizations added to reduce code bloat

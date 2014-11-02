@@ -184,7 +184,7 @@ export class Expression{
 
             }else if(node.type == "Literal"){
                 //console.log("literal: ", node.value);
-                if ((typeof node.value == 'string' || node.value instanceof String) && node.value.indexOf('/') == 0){
+                if ((typeof node.value == 'string' || node.value instanceof String) && node.raw.indexOf('/') == 0){
                     node.expr_type = "regex";
                 } else {
                     node.expr_type = "value";

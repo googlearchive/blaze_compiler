@@ -11,13 +11,13 @@ import tv4 = require("tv4");
 
 function run() {
     //called if this file is run, used to enable runtime debugging
-    console.log("working?", checkScenario("./test/scenarios/accessConstraintPropagation.yaml"))
+    console.log("working?", checkScenario("./test/scenarios/function1.yaml"))
 }
 
 var checkScenario = function(path: string): boolean {
     var scenario: Json.JValue = blaze.load_yaml(path);
-    var source   = scenario.getOrThrow("source", "scenario has no 'source' attached");
-    var expected = scenario.getOrThrow("expected", "scenario has no 'expected' outcome");
+    var source   = scenario.getOrThrow("source", "scenario has no 'source' attached " + path);
+    var expected = scenario.getOrThrow("expected", "scenario has no 'expected' outcome " + path);
     var result = compiler.compileJSON(source);
     var expectedNormalised = JSON.stringify((expected.toJSON()));
     var resultNormalised = JSON.stringify(JSON.parse(result.code));
