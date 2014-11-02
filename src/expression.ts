@@ -99,7 +99,7 @@ export class Expression{
     source: Json.JString; //null source means the compiler generated it
 
     static FALSE: Expression = new Expression("false", null);
-    static TRUE: Expression = new Expression("false", null);
+    static TRUE: Expression = new Expression("true", null);
 
     constructor (raw: string, source: Json.JString) {
         this.raw = raw;
@@ -116,8 +116,8 @@ export class Expression{
     /**
      * changes next and prev references for next.parent() and prev.parent()
      */
-    rewriteForChild(): string{
-        var falafel_visitor = function(node){
+    rewriteForChild(): string {
+        var falafel_visitor = function(node) {
             if(node.type == "Identifier"){
                 if(node.name == "next"){
                     node.update("next.parent()");
@@ -127,7 +127,7 @@ export class Expression{
             }
         };
 
-        return <string>falafel(this.raw, {}, falafel_visitor);
+        return falafel(this.raw, {}, falafel_visitor).toString();
     }
 
     /**
@@ -149,7 +149,7 @@ export class Expression{
             }
         };
 
-        return <string>falafel(this.raw, {}, falafel_visitor);
+        return <string>falafel(this.raw, {}, falafel_visitor).toString();
     }
 
     generate(symbols: Symbols): string {

@@ -368,6 +368,10 @@ access:
 
 
 ##  Changelog
+- 1st November 2014:
+  - bugfix: wilderchild overwriting parent constraints bug fixed
+  - bugfix: access control constraints localised
+  
 - 20th October 2014:
   - optimizations added to reduce code bloat
   - sensitization bug regarding regexes fixed

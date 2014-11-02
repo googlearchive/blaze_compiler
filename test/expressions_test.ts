@@ -466,3 +466,16 @@ export function testSanitizeQuotes2(test:nodeunit.Test):void {
     );
     test.done();
 }
+
+export function testRewriteForChild(test:nodeunit.Test):void {
+    var expr = expressions.Expression.parse("true");
+    var rewrite = expr.rewriteForChild().toString();
+    test.equals(rewrite,  "true");
+    var expr2 = expressions.Expression.parse(rewrite);
+    var rewrite2 = expr2.rewriteForChild();
+    test.equals(rewrite2, "true");
+    test.done();
+}
+
+//testRewriteForChild(<nodeunit.Test>{equals: function(){}});
+

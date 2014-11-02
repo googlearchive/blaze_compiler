@@ -7,7 +7,6 @@ import expression = require('../src/expression');
 import globals = require('../src/globals');
 import fs = require('fs');
 
-var debug_intermediates = true;
 /**
  * compiles a json object into an annotated model of rules, then writes it to file in rules.json
  * return null if failed, or the model
@@ -16,7 +15,7 @@ export function compileJSON(json: Json.JValue): blaze.Rules {
     //check user's JSON meets JSON schema spec of rule file
     try {
         var ok = blaze.validate_rules(json);
-        if (debug_intermediates){
+        if (globals.debug){
             console.log("\ninput:");
             console.log(JSON.stringify(json.toJSON()));
         }
@@ -28,7 +27,7 @@ export function compileJSON(json: Json.JValue): blaze.Rules {
         //metaschema generate constraints for schema
         schema.annotate(model);
 
-        if(debug_intermediates){
+        if(globals.debug){
             console.log("\nannotated model:");
             console.log(model.schema.root);
         }
@@ -36,7 +35,7 @@ export function compileJSON(json: Json.JValue): blaze.Rules {
         //2nd pass of compiler
         //constraints pushed into leaves
         schema.pushDownConstraints(model);
-        if(debug_intermediates){
+        if(globals.debug){
             console.log("\npushed down constraint model:");
             console.log(model.schema.root);
         }
@@ -44,14 +43,14 @@ export function compileJSON(json: Json.JValue): blaze.Rules {
         //3rd pass of compiler
         //constraints pulled up from leaves
         schema.pullUpConstraints(model);
-        if (debug_intermediates){
+        if (globals.debug){
             console.log("\npulled up constraint model:");
             console.log(model.schema.root);
         }
 
         //4th pass pass of compiler, unifying ACL and the schema
         schema.combineACL(model);
-        if (debug_intermediates){
+        if (globals.debug){
             console.log("\n ACL and schema:");
             console.log(model.schema.root);
         }
@@ -59,7 +58,7 @@ export function compileJSON(json: Json.JValue): blaze.Rules {
         var code: string = schema.generateRules(model);
 
         //print generate code out
-        if (debug_intermediates){
+        if (globals.debug){
             console.log("\ngenerated code:");
             console.log(code);
         }
@@ -88,8 +87,8 @@ export function compileJSON(json: Json.JValue): blaze.Rules {
     }
 }
 
-export function compile(path: string): blaze.Rules{
-
+export function compile(path: string, debug: boolean = false): blaze.Rules{
+    globals.debug = debug;
     //convert to JSON
     if (path.slice(path.length-5) == ".json"){
         var json: Json.JValue = blaze.load_json(path);

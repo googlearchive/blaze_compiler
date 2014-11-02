@@ -11,7 +11,7 @@ import tv4 = require("tv4");
 
 function run() {
     //called if this file is run, used to enable runtime debugging
-    checkScenario("./test/scenarios/functions_and_optimization.yaml")
+    console.log("working?", checkScenario("./test/scenarios/accessConstraintPropagation.yaml"))
 }
 
 var checkScenario = function(path: string): boolean {

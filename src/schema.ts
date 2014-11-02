@@ -7,10 +7,10 @@ import fs = require('fs');
 import Json  = require('source-processor');
 import error  = require('source-processor');
 import optimizer = require('../src/optimizer');
+import globals = require('../src/globals');
 
 //todo
 //refactor out traversals
-export var debug = true;
 var debug_metaschema_validation = false;
 
 /**
@@ -186,7 +186,7 @@ export class SchemaNode{
         return this.constraint.rewriteForParent(child_name);
     }
 
-    combineACL(acl:blaze.Access, location:string[]){
+    combineACL(acl:blaze.Access, location: string[]){
         //console.log("combineACL", location);
 
         var write:string = "false";
@@ -194,11 +194,11 @@ export class SchemaNode{
 
         //work out what ACL entries are active for this node by ORing active entries clauses together
         for(var idx in acl){
-            var entry:blaze.AccessEntry = acl[idx];
+            var entry: blaze.AccessEntry = acl[idx];
 
             if(entry.match(location)){
-                write = "(" + write + ")||(" + entry.write.raw + ")";
-                read  = "(" + read  + ")||(" + entry.read.raw  + ")";
+                write = "(" + write + ")||(" + entry.getWriteFor(location).raw + ")";
+                read  = "(" + read  + ")||(" + entry.getReadFor(location).raw  + ")";
             }
         }
 
@@ -281,7 +281,7 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
             });
     }
 
-    if (debug) console.log("annotate_schema", node.toJSON());
+    if (globals.debug) console.log("annotate_schema", node.toJSON());
 
     //wildchilds need special treatment as they are not normal properties but still schema nodes
     if (getWildchild(node)){
@@ -411,7 +411,7 @@ export function fetchRef(url:string, model:blaze.Rules): Json.JValue{
             ].join("\n"))
     }
 
-    if (debug) console.log("fetchRef" + url + " retrieved " + JSON.stringify(schema.toJSON()));
+    if (globals.debug) console.log("fetchRef" + url + " retrieved " + JSON.stringify(schema.toJSON()));
 
     return schema;
 }
@@ -461,7 +461,7 @@ export class SchemaAPI{
      * User method for adding a type specific constraint, the constraint is &&ed to the current constraints
      */
     addConstraint(expression:string): void {
-        if (debug) console.log("addConstraint " + expression);
+        if (globals.debug) console.log("addConstraint " + expression);
         this.link.asObject().put(
             new Json.JString("constraint", 0,0),
             new Json.JString(
@@ -494,7 +494,7 @@ export class SchemaAPI{
      * specifying type ('array', 'object', 'string', 'boolean', 'number') is optional
      */
     getField(name:string, type: string): any{
-        if(debug) console.log("getField on", name, "result:", this.node[name], this.node);
+        if(globals.debug) console.log("getField on", name, "result:", this.node[name], this.node);
         if(this.node[name] == null) return null;
 
         //so the field is present, now we check the type

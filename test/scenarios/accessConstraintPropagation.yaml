@@ -1,0 +1,18 @@
+source:
+  schema:
+    ~$wildchild: {}
+  access:
+    - location: /
+      write:    next != null
+
+expected: {
+  "rules":{
+    ".write":"((newData.val()!=null))",
+    ".read":"false",
+    "$wildchild": {
+      ".write":"((newData.parent().val()!=null))",
+      ".validate":"((newData.parent().val()!=null))",
+      ".read":"false"
+    }
+  }
+}

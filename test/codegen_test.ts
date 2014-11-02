@@ -149,11 +149,11 @@ export function testTypes(test:nodeunit.Test):void{
     ], test.done.bind(null));
 }
 
-export function testDefinitions(test:nodeunit.Test):void{
+export function testDefinitions(test:nodeunit.Test): void{
     async.series([
         firebase_io.assertSetValidationRules.bind(null, compiler.compile("test/cases/definitions.yaml", true).code, test),
 
-        test_utils.assert_admin_can_write.bind(null, "/",{}, test),
+        test_utils.assert_admin_can_write.bind(null, "/", {}, test),
 
         test_utils.assert_can_write.bind(null, "any","/object",  {"boolean":true}   , test),
         test_utils.assert_can_write_mock.bind(null, "any","/object/boolean",  true   , test),

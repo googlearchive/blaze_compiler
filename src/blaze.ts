@@ -114,7 +114,7 @@ export class AccessEntry{
         return accessEntry
     }
 
-    match(location:string[]):boolean{
+    match(location: string[]): boolean{
         //console.log("checking if ", location, " matches ", this.location);
         //candidate location must be at least as specific as this location
         if(this.location.length > location.length) return false;
@@ -124,6 +124,29 @@ export class AccessEntry{
         }
         //console.log("access entry is applicable");
         return true;
+    }
+
+    /**
+     *localize the read expression for the given path
+     */
+    getReadFor(path: string[]): expression.Expression {
+        var base_read = this.read;
+        for (var i = 0; i < path.length - this.location.length; i++) {
+            var rewrite = base_read.rewriteForChild();
+            base_read = expression.Expression.parse(rewrite)
+        }
+        return base_read
+    }
+
+    /**
+     *localize the read expression for the given path
+     */
+    getWriteFor(path: string[]): expression.Expression {
+        var base_write = this.write;
+        for (var i = 0; i < path.length - this.location.length; i++) {
+            base_write = expression.Expression.parse(base_write.rewriteForChild())
+        }
+        return base_write
     }
 }
 
