@@ -172,7 +172,7 @@ export class SchemaNode{
         if(this.isLeaf()) return this.constraint.rewriteForParent(child_name);
 
         //recurse first for bottom up
-        var children_clauses:string = "true";
+        var children_clauses:string = this.constraint.raw;
 
         for(var property in this.properties){
             children_clauses =

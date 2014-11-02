@@ -8,6 +8,7 @@ var XRegExp = require('xregexp').XRegExp;
 import Json = require('source-processor');
 import error = require('source-processor');
 import optimizer = require('../src/optimizer');
+import globals = require('../src/globals');
 
 //todo
 //implement explicit types rather than ad hoc string
@@ -136,7 +137,7 @@ export class Expression{
      */
     rewriteForParent(child_name): string{
         if(child_name.indexOf("$") == 0)  return "false"; //wildchilds can't be pushed up
-        if(child_name.indexOf("~$") == 0) return "true";  //wilderchilds can't be pushed up
+        if(child_name.indexOf("~$") == 0) return "true";  //wilderchilds can be pushed up
 
         var falafel_visitor = function(node){
             if(node.type == "Identifier"){
@@ -345,6 +346,6 @@ export class Expression{
 
         var code: string = falafel(this.raw, {}, falafel_visitor).toString();
 
-        return optimizer.optimize(code);
+        return globals.optimize ? optimizer.optimize(code): optimizer.simplify(code);
     }
 }

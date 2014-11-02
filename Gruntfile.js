@@ -12,7 +12,8 @@ module.exports = function(grunt) {
             expressions: ['test/expressions_test.js'],
             optimize: ['test/optimize_test.js'],
             mail: ['test/mail_example_test.js'],
-            parse: ['test/parse_test.js']
+            parse: ['test/parse_test.js'],
+            scenarios: ['test/scenarios_test.js'],
 		},typescript: {
           base: {
             src: ['src/**/*.ts', 'test/**/*.ts'],

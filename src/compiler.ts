@@ -4,6 +4,7 @@ import schema = require('../src/schema');
 import blaze = require('./blaze');
 import Json  = require('source-processor');
 import expression = require('../src/expression');
+import globals = require('../src/globals');
 import fs = require('fs');
 
 var debug_intermediates = true;
@@ -11,9 +12,8 @@ var debug_intermediates = true;
  * compiles a json object into an annotated model of rules, then writes it to file in rules.json
  * return null if failed, or the model
  */
-export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
+export function compileJSON(json: Json.JValue): blaze.Rules {
     //check user's JSON meets JSON schema spec of rule file
-    schema.debug = debug;
     try {
         var ok = blaze.validate_rules(json);
         if (debug_intermediates){
@@ -42,7 +42,7 @@ export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
         }
 
         //3rd pass of compiler
-        //constraints pushed into leaves
+        //constraints pulled up from leaves
         schema.pullUpConstraints(model);
         if (debug_intermediates){
             console.log("\npulled up constraint model:");
@@ -78,7 +78,7 @@ export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
             console.error(source.toJSON());
         }
 
-        if (debug) console.error(error.stack); //includes writing message
+        if (globals.debug) console.error(error.stack); //includes writing message
         else{
             console.error(msg);
             console.error("run with -v option for fuller error messages")
@@ -88,8 +88,7 @@ export function compileJSON(json: Json.JValue, debug: boolean): blaze.Rules {
     }
 }
 
-export function compile(path: string, debug: boolean): blaze.Rules{
-    blaze.debug = debug;
+export function compile(path: string): blaze.Rules{
 
     //convert to JSON
     if (path.slice(path.length-5) == ".json"){
@@ -97,6 +96,6 @@ export function compile(path: string, debug: boolean): blaze.Rules{
     } else {
         var json: Json.JValue = blaze.load_yaml(path);
     }
-    return compileJSON(json, debug);
+    return compileJSON(json);
 
 }
