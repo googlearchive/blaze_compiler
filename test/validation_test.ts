@@ -48,7 +48,7 @@ export function testAntiCases(test: nodeunit.Test){
         var path:string = "test/anticases/"+files[i];
 
         blaze.load_yaml_collection(path, function(anticase: Json.JValue){
-            var failed = compiler.compileJSON(anticase, true) == null;
+            var failed = compiler.compileJSON(anticase) == null;
             if (!failed){
                 console.error("passed anticase:-");
                 console.error(anticase.toJSON());
@@ -86,6 +86,6 @@ export function testRequiredArray(test: nodeunit.Test){
         test.ok(true);
     }
 
-    test.ok(compiler.compileJSON(schema, false) == null);
+    test.ok(compiler.compileJSON(schema) == null);
     test.done();
 }
