@@ -368,6 +368,9 @@ access:
 
 
 ##  Changelog
+- 3rd November 2014:
+  - bugfix: wilderchild matching fix in ACL
+  
 - 1st November 2014:
   - bugfix: wilderchild overwriting parent constraints bug fixed
   - bugfix: access control constraints localised properly
