@@ -1,0 +1,13 @@
+source:
+  functions:
+    - isWorkspaceRole(userId, workspaceId, role): root['/rels/workspaces/users/'][workspaceId][userId]['role'] == role
+
+  schema:
+    $workspace_id:
+      ~$user_id: {}
+
+  access:
+    - location: $workspace_id/$user_id
+      write:    isWorkspaceRole(auth.id, $workspace_id, 'administrator')
+
+expected: {"rules":{".write":"false",".read":"false","$workspace_id":{".write":"false",".read":"false","$user_id":{".write":"((root.child('/rels/workspaces/users/').child($workspace_id).child(auth.id).child('role').val()=='administrator'))",".validate":"((root.child('/rels/workspaces/users/').child($workspace_id).child(auth.id).child('role').val()=='administrator'))",".read":"false"}}}}

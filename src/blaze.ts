@@ -120,10 +120,16 @@ export class AccessEntry{
         if(this.location.length > location.length) return false;
 
         for(var idx in this.location){
-            if(this.location[idx] !== location[idx]) return false
+            if (!this.matchSegment(this.location[idx], location[idx])) return false
         }
         //console.log("access entry is applicable");
         return true;
+    }
+
+    matchSegment(rule_segment: string, path_segment): boolean{
+        if (rule_segment.indexOf("~$") == 0) rule_segment = rule_segment.substr(1);
+        if (path_segment.indexOf("~$") == 0) path_segment = path_segment.substr(1);
+        return rule_segment == path_segment
     }
 
     /**

@@ -11,7 +11,7 @@ import tv4 = require("tv4");
 
 function run() {
     //called if this file is run, used to enable runtime debugging
-    console.log("working?", checkScenario("./test/scenarios/function1.yaml"))
+    console.log("working?", checkScenario("./test/scenarios/wilderchildsMatching1.yaml"))
 }
 
 var checkScenario = function(path: string): boolean {
