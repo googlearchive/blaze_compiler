@@ -7,14 +7,16 @@ import expression = require('../src/expression');
 import blaze      = require('../src/blaze');
 import compiler   = require('../src/compiler');
 import Json       = require('source-processor');
+import globals    = require('../src/globals');
 import tv4 = require("tv4");
 
 function run() {
     //called if this file is run, used to enable runtime debugging
-    console.log("working?", checkScenario("./test/scenarios/wilderchildsMatching1.yaml"))
+    console.log("working?", checkScenario("./test/scenarios/isDeleted.yaml"))
 }
 
 var checkScenario = function(path: string): boolean {
+    globals.debug = true;
     var scenario: Json.JValue = blaze.load_yaml(path);
     var source   = scenario.getOrThrow("source", "scenario has no 'source' attached " + path);
     var expected = scenario.getOrThrow("expected", "scenario has no 'expected' outcome " + path);

@@ -42,7 +42,7 @@ export function pullUpConstraints(model:blaze.Rules){
 * intergrates the ACL constraints into the schema
 */
 export function combineACL(model:blaze.Rules){
-    model.schema.root.combineACL(model.access, []);
+    model.schema.root.combineACL(model.functions, model.access, []);
 }
 
 /**
@@ -186,19 +186,22 @@ export class SchemaNode{
         return this.constraint.rewriteForParent(child_name);
     }
 
-    combineACL(acl:blaze.Access, location: string[]){
+    combineACL(functions: expression.Functions, acl: blaze.Access, location: string[]){
         //console.log("combineACL", location);
 
         var write:string = "false";
         var read: string = "false";
+
+        var symbols: expression.Symbols = new expression.Symbols();
+        symbols.loadFunction(functions);
 
         //work out what ACL entries are active for this node by ORing active entries clauses together
         for(var idx in acl){
             var entry: blaze.AccessEntry = acl[idx];
 
             if(entry.match(location)){
-                write = "(" + write + ")||(" + entry.getWriteFor(location).raw + ")";
-                read  = "(" + read  + ")||(" + entry.getReadFor(location).raw  + ")";
+                write = "(" + write + ")||(" + entry.getWriteFor(symbols, location).raw + ")";
+                read  = "(" + read  + ")||(" + entry.getReadFor(symbols, location).raw + ")";
             }
         }
 
@@ -209,7 +212,7 @@ export class SchemaNode{
         //recurse
         for(var property in this.properties){
             var child_location: string[] = location.concat(<string>property);
-            this.properties[property].combineACL(acl, child_location);
+            this.properties[property].combineACL(functions, acl, child_location);
         }
     }
 
@@ -249,7 +252,6 @@ export class MetaSchema{
         if(tv4.getMissingUris().length != 0){
             throw error.message("missing $ref definitions: " + tv4.getMissingUris()).source(data).on(new Error());
         }
-
 
         return valid;
     }

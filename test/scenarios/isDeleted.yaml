@@ -1,0 +1,13 @@
+source:
+  functions:
+    - isDeleted(): prev.exists() && !next.exists()
+
+  schema:
+    $workspace_id:
+      ~$user_id: {}
+
+  access:
+    - location: $workspace_id
+      write:    isDeleted()
+
+expected: {"rules":{".write":"false",".read":"false","$workspace_id":{".write":"((data.exists()&&!newData.exists()))",".read":"false","$user_id":{".write":"((data.parent().exists()&&!newData.parent().exists()))",".validate":"((data.parent().exists()&&!newData.parent().exists()))",".read":"false"}}}}

@@ -135,8 +135,8 @@ export class AccessEntry{
     /**
      *localize the read expression for the given path
      */
-    getReadFor(path: string[]): expression.Expression {
-        var base_read = this.read;
+    getReadFor(symbols: expression.Symbols, path: string[]): expression.Expression {
+        var base_read = expression.Expression.parse(this.read.expandFunctions(symbols));
         for (var i = 0; i < path.length - this.location.length; i++) {
             var rewrite = base_read.rewriteForChild();
             base_read = expression.Expression.parse(rewrite)
@@ -146,9 +146,10 @@ export class AccessEntry{
 
     /**
      *localize the read expression for the given path
+     * we have to expand functions first, so that the insides of functions are also localised
      */
-    getWriteFor(path: string[]): expression.Expression {
-        var base_write = this.write;
+    getWriteFor(symbols: expression.Symbols, path: string[]): expression.Expression {
+        var base_write = expression.Expression.parse(this.write.expandFunctions(symbols));
         for (var i = 0; i < path.length - this.location.length; i++) {
             base_write = expression.Expression.parse(base_write.rewriteForChild())
         }

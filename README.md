@@ -368,6 +368,9 @@ access:
 
 
 ##  Changelog
+- 4th November 2014:
+  - bugfix: functions in ACL resolved properly
+  
 - 3rd November 2014:
   - bugfix: wilderchild matching fix in ACL
   

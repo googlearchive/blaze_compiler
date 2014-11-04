@@ -152,6 +152,48 @@ export class Expression{
         return <string>falafel(this.raw, {}, falafel_visitor).toString();
     }
 
+    expandFunctions(symbols: Symbols): string {
+        var self: Expression = this;
+        var falafel_visitor = function(node){
+
+            //console.log("type:", node.type);
+
+            if(node.type == "Identifier"){
+                if(symbols.functions[node.name]){
+                    node.expr_type = "pred"
+                }else if(symbols.variables[node.name]){
+                    node.update(symbols.variables[node.name].source());
+                    node.expr_type = symbols.variables[node.name].expr_type
+                }
+            } else if(node.type == "CallExpression"){
+                if(node.callee.expr_type === "pred"){
+                    //console.log(node)
+                    //we are calling a user defined function
+                    var fun: Function = symbols.functions[node.callee.name];
+
+                    //clone the global symbol table and populate with binding to parameters
+                    var function_symbols = symbols.clone();
+
+                    var params = node.arguments;
+                    for(var p_index in params){
+                        var p_node = params[p_index];
+                        var local_name = fun.parameter_map[p_index];
+                        function_symbols.variables[local_name] = p_node;
+                    }
+
+                    var expansion = fun.expression.expandFunctions(function_symbols);
+
+                    node.update("(" + expansion + ")");
+                    node.expr_type = "value";
+                }
+            }
+        };
+
+        var code: string = falafel(this.raw, {}, falafel_visitor).toString();
+
+        return optimizer.simplify(code);
+    }
+
     generate(symbols: Symbols): string {
         var self: Expression = this;
 
@@ -162,8 +204,12 @@ export class Expression{
 
             if(node.type == "Identifier"){
                 //console.log("identifier: ", node.name);
-
-                if(node.name == "next"){
+                /*
+                if(node.name == "data"){
+                    node.expr_type = "rule"
+                }else if(node.name == "newData"){
+                    node.expr_type = "rule"
+                }else*/ if(node.name == "next"){
                     node.update("newData");
                     node.expr_type = "rule"
                 }else if(node.name == "prev"){
