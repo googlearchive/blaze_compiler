@@ -1,0 +1,15 @@
+source:
+  schema:
+    properties:
+      basic:
+        indexOn: [a]
+        $wild:
+          indexOn: [b, red]
+          ~$wilder:
+            indexOn: c
+
+  access:
+    - location: /
+      read: true
+
+expected: {"rules":{".write":"((false))",".read":"true","basic":{".indexOn":["a"],".write":"((false))",".read":"true","$wild":{".indexOn":["b","red"],".write":"(false)",".read":"true","$wilder":{".indexOn":["c"],".write":"(false)",".validate":"(false)",".read":"true"}}}}}

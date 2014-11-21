@@ -146,6 +146,18 @@ schema:
   enum: [yes, no, maybe]
 ```
 
+#### indexOn
+
+The indexOn keyword adds an index for [querying](https://www.firebase.com/docs/security/guide/indexing-data.html).
+This can either be specified as a single string or an array, applied to non-typed or object types only.
+
+```YAML
+schema:
+  indexOn: name
+  $user:
+     indexOn: [inbox, outbox]
+```
+
 #### ranges
 
 The minimum keyword constrains the minimum value of a number type. You set exclusiveMinimum to true, otherwise the
@@ -368,6 +380,10 @@ access:
 
 
 ##  Changelog
+
+- 20th November 2014:
+  - support for indexOn
+
 - 4th November 2014:
   - bugfix: functions in ACL resolved properly
   

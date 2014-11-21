@@ -19,6 +19,11 @@ properties:
 
   additionalProperties: {type: boolean}
 
+  indexOn:
+    anyOf:
+      - {type: array}
+      - {type: string}
+
   properties:
     type: object
     additionalProperties: {$ref: "http://firebase.com/schema#"}

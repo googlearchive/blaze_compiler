@@ -26,6 +26,11 @@ properties:
     minItems: 1
     uniqueItems: true
 
+  indexOn:
+    anyOf:
+      - {type: array}
+      - {type: string}
+
   properties:
     type: object
     additionalProperties: {$ref: "http://firebase.com/schema#"}
@@ -40,6 +45,7 @@ properties:
     type: object
     additionalProperties: {$ref: "http://firebase.com/schema#"}
     default: {}
+
 
 patternProperties:
   ^\$.+$: #wildchild support, starts with dollar

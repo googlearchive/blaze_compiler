@@ -71,14 +71,15 @@ export class SchemaNode{
     static KEY_PATTERN:string = ".*"; //regex for patterns
 
     type: string;
-    properties:{[name:string]:SchemaNode} = {};
-    constraint:expression.Expression;
-    write:expression.Expression;
+    properties: {[name:string]:SchemaNode} = {};
+    constraint: expression.Expression;
+    write: expression.Expression;
     read: expression.Expression;
     additionalProperties: boolean;
     node: any;
     examples: Json.JArray;
     nonexamples: Json.JArray;
+    indexOn: string[];
 
     constructor(node:any){
         this.node = node;
@@ -90,6 +91,10 @@ export class SchemaNode{
 
     generate(symbols: expression.Symbols, prefix: string, buffer: string[], use_validation: boolean): string[]{
         buffer.push('{\n');
+
+        if (this.indexOn.length > 0){
+            buffer.push(prefix + '  ".indexOn": ["' + this.indexOn.join('", "') + '"],\n');
+        }
 
         buffer.push(prefix + '  ".write":"');
         buffer.push(optimizer.escapeEscapes(this.write.generate(symbols)));
@@ -331,6 +336,18 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
 
     annotation.nonexamples = node.has("nonexamples") ?
         node.asObject().getOrThrow("nonexamples", "").asArray(): new Json.JArray();
+
+    annotation.indexOn = []; //get indexOn, whether specified as a single string or an array
+    if (node.has("indexOn")) {
+        var index: Json.JValue = node.asObject().getOrThrow("indexOn", "");
+        if (index.type == Json.JType.JString) {
+            annotation.indexOn = [index.asString().value]
+        } else {
+            index.asArray().forEach(function (val) {
+                annotation.indexOn.push(val.asString().value)
+            })
+        }
+    }
 
     //using type information, the metaschema is given an opportunity to customise the node with type specific keywords
 
