@@ -262,7 +262,7 @@ of nested schema at compile time.
 *nonexamples* is a list of JSONs that you expect to be rejected by the JSON schema node.
 
 These inline tests are good for documenting intent and providing fast feedback when authoring a new schema. Note that
-inline tests cannot understand the constraint field, they can only test the schema. 
+inline tests cannot understand the constraint field, they can only test the schema.
 
 ```YAML
 schema:
@@ -384,6 +384,7 @@ access:
 
 - 23rd December 2014:
   - bugfix: function with next or prev were not moved around when in constraints properly (similar to Nov 4th bug)
+  - bugfix: minimum and maximum
 
 - 20th November 2014:
   - support for indexOn
