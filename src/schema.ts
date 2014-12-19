@@ -27,7 +27,7 @@ export function annotate(model: blaze.Rules){
 * next in a parent's context is next.parent() in the child context
 */
 export function pushDownConstraints(model:blaze.Rules){
-    model.schema.root.pushDownConstraints(null);
+    model.schema.root.pushDownConstraints(model.functions, null);
 }
 
 /**
@@ -35,7 +35,7 @@ export function pushDownConstraints(model:blaze.Rules){
 * by the && concatenation of all children
 */
 export function pullUpConstraints(model:blaze.Rules){
-    model.schema.root.pullUpConstraints("");
+    model.schema.root.pullUpConstraints(model.functions, "");
 }
 
 /**
@@ -159,31 +159,36 @@ export class SchemaNode{
      * this is done by leaves being the && concatenation of all ancestors
      * next in a parent's context is next.parent() in the child context
      */
-    pushDownConstraints(inherited_clause:expression.Expression){
+    pushDownConstraints(functions: expression.Functions, inherited_clause:expression.Expression) {
+        var symbols: expression.Symbols = new expression.Symbols();
+        symbols.loadFunction(functions);
+
         if(inherited_clause != null){
             this.constraint = expression.Expression.parse(
                 "(" + inherited_clause.rewriteForChild()  +
                 ")&&(" +
-                this.constraint.raw + ")");
+                this.constraint.expandFunctions(symbols) + ")");
         }
 
         //recurse last for top down
         for(var property in this.properties){
-            this.properties[property].pushDownConstraints(this.constraint)
+            this.properties[property].pushDownConstraints(functions, this.constraint)
         }
     }
 
-    pullUpConstraints(child_name):string{
+    pullUpConstraints(functions: expression.Functions, child_name):string{
         if(this.isLeaf()) return this.constraint.rewriteForParent(child_name);
 
-        //recurse first for bottom up
-        var children_clauses:string = this.constraint.raw;
+        var symbols: expression.Symbols = new expression.Symbols();
+        symbols.loadFunction(functions);
+        var children_clauses:string = this.constraint.expandFunctions(symbols);
 
+        //recurse first for bottom up
         for(var property in this.properties){
             children_clauses =
                 "(" +children_clauses+
                 ") && (" +
-                this.properties[property].pullUpConstraints(property) + ")"
+                this.properties[property].pullUpConstraints(functions, property) + ")"
         }
 
         this.constraint = expression.Expression.parse(children_clauses);

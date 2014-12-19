@@ -1,0 +1,12 @@
+source:
+  functions:
+    - within24hours(): next > (now - 1000)
+  schema:
+    properties:
+      date:
+        constraint: within24hours()
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"((newData.child('date').val()>now-1000))",".read":"false","date":{".write":"((newData.val()>now-1000))",".read":"false"}}}

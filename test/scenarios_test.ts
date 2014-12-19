@@ -12,7 +12,7 @@ import tv4 = require("tv4");
 
 function run() {
     //called if this file is run, used to enable runtime debugging
-    console.log("working?", checkScenario("./test/scenarios/index.yaml"))
+    console.log("working?", checkScenario("./test/scenarios/function2.yaml"))
 }
 
 var checkScenario = function(path: string): boolean {
@@ -28,7 +28,7 @@ var checkScenario = function(path: string): boolean {
     return  expectedNormalised == resultNormalised;
 };
 
-export function testFiles(test: nodeunit.Test){
+export function testFiles(test: nodeunit.Test) {
 
     //load all anti-cases
     var files = fs.readdirSync("test/scenarios");
