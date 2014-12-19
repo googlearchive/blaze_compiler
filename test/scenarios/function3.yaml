@@ -1,0 +1,10 @@
+source:
+  functions:
+    - fn(nxt): nxt > (now * 60)
+  schema:
+    constraint: fn(next)
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"((newData.val()>now*60))",".read":"false"}}

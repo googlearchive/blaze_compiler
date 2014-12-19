@@ -1,10 +1,10 @@
 source:
   functions:
-    - within24hours(): next > (now - 1000)
+    - fn(): next > (now - 1000)
   schema:
     properties:
       date:
-        constraint: within24hours()
+        constraint: fn()
   access:
     - location: /
       write: true
