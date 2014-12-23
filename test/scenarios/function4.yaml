@@ -1,0 +1,15 @@
+source:
+  functions:
+    - isLoggedIn(): auth.id !== null
+
+  schema:
+    ~$projectId:
+      type: object
+      $permissionId:
+        type: object
+
+  access:
+    - location: $projectId/
+      write: isLoggedIn()
+
+expected: {"rules":{".write":"false",".read":"false","$projectId":{".write":"(false)",".validate":"(false)",".read":"false","$permissionId":{".write":"(((!newData.parent().exists()||!(((newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean()))))&&(!newData.exists()||!(((newData.isString()||newData.isNumber()||newData.isBoolean()))))&&auth.id!==null))",".read":"false"}}}}
