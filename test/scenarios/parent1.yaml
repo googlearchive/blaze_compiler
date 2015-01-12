@@ -1,0 +1,8 @@
+source:
+  schema:
+    constraint: (!prev.parent().registrationDate.exists())
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"((!data.parent().child('registrationDate').exists()))",".read":"false"}}

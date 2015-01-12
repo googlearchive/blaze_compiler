@@ -367,7 +367,11 @@ export class Expression{
                     node.update("(" + expansion + ")");
                     node.expr_type = "value";
                 }else{
-                    throw error.message("Bug: 4 Unexpected situation in type system " + node.callee.expr_type).source(self.source).on(new Error());
+                    if (node.callee.type == 'MemberExpression' && node.callee.property.type == 'Identifier' && node.callee.property.name == 'child') {
+                        throw error.message("parent.child(<name>) syntax is not supported in Blaze, use parent.<name> or parent[<name>] instead").source(self.source).on(new Error());
+                    } else {
+                        throw error.message("Bug: 4 Unexpected situation in type system on '" + node.callee.expr_type + "'").source(self.source).on(new Error());
+                    }
                 }
             }else if(node.type == "BinaryExpression" || node.type == "BooleanExpression" || node.type == "LogicalExpression"){
                 //coersion to value, if a rule (i.e. appending .val() when in a binary operator as ruleSnapshots don't support any binary operators)

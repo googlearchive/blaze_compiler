@@ -381,6 +381,8 @@ access:
 
 
 ##  Changelog
+- 12th Jan 2015:
+  - improved messaging if blah.child('name') syntax is erroneously used
 
 - 23rd December 2014:
   - bugfix: function with next or prev were not moved around when in constraints properly (similar to Nov 4th bug)
