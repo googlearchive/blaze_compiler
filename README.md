@@ -14,7 +14,7 @@ create a rules.yaml containing the following code
 ```YAML
 functions:
   - isLoggedIn(): auth.uid !== null
-a
+  
 schema: {}
 
 access:
