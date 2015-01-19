@@ -13,8 +13,8 @@ create a rules.yaml containing the following code
 
 ```YAML
 functions:
-  - isLoggedIn(): auth.id !== null
-
+  - isLoggedIn(): auth.uid !== null
+  
 schema: {}
 
 access:
