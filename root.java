@@ -11,15 +11,13 @@ abstract class Ref<BuilderIdentity> {
 }
 
 class Val {
-    Map<String, Object> properties;
-    Ref ref;
-    Val(Ref ref, Map<String, Object> properties) {
-        this.ref = ref;
-        this.properties = properties;
+    TopBuilder previous;
+    Val(TopBuilder previous) {
+        this.previous = previous;
     }
 
     public void write() {
-        ref.ref.setValue(properties);
+        previous.ref.ref.setValue(properties);
     }
 }
 
