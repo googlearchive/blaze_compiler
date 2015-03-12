@@ -18,7 +18,8 @@ var debug_metaschema_validation = false;
  * to generate constraints
  */
 export function annotate(model: blaze.Rules){
-    model.schema.root = annotate_schema(model.schema.json, null, null, new SchemaAPI(), model)
+    model.schema.root = annotate_schema(model.schema.json, null, null, new SchemaAPI(), model);
+    model.schema.root.setParent(null, "");
 }
 
 /**
@@ -67,7 +68,6 @@ export function generateRules(model:blaze.Rules){
  * main model class for schema tree, all schema nodes are parsed into this format by annotate
  */
 export class SchemaNode{
-
     static KEY_PATTERN:string = ".*"; //regex for patterns
 
     type: string;
@@ -80,6 +80,8 @@ export class SchemaNode{
     examples: Json.JArray;
     nonexamples: Json.JArray;
     indexOn: string[];
+    parent: SchemaNode;
+    key: string;
 
     constructor(node:any){
         this.node = node;
@@ -152,6 +154,14 @@ export class SchemaNode{
         buffer.push("}\n");
 
         return buffer;
+    }
+
+    setParent(parent: SchemaNode, key: string) {
+        this.parent = parent;
+        this.key = key;
+        for(var property in this.properties){
+            this.properties[property].setParent(this, property);
+        }
     }
 
     /**
@@ -229,6 +239,16 @@ export class SchemaNode{
     getWildchild():string {
         return getWildchild(this.node).value;
     }
+
+    getPath(): string[] {
+        if (this.parent != null) {
+            var parent_path = this.parent.getPath();
+            parent_path.push(this.key);
+            return parent_path;
+        } else {
+            return [];
+        }
+    }
 }
 
 export class MetaSchema{
@@ -284,12 +304,11 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
     }
 
     var annotation = new SchemaNode(node);
-
     //recurse to children first in bottom up
     if (node.has("properties")) {
         node.getOrThrow("properties", "").asObject().forEach(
             function(name: Json.JString, child: Json.JValue){
-                annotation.properties[name.value] = annotate_schema(child, node, key, api, model);
+                var childSchema = annotation.properties[name.value] = annotate_schema(child, node, key, api, model);
             });
     }
 

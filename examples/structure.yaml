@@ -9,6 +9,8 @@ schema:
     child_object:
       type: object
       additionalProperties: false
+
+  $wildchild: {type: string}
   required: [child_object]
 
 access:
