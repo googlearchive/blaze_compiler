@@ -9,6 +9,7 @@ var DEBUG: boolean;
 var TARGET_FIREBASE_URL: string = "https://firesafe-sandbox.firebaseio.com";
 
 var PREAMBLE = fs.readFileSync("src/java/preamble.java").toString(); //todo move into js file
+var TEST = fs.readFileSync("src/java/test.java").toString(); //todo move into js file
 /**
  * from a compiled model of the rules, a typed java source file is created
  */
@@ -24,6 +25,7 @@ export function generate(model: rules.Rules, debug: boolean) {
 
     generate_path_class("root", model.schema.root, 0, output);
 
+    writeLine(TEST, 0, output);
     fs.writeFile(TARGET, output.join("\n"));
 }
 
@@ -128,7 +130,7 @@ function generateStepBuilder(name: string, schema: schema.SchemaNode, depth: num
     for(var i =0; i < plan.length; i++) {
         var p: PlanElement = plan[i];
 
-        p.generatePlanStep(i, output);
+        p.generatePlanStep(i, plan, output);
     }
 
 }
@@ -148,18 +150,20 @@ class PlanElement {
     static START = "start";
     static END   = "end  ";
     static PRIMITIVE   = "prim ";
-    constructor(public type: String, public rootSchema: schema.SchemaNode, public schema: schema.SchemaNode, public depth: number) {}
+    constructor(public type: String, public rootSchema: schema.SchemaNode, public schema: schema.SchemaNode, public depth: number, public required: Boolean = true) {}
     toString() {
         return this.type + ": " + this.schema.key
     }
 
-    generatePlanStep(index: number, output: string[]) {
+    generatePlanStep(index: number, plan: PlanElement[], output: string[]) {
         var className = builderClassIdentifier(this.rootSchema) + index;
         if (this.type == PlanElement.FIRST) {
             writeLine("class " + className + " extends SubBuilderIdentity {", 0, output);//constructor
             writeLine(className + "(Ref ref) {", 1, output);
             writeLine("  super(ref, null);", 1, output);
             writeLine("}", 1, output);
+
+            this.generateTransitions(index, plan, output);
         } else if (this.type == PlanElement.LAST) {
             var valueReturnType = valueClassIdentifier(this.schema);
             writeLine("class " + className + " extends SubBuilderLast<Object, " + valueReturnType + "> {", 0, output);seperator(output);
@@ -173,6 +177,7 @@ class PlanElement {
             writeLine(className + "(SubBuilder parent) {", 1, output);
             writeLine("  super(parent.ref, parent);", 1, output);
             writeLine("}", 1, output);
+            this.generateTransitions(index, plan, output);
         } else if (this.type == PlanElement.END) {
             var nextStep: number = (index+1);
             var valueReturnType = builderClassIdentifier(this.rootSchema) + nextStep;
@@ -188,6 +193,7 @@ class PlanElement {
             writeLine(className + "(SubBuilder parent, SubBuilder prev, String key, Object val) {", 1, output);
             writeLine("  super(parent, prev, key, val);", 1, output);
             writeLine("}", 1, output);
+            this.generateTransitions(index, plan, output);
         }
         writeLine("}", 0, output);
     }
@@ -206,6 +212,37 @@ class PlanElement {
         writeLine("  return new " + returnType + "(parent.parent, parent, \"" + this.schema.key + "\", this.properties);", 1, output);
         writeLine("}", 1, output);
     }
+    generateTransitions(index: number, plan: PlanElement[], output: string[]) {
+        for (var i = index + 1; i < plan.length; i++) {
+            var futurePlanElement: PlanElement = plan[i];
+
+            if (futurePlanElement.type == PlanElement.PRIMITIVE) {
+                var functionname = futurePlanElement.schema.key;
+                var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
+                writeLine("public " + returnType + " " + functionname + "(Object val) {", 1, output);
+                writeLine("  return new " + returnType + "(parent.parent, parent, \"" + futurePlanElement.schema.key + "\", val);", 1, output);
+                writeLine("}", 1, output);
+            }
+
+            if (futurePlanElement.type == PlanElement.LAST) {
+                var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
+                writeLine("public " + returnType + " " + "value() {", 1, output);
+                writeLine("  return new " + returnType + "(parent.parent, parent, \"" + futurePlanElement.schema.key + "\", val);", 1, output);
+                writeLine("}", 1, output);
+            }
+            if (futurePlanElement.type == PlanElement.END) {
+                var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
+                writeLine("public " + returnType + " " + "value() {", 1, output);
+                writeLine("  return new " + returnType + "(parent.parent, parent, \"" + futurePlanElement.schema.key + "\", val);", 1, output);
+                writeLine("}", 1, output);
+            }
+
+
+            if (futurePlanElement.required) break; //we quit if we have to step to the next one
+            if (futurePlanElement.type == PlanElement.END) break;  //we quit if we have to go up a level of context
+            if (futurePlanElement.type == PlanElement.LAST) break; //we quit if we have to go up a level of context
+        }
+    }
 }
 
 function planStepBuilderTop(name: string, rootSchema: schema.SchemaNode, depth: number, plan: PlanElement[]) {
@@ -217,6 +254,13 @@ function planStepBuilderTop(name: string, rootSchema: schema.SchemaNode, depth: 
     plan[plan.length - 1].type = PlanElement.LAST;
 }
 
+/**
+ * todo We have some big modeling mistakes here
+ * A plan element can be *many* things at the same time
+ * it can terminate the context whilst being the recipeint of a setKey or setProperty or an optional instanciation of a new sub context
+ * Thus the SubBuilder heirarchy doesn;t make sense. It would be better to implement that by composition, perhaps on top of an untped Builder to
+ * make it a bit more tractible to think about
+ */
 function planStepBuilder(name: string, rootSchema: schema.SchemaNode, schema: schema.SchemaNode, depth: number, plan: PlanElement[]) {
 
     if (schema.type == "any" || schema.type == "object") {
