@@ -70,9 +70,9 @@ class SubBuilderIntermediate<Property> extends SubBuilder{
         prev.properties.put(key, val);
     }
 }
-abstract class SubBuilderLast<Property, Value> extends SubBuilderIntermediate<Property>{
-    SubBuilderLast(SubBuilder parent, SubBuilder prev, String key, Property val) {
-        super(parent, prev, key, val);
+abstract class SubBuilderLast<Value> extends SubBuilder{
+    SubBuilderLast(SubBuilder parent, SubBuilder prev) {
+        super(prev.ref, parent, prev.properties);
     }
     public abstract Value value(); //return parent builder context or a Value object
 }

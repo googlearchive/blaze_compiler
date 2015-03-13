@@ -25,6 +25,8 @@ export function generate(model: rules.Rules, debug: boolean) {
 
     generate_path_class("root", model.schema.root, 0, output);
 
+    generate_root(model.schema.root, 0, output);
+
     writeLine(TEST, 0, output);
     fs.writeFile(TARGET, output.join("\n"));
 }
@@ -52,11 +54,13 @@ function valueClassIdentifier(schema: schema.SchemaNode): string {
 }
 
 
-function generate_path_field(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
-    writeLine("public " + pathClassIdentifier(schema) + " " + name + " = new " + pathClassIdentifier(schema) + "();", depth, output);
+function generate_path_field(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false) {
+    var modifier = isStatic?"static ": "";
+    writeLine("public " + modifier + pathClassIdentifier(schema) + " " + name + " = new " + pathClassIdentifier(schema) + "();", depth, output);
 }
-function generate_path_wild_function(name: string, schema: schema.SchemaNode, depth: number, output: string[]) { //todo $("") thing
-    writeLine("public " + pathClassIdentifier(schema) + " " + name + " = new " + pathClassIdentifier(schema) + "();", depth, output);
+function generate_path_wild_function(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false) { //todo $("") thing
+    var modifier = isStatic?"static ": "";
+    writeLine("public " + modifier + pathClassIdentifier(schema) + " " + name + " = new " + pathClassIdentifier(schema) + "();", depth, output);
 }
 function generateRefConstructor(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
     //todo binding of variables
@@ -69,6 +73,26 @@ function generate_buildValue(name: string, schema: schema.SchemaNode, depth: num
     var valueClassname = builderClassIdentifier(schema) + "0";
     writeLine("public " + valueClassname + " buildValue() {", depth, output);
     writeLine("  return new " + valueClassname + "(this);", depth, output);
+    writeLine("}", depth, output);
+}
+function generate_root_buildValue(schema: schema.SchemaNode, depth: number, output: string[]) {
+    var valueClassname = builderClassIdentifier(schema) + "0";
+    writeLine("public static " + valueClassname + " buildValue() {", depth, output);
+    writeLine("  return new root$$Builder0(new root$());", depth, output);
+    writeLine("}", depth, output);
+}
+
+function generate_root(schema: schema.SchemaNode, depth: number, output: string[]) {
+    writeLine("public class root {", depth, output);
+
+    for (var child in schema.properties) {
+        if (child.indexOf("$") == 0 || child.indexOf("~$") == 0) {
+            generate_path_wild_function(child, schema.properties[child], depth + 1, output, true);
+        } else {
+            generate_path_field(child, schema.properties[child], depth + 1, output, true);
+        }
+    }
+    generate_root_buildValue(schema, depth + 1, output);
     writeLine("}", depth, output);
 }
 function generate_path_class(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
@@ -166,10 +190,10 @@ class PlanElement {
             this.generateTransitions(index, plan, output);
         } else if (this.type == PlanElement.LAST) {
             var valueReturnType = valueClassIdentifier(this.schema);
-            writeLine("class " + className + " extends SubBuilderLast<Object, " + valueReturnType + "> {", 0, output);seperator(output);
+            writeLine("class " + className + " extends SubBuilderLast<" + valueReturnType + "> {", 0, output);seperator(output);
             //constructor
-            writeLine(className + "(SubBuilder prev, String key, Object val) {", 1, output);
-            writeLine("  super(null, prev, key, val);", 1, output);
+            writeLine(className + "(SubBuilder prev) {", 1, output);
+            writeLine("  super(null, prev);", 1, output);
             writeLine("}", 1, output);
             this.generateValue(valueReturnType, output);
         } else if (this.type == PlanElement.START) {
@@ -181,10 +205,10 @@ class PlanElement {
         } else if (this.type == PlanElement.END) {
             var nextStep: number = (index+1);
             var valueReturnType = builderClassIdentifier(this.rootSchema) + nextStep;
-            writeLine("class " + className + " extends SubBuilderLast<Object, " + valueReturnType + "> {", 0, output);seperator(output);
+            writeLine("class " + className + " extends SubBuilderLast<" + valueReturnType + "> {", 0, output);seperator(output);
             //constructor
-            writeLine(className + "(SubBuilder parent, SubBuilder prev, String key, Object val) {", 1, output);
-            writeLine("  super(parent, prev, key, val);", 1, output);
+            writeLine(className + "(SubBuilder parent, SubBuilder prev) {", 1, output);
+            writeLine("  super(parent, prev);", 1, output);
             writeLine("}", 1, output);
             this.generateSubValue(valueReturnType, output);
         } else if (this.type == PlanElement.PRIMITIVE) {
@@ -198,10 +222,6 @@ class PlanElement {
         writeLine("}", 0, output);
     }
 
-    /*
-    public root$child_string$Value value() {
-        return new root$child_string$Value(this);
-    }*/
     generateValue(returnType: string, output: string[]) {
         writeLine("public " + returnType + " value() {", 1, output);
         writeLine("  return new " + returnType + "(this);", 1, output);
@@ -227,13 +247,21 @@ class PlanElement {
             if (futurePlanElement.type == PlanElement.LAST) {
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
                 writeLine("public " + returnType + " " + "value() {", 1, output);
-                writeLine("  return new " + returnType + "(parent.parent, parent, \"" + futurePlanElement.schema.key + "\", val);", 1, output);
+                writeLine("  return new " + returnType + "(parent.parent);", 1, output);
                 writeLine("}", 1, output);
             }
             if (futurePlanElement.type == PlanElement.END) {
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
                 writeLine("public " + returnType + " " + "value() {", 1, output);
-                writeLine("  return new " + returnType + "(parent.parent, parent, \"" + futurePlanElement.schema.key + "\", val);", 1, output);
+                writeLine("  return new " + returnType + "(parent.parent, parent);", 1, output);
+                writeLine("}", 1, output);
+            }
+
+            if (futurePlanElement.type == PlanElement.START) {
+                var functionname = "build" + futurePlanElement.schema.key;
+                var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
+                writeLine("public " + returnType + " " + functionname + "() {", 1, output);
+                writeLine("  return new " + returnType + "(this);", 1, output);
                 writeLine("}", 1, output);
             }
 
@@ -247,20 +275,12 @@ class PlanElement {
 
 function planStepBuilderTop(name: string, rootSchema: schema.SchemaNode, depth: number, plan: PlanElement[]) {
     planStepBuilder(name, rootSchema, rootSchema, depth, plan);
-    if (plan[0].type == PlanElement.START)
+    if (plan[0].type == PlanElement.START){
         plan[0].type = PlanElement.FIRST;
-    else
-        plan.unshift(new PlanElement(PlanElement.FIRST, rootSchema, rootSchema, depth));
-    plan[plan.length - 1].type = PlanElement.LAST;
+        plan[plan.length - 1].type = PlanElement.LAST;
+    }
 }
 
-/**
- * todo We have some big modeling mistakes here
- * A plan element can be *many* things at the same time
- * it can terminate the context whilst being the recipeint of a setKey or setProperty or an optional instanciation of a new sub context
- * Thus the SubBuilder heirarchy doesn;t make sense. It would be better to implement that by composition, perhaps on top of an untped Builder to
- * make it a bit more tractible to think about
- */
 function planStepBuilder(name: string, rootSchema: schema.SchemaNode, schema: schema.SchemaNode, depth: number, plan: PlanElement[]) {
 
     if (schema.type == "any" || schema.type == "object") {
