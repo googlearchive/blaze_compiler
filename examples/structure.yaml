@@ -16,8 +16,7 @@ schema:
     type: object
     properties:
       name: {type: string}
-      age:  {type: number}
-
+      age:  {type: number} 
   required: [child_object]
 
 access:

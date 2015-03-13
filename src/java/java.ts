@@ -20,7 +20,6 @@ http://www.unquietcode.com/blog/2011/programming/using-generics-to-build-fluent-
 
  */
 
-
 var TARGET_FIREBASE_URL: string = "https://firesafe-sandbox.firebaseio.com";
 
 var PREAMBLE = fs.readFileSync("src/java/preamble.java").toString(); //todo move into js file
@@ -28,9 +27,9 @@ var TEST = fs.readFileSync("src/java/test.java").toString(); //todo move into js
 /**
  * from a compiled model of the rules, a typed java source file is created
  */
-export function generate(model: rules.Rules, debug: boolean) {
+export function generate(model: rules.Rules, target_dir: string, debug: boolean) {
     console.log("generating", TARGET);
-    DEBUG = true; //debug;
+    DEBUG = false; //debug;
 
     //big array we put all the output in
     var output: string[] = [];
@@ -41,8 +40,8 @@ export function generate(model: rules.Rules, debug: boolean) {
 
     generate_root(model.schema.root, 0, output);
 
-    writeLine(TEST, 0, output);
-    fs.writeFile(TARGET, output.join("\n"));
+    //writeLine(TEST, 0, output);
+    fs.writeFile(target_dir + "/" + TARGET, output.join("\n"));
 }
 
 function writeLine(value: string, depth: number, output: string[]) {

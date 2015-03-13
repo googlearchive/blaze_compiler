@@ -9,7 +9,7 @@ import async = require('async');
 
 export function testSetup(test:nodeunit.Test):void{
     async.series([
-        firebase_io.setValidationRules.bind(null, compiler.compile("examples/mail_example.yaml", true).code)
+        firebase_io.setValidationRules.bind(null, compiler.compile("examples/mail_example.yaml", ".", true).code)
     ], test.done.bind(null));
 }
 

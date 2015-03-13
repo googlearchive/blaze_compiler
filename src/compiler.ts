@@ -11,7 +11,7 @@ import fs = require('fs');
  * compiles a json object into an annotated model of rules, then writes it to file in rules.json
  * return null if failed, or the model
  */
-export function compileJSON(json: Json.JValue): blaze.Rules {
+export function compileJSON(json: Json.JValue, target_dir: string = "."): blaze.Rules {
     //check user's JSON meets JSON schema spec of rule file
     try {
         var ok = blaze.validate_rules(json);
@@ -64,7 +64,7 @@ export function compileJSON(json: Json.JValue): blaze.Rules {
         }
         //write to file
         console.log("\nwriting rules.json");
-        fs.writeFileSync("rules.json", code);
+        fs.writeFileSync(target_dir + "/rules.json", code);
         model.code = code;
         return model;
 
@@ -87,7 +87,8 @@ export function compileJSON(json: Json.JValue): blaze.Rules {
     }
 }
 
-export function compile(path: string, debug: boolean = false): blaze.Rules{
+//todo the options should the their own type I think
+export function compile(path: string, target_dir: string, debug: boolean = false): blaze.Rules{
     globals.debug = debug;
     //convert to JSON
     if (path.slice(path.length-5) == ".json"){
@@ -95,6 +96,6 @@ export function compile(path: string, debug: boolean = false): blaze.Rules{
     } else {
         var json: Json.JValue = blaze.load_yaml(path);
     }
-    return compileJSON(json);
+    return compileJSON(json, target_dir);
 
 }
