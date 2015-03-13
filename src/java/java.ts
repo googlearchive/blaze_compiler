@@ -308,18 +308,23 @@ class PlanElement {
                 writeLine("  return new " + returnType + "(parent.parent, parent);", 1, output);
                 writeLine("}", 1, output);
             }
-            if (futurePlanElement.type == PlanElement.START) {
+            if (futurePlanElement.type == PlanElement.START && futurePlanElement.schema.key.indexOf("$") != 0) {
                 var functionname = camelConcatinate("open", futurePlanElement.schema.key);
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
                 writeLine("public " + returnType + " " + functionname + "() {", 1, output);
                 writeLine("  return new " + returnType + "(this);", 1, output);
                 writeLine("}", 1, output);
             }
+
             if (futurePlanElement.required) break; //we quit if we have to step to the next one
             if (futurePlanElement.type == PlanElement.FIRST) break;  //we quit if we have to go up a level of context
-            if (futurePlanElement.type == PlanElement.START) break;  //we quit if we have to go up a level of context
             if (futurePlanElement.type == PlanElement.END) break;  //we quit if we have to go up a level of context
             if (futurePlanElement.type == PlanElement.LAST) break; //we quit if we have to go up a level of context
+
+            //if a non required new context is following, we can skip it by fast forwarding to after
+            if (futurePlanElement.type == PlanElement.START) {
+                while (plan[i].type != PlanElement.END) i++;
+            }
         }
     }
 }
