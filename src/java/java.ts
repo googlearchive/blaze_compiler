@@ -223,7 +223,7 @@ class PlanElement {
             writeLine("}", 0, output);
         } else if (this.type == PlanElement.END) {
             var nextStep: number = (index+1);
-            var valueReturnType = builderClassIdentifier(this.rootSchema) + nextStep;
+            var valueReturnType = valueClassIdentifier(this.rootSchema);
             writeLine("class " + className + " extends SubBuilderLast<" + valueReturnType + "> {", 0, output);seperator(output);
             //constructor
             writeLine(className + "(SubBuilder parent, SubBuilder prev) {", 1, output);
@@ -252,7 +252,7 @@ class PlanElement {
     }
     generateSubValue(returnType: string, output: string[]) {
         writeLine("public " + returnType + " write() {", 1, output);
-        writeLine("  return new " + returnType + "(parent.parent, parent, \"" + this.schema.key + "\", this.properties);", 1, output);
+        writeLine("  return new " + returnType + "(this);", 1, output);
         writeLine("}", 1, output);
     }
     generateTransitions(index: number, plan: PlanElement[], output: string[]) {
@@ -268,7 +268,7 @@ class PlanElement {
             }
 
             if (futurePlanElement.type == PlanElement.LAST) {
-                var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
+                var returnType   = valueClassIdentifier(futurePlanElement.rootSchema);
                 writeLine("public " + returnType + " " + "write() {", 1, output);
                 writeLine("  return new " + returnType + "(parent.parent);", 1, output);
                 writeLine("}", 1, output);

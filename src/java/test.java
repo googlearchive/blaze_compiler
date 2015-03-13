@@ -20,7 +20,7 @@ class Test {
                 .closeChildObject()
                 .write();
 
-        root.$("id").write("bling");
+        root.$("id").openWrite().setAge(12).write();
 
     }
 }
