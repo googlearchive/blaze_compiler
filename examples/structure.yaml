@@ -5,12 +5,12 @@ schema:
   type: object
   constraint: "false"
   properties:
-    child_string: {type: string}
-    child_object:
+    childString: {type: string}
+    childObject:
       type: object
       additionalProperties: false
       properties:
-        grandchild_number: {type: number}
+        grandchildNumber: {type: number}
 
   $wildchild: {type: string}
   required: [child_object]

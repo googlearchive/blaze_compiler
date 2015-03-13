@@ -53,7 +53,10 @@ function valueClassIdentifier(schema: schema.SchemaNode): string {
     return "root$" + schema.getPath().join("$") + "$Value";
 }
 
+function camelConcatinate(a: string, b: string): string {
 
+    return a + b.charAt(0).toUpperCase() + b.slice(1);
+}
 function generate_path_field(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false) {
     var modifier = isStatic?"static ": "";
     writeLine("public " + modifier + pathClassIdentifier(schema) + " " + name + " = new " + pathClassIdentifier(schema) + "();", depth, output);
@@ -97,13 +100,16 @@ function generate_root(schema: schema.SchemaNode, depth: number, output: string[
 }
 function generate_path_class(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
 
-    generateStepBuilder(name, schema, depth, output);
+    var primitive: PlanElement = generateStepBuilder(name, schema, depth, output);
     generateValue(name, schema, depth, output);
 
-    writeLine("class " + pathClassIdentifier(schema) + " extends Ref<" + builderClassIdentifier(schema) + "0" + "> {", depth, output);
+    if (primitive) {
+        writeLine("class " + pathClassIdentifier(schema) + " {", depth, output);
+    } else {
+        writeLine("class " + pathClassIdentifier(schema) + " extends Ref<" + builderClassIdentifier(schema) + "0" + "> {", depth, output);
+        generateRefConstructor(name, schema, depth + 1, output);
+    }
 
-
-    generateRefConstructor(name, schema, depth + 1, output);
     //for each non-wildchild child we generate a field to an instantiated child path_class
     //for wildchilds we create a function that instantiates the correct child path class
 
@@ -118,8 +124,12 @@ function generate_path_class(name: string, schema: schema.SchemaNode, depth: num
         }
     }
 
-    //each path also exposes a ref
-    generate_buildValue(name, schema, depth + 1, output);
+    if (primitive == null) {
+        generate_buildValue(name, schema, depth + 1, output);
+
+    } else {
+        generate_primitiveWrite(primitive, output);
+    }
 
     writeLine("}", depth, output);
 
@@ -134,8 +144,9 @@ function generate_path_class(name: string, schema: schema.SchemaNode, depth: num
  * @param schema
  * @param depth
  * @param output
+ * @return is non-null if that plan was a single primative invocation, therefore the parent should not generate a buildObject
  */
-function generateStepBuilder(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
+function generateStepBuilder(name: string, schema: schema.SchemaNode, depth: number, output: string[]): PlanElement {
     //so first step is to work out the sequence if the user specifies every optional field
     //they specify the primitives, dropping into sub builders for complex objects,
     //wildchilds can be added multiple times by using a keyed subbuilder todo
@@ -157,6 +168,8 @@ function generateStepBuilder(name: string, schema: schema.SchemaNode, depth: num
         p.generatePlanStep(i, plan, output);
     }
 
+    if (plan.length == 1) return plan[0];
+
 }
 
 function generateValue(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
@@ -174,6 +187,7 @@ class PlanElement {
     static START = "start";
     static END   = "end  ";
     static PRIMITIVE   = "prim ";
+    static SINGLE_PRIM = "singl";
     constructor(public type: String, public rootSchema: schema.SchemaNode, public schema: schema.SchemaNode, public depth: number, public required: Boolean = true) {}
     toString() {
         return this.type + ": " + this.schema.key
@@ -186,8 +200,9 @@ class PlanElement {
             writeLine(className + "(Ref ref) {", 1, output);
             writeLine("  super(ref, null);", 1, output);
             writeLine("}", 1, output);
-
             this.generateTransitions(index, plan, output);
+
+            writeLine("}", 0, output);
         } else if (this.type == PlanElement.LAST) {
             var valueReturnType = valueClassIdentifier(this.schema);
             writeLine("class " + className + " extends SubBuilderLast<" + valueReturnType + "> {", 0, output);seperator(output);
@@ -196,12 +211,16 @@ class PlanElement {
             writeLine("  super(null, prev);", 1, output);
             writeLine("}", 1, output);
             this.generateValue(valueReturnType, output);
+
+            writeLine("}", 0, output);
         } else if (this.type == PlanElement.START) {
             writeLine("class " + className + " extends SubBuilderIdentity {", 0, output);//constructor
             writeLine(className + "(SubBuilder parent) {", 1, output);
             writeLine("  super(parent.ref, parent);", 1, output);
             writeLine("}", 1, output);
             this.generateTransitions(index, plan, output);
+
+            writeLine("}", 0, output);
         } else if (this.type == PlanElement.END) {
             var nextStep: number = (index+1);
             var valueReturnType = builderClassIdentifier(this.rootSchema) + nextStep;
@@ -211,6 +230,8 @@ class PlanElement {
             writeLine("  super(parent, prev);", 1, output);
             writeLine("}", 1, output);
             this.generateSubValue(valueReturnType, output);
+
+            writeLine("}", 0, output);
         } else if (this.type == PlanElement.PRIMITIVE) {
             //constructor
             writeLine("class " + className + " extends SubBuilderIntermediate {", 0, output);
@@ -218,9 +239,11 @@ class PlanElement {
             writeLine("  super(parent, prev, key, val);", 1, output);
             writeLine("}", 1, output);
             this.generateTransitions(index, plan, output);
+
+            writeLine("}", 0, output);
         }
-        writeLine("}", 0, output);
     }
+
 
     generateValue(returnType: string, output: string[]) {
         writeLine("public " + returnType + " value() {", 1, output);
@@ -237,7 +260,7 @@ class PlanElement {
             var futurePlanElement: PlanElement = plan[i];
 
             if (futurePlanElement.type == PlanElement.PRIMITIVE) {
-                var functionname = futurePlanElement.schema.key;
+                var functionname = camelConcatinate("set", futurePlanElement.schema.key);
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
                 writeLine("public " + returnType + " " + functionname + "(Object val) {", 1, output);
                 writeLine("  return new " + returnType + "(parent.parent, parent, \"" + futurePlanElement.schema.key + "\", val);", 1, output);
@@ -258,13 +281,12 @@ class PlanElement {
             }
 
             if (futurePlanElement.type == PlanElement.START) {
-                var functionname = "build" + futurePlanElement.schema.key;
+                var functionname = camelConcatinate("build", futurePlanElement.schema.key);
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
                 writeLine("public " + returnType + " " + functionname + "() {", 1, output);
                 writeLine("  return new " + returnType + "(this);", 1, output);
                 writeLine("}", 1, output);
             }
-
 
             if (futurePlanElement.required) break; //we quit if we have to step to the next one
             if (futurePlanElement.type == PlanElement.END) break;  //we quit if we have to go up a level of context
@@ -273,24 +295,37 @@ class PlanElement {
     }
 }
 
+
+function generate_primitiveWrite(primitive: PlanElement, output: string[]) {
+    var functionname = "write";
+    writeLine("public void " + functionname + "(Object val) {", 1, output);
+    //todo implementation
+    writeLine("}", 1, output);
+}
+
 function planStepBuilderTop(name: string, rootSchema: schema.SchemaNode, depth: number, plan: PlanElement[]) {
     planStepBuilder(name, rootSchema, rootSchema, depth, plan);
     if (plan[0].type == PlanElement.START){
         plan[0].type = PlanElement.FIRST;
         plan[plan.length - 1].type = PlanElement.LAST;
+    } else {
+        //not a complex object
+        plan[0].type = PlanElement.SINGLE_PRIM;
     }
 }
 
 function planStepBuilder(name: string, rootSchema: schema.SchemaNode, schema: schema.SchemaNode, depth: number, plan: PlanElement[]) {
+    var requiredArray: string[] = schema.parent == null ? [] : schema.parent.required.toJSON();
+    var required: boolean = requiredArray.indexOf(name) >= 0;
 
     if (schema.type == "any" || schema.type == "object") {
-        plan.push(new PlanElement(PlanElement.START, rootSchema, schema, depth));
+        plan.push(new PlanElement(PlanElement.START, rootSchema, schema, depth, required));
         for (var child in schema.properties) {
             planStepBuilder(child, rootSchema, schema.properties[child], depth + 1, plan);
         }
         plan.push(new PlanElement(PlanElement.END, rootSchema, schema, depth));
     } else if (schema.type == "string" || schema.type == "number") {
-        plan.push(new PlanElement(PlanElement.PRIMITIVE, rootSchema, schema, depth));
+        plan.push(new PlanElement(PlanElement.PRIMITIVE, rootSchema, schema, depth, required));
     } else {
         throw new Error("unrecognised type in schema: " + schema.type);
     }

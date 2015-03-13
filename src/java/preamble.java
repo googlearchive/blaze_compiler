@@ -36,7 +36,7 @@ abstract class Ref<BuilderIdentity> {
     Ref(Firebase ref) {
         this.ref = ref;
     }
-    abstract BuilderIdentity buildValue();
+    //abstract BuilderIdentity buildValue();
 }
 
 class Val {

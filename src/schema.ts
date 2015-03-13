@@ -80,6 +80,7 @@ export class SchemaNode{
     examples: Json.JArray;
     nonexamples: Json.JArray;
     indexOn: string[];
+    required: Json.JArray;
     parent: SchemaNode;
     key: string;
 
@@ -360,6 +361,9 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
 
     annotation.nonexamples = node.has("nonexamples") ?
         node.asObject().getOrThrow("nonexamples", "").asArray(): new Json.JArray();
+
+    annotation.required = node.has("required") ?
+        node.asObject().getOrThrow("required", "").asArray(): new Json.JArray();
 
     annotation.indexOn = []; //get indexOn, whether specified as a single string or an array
     if (node.has("indexOn")) {

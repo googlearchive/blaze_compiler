@@ -1,3 +1,4 @@
+
 class Test {
     {
 
@@ -6,18 +7,18 @@ class Test {
 
         //setting a complex object
         root.child_object
-            .buildValue()
-            .grandchild_number(12)
-            .value();
+                .buildValue()
+                .setGrandchild_number(12)
+                .value();
 
 
         //setting a nested object
         root.buildValue()
-            .child_string("yo")
-            .buildchild_object()
-            .grandchild_number(12)
-            .value()
-            .value();
+                .setChild_string("yo")
+                .buildchild_object()
+                .setGrandchild_number(12)
+                .value()
+                .value();
 
     }
 }
