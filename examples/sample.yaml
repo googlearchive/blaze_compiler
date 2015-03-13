@@ -1,0 +1,24 @@
+#root
+#  - string
+#  - complex
+#     - number
+#     - string
+#  - $user
+#     - name
+#     - age
+schema:
+  type: object
+  properties:
+    string: {type: string}
+    complex:
+      type: object
+      properties:
+        number: {type: number}
+        string: {type: string}
+
+  $userid:
+    type: object
+    properties:
+      name: {type: string}
+      age:  {type: number} 
+

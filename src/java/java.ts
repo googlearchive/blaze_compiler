@@ -3,7 +3,7 @@ import schema = require('../schema');
 import rules = require('../blaze');
 import expression = require('../expression');
 import fs = require('fs');
-var TARGET: string = "model.java";
+var TARGET: string = "root.java";
 var DEBUG: boolean;
 
 /*
@@ -34,9 +34,12 @@ export function generate(model: rules.Rules, target_dir: string, debug: boolean)
     //big array we put all the output in
     var output: string[] = [];
 
-    writeLine(PREAMBLE, 0, output);
+    writeLine("package com.firebase.fluent;",0, output);
+    writeLine("import com.firebase.client.Firebase;",0, output);
+    writeLine("import java.util.HashMap;",0, output);
+    writeLine("import java.util.Map;",0, output);
 
-    generate_path_class("root", model.schema.root, 0, output);
+
 
     generate_root(model.schema.root, 0, output);
 
@@ -74,13 +77,13 @@ function schemaToJavaTypes(schema: schema.SchemaNode): string[] {
     if (schema.type == "string") return ["String"];
     if (schema.type == "number") return ["Double", "Integer"];
 }
-function generate_path_field(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false) {
+function generate_path_field(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false, class_prefix = "") {
     var modifier = isStatic?"static ": "";
-    writeLine("public " + modifier + pathClassIdentifier(schema) + " " + name + " = new " + pathClassIdentifier(schema) + "();", depth, output);
+    writeLine("public " + modifier + class_prefix + pathClassIdentifier(schema) + " " + name + " = new " + class_prefix + pathClassIdentifier(schema) + "();", depth, output);
 }
-function generate_path_wild_function(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false) {
+function generate_path_wild_function(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false, class_prefix = "") {
     var modifier = isStatic?"static ": "";
-    writeLine("public " + modifier + pathClassIdentifier(schema) + " $(String key) {return null;}", depth, output); //todo implementation
+    writeLine("public " + modifier + class_prefix + pathClassIdentifier(schema) + " $(String key) {return null;}", depth, output); //todo implementation
 }
 function generateRefConstructor(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
     //todo binding of variables
@@ -97,8 +100,8 @@ function generate_buildValue(name: string, schema: schema.SchemaNode, depth: num
 }
 function generate_root_buildValue(schema: schema.SchemaNode, depth: number, output: string[]) {
     var valueClassname = builderClassIdentifier(schema) + "0";
-    writeLine("public static " + valueClassname + " openWrite() {", depth, output);
-    writeLine("  return new root$$Builder0(new root$());", depth, output);
+    writeLine("public static _fluent_classes." + valueClassname + " openWrite() {", depth, output);
+    writeLine("  return new _fluent_classes.root$$Builder0(new _fluent_classes.root$());", depth, output);
     writeLine("}", depth, output);
 }
 
@@ -107,11 +110,20 @@ function generate_root(schema: schema.SchemaNode, depth: number, output: string[
 
     for (var child in schema.properties) {
         if (child.indexOf("$") == 0 || child.indexOf("~$") == 0) {
-            generate_path_wild_function(child, schema.properties[child], depth + 1, output, true);
+            generate_path_wild_function(child, schema.properties[child], depth + 1, output, true, "_fluent_classes.");
         } else {
-            generate_path_field(child, schema.properties[child], depth + 1, output, true);
+            generate_path_field(child, schema.properties[child], depth + 1, output, true, "_fluent_classes.");
         }
     }
+
+
+    //generate public classes inside the root scope, but within another static class so the IDE doesn't drown in option
+    writeLine("public static class _fluent_classes {", depth, output);
+        generate_path_class("root", schema, 2, output);
+    writeLine("}", depth, output);
+
+    writeLine(PREAMBLE, 0, output);
+
     generate_root_buildValue(schema, depth + 1, output);
     writeLine("}", depth, output);
 }
@@ -120,9 +132,9 @@ function generate_path_class(name: string, schema: schema.SchemaNode, depth: num
     generateValue(name, schema, depth, output);
 
     if (primitive) {
-        writeLine("class " + pathClassIdentifier(schema) + " {", depth, output);
+        writeLine("public static class " + pathClassIdentifier(schema) + " {", depth, output);
     } else {
-        writeLine("class " + pathClassIdentifier(schema) + " extends Ref<" + builderClassIdentifier(schema) + "0" + "> {", depth, output);
+        writeLine("public static class " + pathClassIdentifier(schema) + " extends Ref<" + builderClassIdentifier(schema) + "0" + "> {", depth, output);
         generateRefConstructor(name, schema, depth + 1, output);
     }
 
@@ -188,7 +200,7 @@ function generateStepBuilder(name: string, schema: schema.SchemaNode, depth: num
 
 function generateValue(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
     var classname = valueClassIdentifier(schema);
-    writeLine("class " + classname + " extends Val {", depth, output);
+    writeLine("public static class " + classname + " extends Val {", depth, output);
     writeLine("  " + classname + "(SubBuilder prev) {", depth, output);
     writeLine("    super(prev);", depth, output);
     writeLine("  }", depth, output);
@@ -210,7 +222,7 @@ class PlanElement {
     generatePlanStep(index: number, plan: PlanElement[], output: string[]) {
         var className = builderClassIdentifier(this.rootSchema) + index;
         if (this.type == PlanElement.FIRST) {
-            writeLine("class " + className + " extends SubBuilderIdentity {", 0, output);//constructor
+            writeLine("public static class " + className + " extends SubBuilderIdentity {", 0, output);//constructor
             writeLine(className + "(Ref ref) {", 1, output);
             writeLine("  super(ref, null);", 1, output);
             writeLine("}", 1, output);
@@ -219,7 +231,7 @@ class PlanElement {
             writeLine("}", 0, output);
         } else if (this.type == PlanElement.LAST) {
             var valueReturnType = valueClassIdentifier(this.schema);
-            writeLine("class " + className + " extends SubBuilderLast<" + valueReturnType + "> {", 0, output);seperator(output);
+            writeLine("public static class " + className + " extends SubBuilderLast<" + valueReturnType + "> {", 0, output);seperator(output);
             //constructor
             writeLine(className + "(SubBuilder prev) {", 1, output);
             writeLine("  super(null, prev);", 1, output);
@@ -228,7 +240,7 @@ class PlanElement {
 
             writeLine("}", 0, output);
         } else if (this.type == PlanElement.START) {
-            writeLine("class " + className + " extends SubBuilderIdentity {", 0, output);//constructor
+            writeLine("public static class " + className + " extends SubBuilderIdentity {", 0, output);//constructor
             writeLine(className + "(SubBuilder parent) {", 1, output);
             writeLine("  super(parent.ref, parent);", 1, output);
             writeLine("}", 1, output);
@@ -237,7 +249,7 @@ class PlanElement {
             writeLine("}", 0, output);
         } else if (this.type == PlanElement.END) {
             var valueReturnType = valueClassIdentifier(this.rootSchema);
-            writeLine("class " + className + " extends SubBuilderLast<" + valueReturnType + "> {", 0, output);seperator(output);
+            writeLine("public static class " + className + " extends SubBuilderLast<" + valueReturnType + "> {", 0, output);seperator(output);
             //constructor
             writeLine(className + "(SubBuilder parent, SubBuilder prev) {", 1, output);
             writeLine("  super(parent, prev);", 1, output);
@@ -247,7 +259,7 @@ class PlanElement {
             writeLine("}", 0, output);
         } else if (this.type == PlanElement.PRIMITIVE) {
             //constructor
-            writeLine("class " + className + " extends SubBuilderIntermediate {", 0, output);
+            writeLine("public static class " + className + " extends SubBuilderIntermediate {", 0, output);
             writeLine(className + "(SubBuilder parent, SubBuilder prev, String key, Object val) {", 1, output);
             writeLine("  super(parent, prev, key, val);", 1, output);
             writeLine("}", 1, output);
