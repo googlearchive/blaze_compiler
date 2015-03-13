@@ -12,7 +12,12 @@ schema:
       properties:
         grandchildNumber: {type: number}
 
-  $wildchild: {type: string}
+  $userid:
+    type: object
+    properties:
+      name: {type: string}
+      age:  {type: number}
+
   required: [child_object]
 
 access:

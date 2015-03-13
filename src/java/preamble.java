@@ -74,5 +74,4 @@ abstract class SubBuilderLast<Value> extends SubBuilder{
     SubBuilderLast(SubBuilder parent, SubBuilder prev) {
         super(prev.ref, parent, prev.properties);
     }
-    public abstract Value value(); //return parent builder context or a Value object
 }

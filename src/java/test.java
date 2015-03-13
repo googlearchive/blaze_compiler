@@ -2,23 +2,25 @@
 class Test {
     {
 
-        //setting a primative
-        root.child_string.write("yo");
+        //setting a primitive
+        root.childString.write("yo");
 
-        //setting a complex object
-        root.child_object
-                .buildValue()
-                .setGrandchild_number(12)
-                .value();
+        //setting an object
+        root.childObject
+                .openWrite()
+                .setGrandchildNumber(12)
+                .write();
 
 
         //setting a nested object
-        root.buildValue()
-                .setChild_string("yo")
-                .buildchild_object()
-                .setGrandchild_number(12)
-                .value()
-                .value();
+        root.openWrite()
+                .setChildString("yo") //optional
+                .openChildObject()
+                .setGrandchildNumber(12)
+                .closeChildObject()
+                .write();
+
+        root.$("id").write("bling");
 
     }
 }

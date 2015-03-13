@@ -61,9 +61,9 @@ function generate_path_field(name: string, schema: schema.SchemaNode, depth: num
     var modifier = isStatic?"static ": "";
     writeLine("public " + modifier + pathClassIdentifier(schema) + " " + name + " = new " + pathClassIdentifier(schema) + "();", depth, output);
 }
-function generate_path_wild_function(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false) { //todo $("") thing
+function generate_path_wild_function(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false) {
     var modifier = isStatic?"static ": "";
-    writeLine("public " + modifier + pathClassIdentifier(schema) + " " + name + " = new " + pathClassIdentifier(schema) + "();", depth, output);
+    writeLine("public " + modifier + pathClassIdentifier(schema) + " $(String key) {return null;}", depth, output); //todo implementation
 }
 function generateRefConstructor(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
     //todo binding of variables
@@ -74,13 +74,13 @@ function generateRefConstructor(name: string, schema: schema.SchemaNode, depth: 
 }
 function generate_buildValue(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
     var valueClassname = builderClassIdentifier(schema) + "0";
-    writeLine("public " + valueClassname + " buildValue() {", depth, output);
+    writeLine("public " + valueClassname + " openWrite() {", depth, output);
     writeLine("  return new " + valueClassname + "(this);", depth, output);
     writeLine("}", depth, output);
 }
 function generate_root_buildValue(schema: schema.SchemaNode, depth: number, output: string[]) {
     var valueClassname = builderClassIdentifier(schema) + "0";
-    writeLine("public static " + valueClassname + " buildValue() {", depth, output);
+    writeLine("public static " + valueClassname + " openWrite() {", depth, output);
     writeLine("  return new root$$Builder0(new root$());", depth, output);
     writeLine("}", depth, output);
 }
@@ -251,7 +251,7 @@ class PlanElement {
         writeLine("}", 1, output);
     }
     generateSubValue(returnType: string, output: string[]) {
-        writeLine("public " + returnType + " value() {", 1, output);
+        writeLine("public " + returnType + " write() {", 1, output);
         writeLine("  return new " + returnType + "(parent.parent, parent, \"" + this.schema.key + "\", this.properties);", 1, output);
         writeLine("}", 1, output);
     }
@@ -269,19 +269,20 @@ class PlanElement {
 
             if (futurePlanElement.type == PlanElement.LAST) {
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
-                writeLine("public " + returnType + " " + "value() {", 1, output);
+                writeLine("public " + returnType + " " + "write() {", 1, output);
                 writeLine("  return new " + returnType + "(parent.parent);", 1, output);
                 writeLine("}", 1, output);
             }
             if (futurePlanElement.type == PlanElement.END) {
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
-                writeLine("public " + returnType + " " + "value() {", 1, output);
+                var functionname = camelConcatinate("close", futurePlanElement.schema.key);
+                writeLine("public " + returnType + " " + functionname + "() {", 1, output);
                 writeLine("  return new " + returnType + "(parent.parent, parent);", 1, output);
                 writeLine("}", 1, output);
             }
 
             if (futurePlanElement.type == PlanElement.START) {
-                var functionname = camelConcatinate("build", futurePlanElement.schema.key);
+                var functionname = camelConcatinate("open", futurePlanElement.schema.key);
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
                 writeLine("public " + returnType + " " + functionname + "() {", 1, output);
                 writeLine("  return new " + returnType + "(this);", 1, output);
@@ -289,6 +290,8 @@ class PlanElement {
             }
 
             if (futurePlanElement.required) break; //we quit if we have to step to the next one
+            if (futurePlanElement.type == PlanElement.FIRST) break;  //we quit if we have to go up a level of context
+            if (futurePlanElement.type == PlanElement.START) break;  //we quit if we have to go up a level of context
             if (futurePlanElement.type == PlanElement.END) break;  //we quit if we have to go up a level of context
             if (futurePlanElement.type == PlanElement.LAST) break; //we quit if we have to go up a level of context
         }
