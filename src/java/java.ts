@@ -6,6 +6,21 @@ import fs = require('fs');
 var TARGET: string = "model.java";
 var DEBUG: boolean;
 
+/*
+Built quickly for experiment week
+Improvements:
+Java code generation should be in another module and fluent, perhaps using something like https://github.com/UnquietCode/Flapi
+Lots of short lived objects, maybe a better design is to use a single builder,
+which exposes each step by returning an interface of itself (nested builders are still seperate objects). The builder tracks what stage it is in via a state counter
+
+The state is basically what variables have been set so far and what will come next.
+
+http://www.unquietcode.com/blog/2011/programming/using-generics-to-build-fluent-apis-in-java/
+
+
+ */
+
+
 var TARGET_FIREBASE_URL: string = "https://firesafe-sandbox.firebaseio.com";
 
 var PREAMBLE = fs.readFileSync("src/java/preamble.java").toString(); //todo move into js file
@@ -16,7 +31,6 @@ var TEST = fs.readFileSync("src/java/test.java").toString(); //todo move into js
 export function generate(model: rules.Rules, debug: boolean) {
     console.log("generating", TARGET);
     DEBUG = true; //debug;
-
 
     //big array we put all the output in
     var output: string[] = [];
@@ -56,6 +70,10 @@ function valueClassIdentifier(schema: schema.SchemaNode): string {
 function camelConcatinate(a: string, b: string): string {
 
     return a + b.charAt(0).toUpperCase() + b.slice(1);
+}
+function schemaToJavaTypes(schema: schema.SchemaNode): string[] {
+    if (schema.type == "string") return ["String"];
+    if (schema.type == "number") return ["Double", "Integer"];
 }
 function generate_path_field(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false) {
     var modifier = isStatic?"static ": "";
@@ -99,7 +117,6 @@ function generate_root(schema: schema.SchemaNode, depth: number, output: string[
     writeLine("}", depth, output);
 }
 function generate_path_class(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
-
     var primitive: PlanElement = generateStepBuilder(name, schema, depth, output);
     generateValue(name, schema, depth, output);
 
@@ -112,7 +129,6 @@ function generate_path_class(name: string, schema: schema.SchemaNode, depth: num
 
     //for each non-wildchild child we generate a field to an instantiated child path_class
     //for wildchilds we create a function that instantiates the correct child path class
-
     var wildchild_key = null;
 
     for (var child in schema.properties) {
@@ -169,7 +185,6 @@ function generateStepBuilder(name: string, schema: schema.SchemaNode, depth: num
     }
 
     if (plan.length == 1) return plan[0];
-
 }
 
 function generateValue(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
@@ -222,7 +237,6 @@ class PlanElement {
 
             writeLine("}", 0, output);
         } else if (this.type == PlanElement.END) {
-            var nextStep: number = (index+1);
             var valueReturnType = valueClassIdentifier(this.rootSchema);
             writeLine("class " + className + " extends SubBuilderLast<" + valueReturnType + "> {", 0, output);seperator(output);
             //constructor
@@ -244,7 +258,6 @@ class PlanElement {
         }
     }
 
-
     generateValue(returnType: string, output: string[]) {
         writeLine("public " + returnType + " value() {", 1, output);
         writeLine("  return new " + returnType + "(this);", 1, output);
@@ -262,11 +275,15 @@ class PlanElement {
             if (futurePlanElement.type == PlanElement.PRIMITIVE) {
                 var functionname = camelConcatinate("set", futurePlanElement.schema.key);
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
-                writeLine("public " + returnType + " " + functionname + "(Object val) {", 1, output);
-                writeLine("  return new " + returnType + "(parent.parent, parent, \"" + futurePlanElement.schema.key + "\", val);", 1, output);
-                writeLine("}", 1, output);
-            }
+                var types = schemaToJavaTypes(futurePlanElement.schema);
 
+                for (var t = 0; t < types.length; t++) {
+                    var type: string = types[t];
+                    writeLine("public " + returnType + " " + functionname + "(" + type + " val) {", 1, output);
+                    writeLine("  return new " + returnType + "(parent.parent, parent, \"" + futurePlanElement.schema.key + "\", val);", 1, output);
+                    writeLine("}", 1, output);
+                }
+            }
             if (futurePlanElement.type == PlanElement.LAST) {
                 var returnType   = valueClassIdentifier(futurePlanElement.rootSchema);
                 writeLine("public " + returnType + " " + "write() {", 1, output);
@@ -280,7 +297,6 @@ class PlanElement {
                 writeLine("  return new " + returnType + "(parent.parent, parent);", 1, output);
                 writeLine("}", 1, output);
             }
-
             if (futurePlanElement.type == PlanElement.START) {
                 var functionname = camelConcatinate("open", futurePlanElement.schema.key);
                 var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
@@ -288,7 +304,6 @@ class PlanElement {
                 writeLine("  return new " + returnType + "(this);", 1, output);
                 writeLine("}", 1, output);
             }
-
             if (futurePlanElement.required) break; //we quit if we have to step to the next one
             if (futurePlanElement.type == PlanElement.FIRST) break;  //we quit if we have to go up a level of context
             if (futurePlanElement.type == PlanElement.START) break;  //we quit if we have to go up a level of context
@@ -301,9 +316,14 @@ class PlanElement {
 
 function generate_primitiveWrite(primitive: PlanElement, output: string[]) {
     var functionname = "write";
-    writeLine("public void " + functionname + "(Object val) {", 1, output);
-    //todo implementation
-    writeLine("}", 1, output);
+    var types = schemaToJavaTypes(primitive.schema);
+    for (var t = 0; t < types.length; t++) {
+        var type: string = types[t];
+        writeLine("public void " + functionname + "(" + type + " val) {", 1, output);
+        //todo implementation
+        writeLine("}", 1, output);
+    }
+
 }
 
 function planStepBuilderTop(name: string, rootSchema: schema.SchemaNode, depth: number, plan: PlanElement[]) {

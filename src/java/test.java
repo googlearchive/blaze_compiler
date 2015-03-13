@@ -1,7 +1,5 @@
-
 class Test {
     {
-
         //setting a primitive
         root.childString.write("yo");
 
@@ -20,7 +18,13 @@ class Test {
                 .closeChildObject()
                 .write();
 
-        root.$("id").openWrite().setAge(12).write();
+        root.$("id")
+                .openWrite()
+                .setName("Tom")
+                .setAge(12)
+                .write();
 
+        root.$("id").age
+                .write(12);
     }
 }
