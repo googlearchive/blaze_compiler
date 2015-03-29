@@ -1,24 +1,31 @@
 #root
-#  - string
-#  - complex
-#     - number
-#     - string
+#  - aStr
+#  - aComposite
+#     - aNum
+#     - aStr
 #  - $user
 #     - name
 #     - age
+#     - address (complex)
 schema:
   type: object
   properties:
-    string: {type: string}
-    complex:
+    aStr: {type: string}
+    aComposite:
       type: object
       properties:
-        number: {type: number}
-        string: {type: string}
+        aNum: {type: number}
+        aStr: {type: string}
 
   $userid:
     type: object
     properties:
-      name: {type: string}
-      age:  {type: number}
+      name:     {type: string}
+      age:      {type: number}
+      address:
+        properties:
+          street: {type: string}
+          zip:    {type: string}
+
+    required: ["name"]
 

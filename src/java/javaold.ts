@@ -17,10 +17,13 @@ which exposes each step by returning an interface of itself (nested builders are
 The state is basically what variables have been set so far and what will come next.
 
 http://www.unquietcode.com/blog/2011/programming/using-generics-to-build-fluent-apis-in-java/
+
+
  */
 
 var TARGET_FIREBASE_URL: string = "https://firesafe-sandbox.firebaseio.com";
 
+var PREAMBLE = fs.readFileSync("src/java/preamble.java").toString(); //todo move into js file
 var TEST = fs.readFileSync("src/java/test.java").toString(); //todo move into js file
 /**
  * from a compiled model of the rules, a typed java source file is created
@@ -37,8 +40,9 @@ export function generate(model: rules.Rules, target_dir: string, debug: boolean)
         .addImport("com.firebase.client.Firebase")
         .addImport("java.util.HashMap")
         .addImport("java.util.Map")
-        .addClass(generate_root(model.schema.root))
         .write(output);
+
+    generate_root(model.schema.root, 0, output);
 
     //writeLine(TEST, 0, output);
     fs.writeFile(target_dir + "/" + TARGET, output.join("\n"));
@@ -74,7 +78,7 @@ function schemaToJavaTypes(schema: schema.SchemaNode): string[] {
     if (schema.type == "string") return ["String"];
     if (schema.type == "number") return ["Double", "Integer"];
 }
-function generate_path_field(name: string, schema: schema.SchemaNode, isStatic: boolean = false, class_prefix = ""): gen.JField {
+function generate_path_field(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false, class_prefix = "") {
     //var modifier = isStatic?"static ": "";
     //writeLine("public " + modifier + class_prefix + pathClassIdentifier(schema) + " " + name + " = new " + class_prefix + pathClassIdentifier(schema) + "();", depth, output);
     return new gen.JField()
@@ -82,7 +86,8 @@ function generate_path_field(name: string, schema: schema.SchemaNode, isStatic: 
         .setStatic(isStatic)
         .setType(class_prefix + pathClassIdentifier(schema))
         .setName(name)
-        .setInitializer("new " + class_prefix + pathClassIdentifier(schema) + "()");
+        .setInitializer("new " + class_prefix + pathClassIdentifier(schema) + "()")
+        .write(output, depth);
 }
 function generate_path_wild_function(name: string, schema: schema.SchemaNode, depth: number, output: string[], isStatic: boolean = false, class_prefix = "") {
     //var modifier = isStatic?"static ": "";
@@ -97,121 +102,58 @@ function generate_path_wild_function(name: string, schema: schema.SchemaNode, de
         .write(output, depth);
 
 }
-function generateRefConstructor(schema: schema.SchemaNode): gen.JMethod {
+function generateRefConstructor(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
     //todo binding of variables
-    return new gen.JMethod()
-        .setType("")
-        .setName(pathClassIdentifier(schema))
-        .setBody(["super(new Firebase(\"" + schema.getPath().join("/") + "\"));"]); //todo this is wrong
+    var classname = pathClassIdentifier(schema);
+    writeLine(classname + "() {", depth, output);
+    writeLine("  super(new Firebase(\"" + schema.getPath().join("/") + "\"));", depth, output);
+    writeLine("}", depth, output);
 }
-function generateValConstructor(schema: schema.SchemaNode): gen.JMethod {
-    //todo binding of variables
-    return new gen.JMethod()
-        .setType("")
-        .setName(pathClassIdentifier(schema))
-        .setBody(["super(new Firebase(\"" + schema.getPath().join("/") + "\"));"]); //todo this is wrong
-}
-function generate_startWriteMethod(schema: schema.SchemaNode): gen.JMethod {
-    //todo
-    //this should instanciate an Val object and return the correct interface to it
-
-    /*
+function generate_buildValue(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
     var valueClassname = builderClassIdentifier(schema) + "0";
-    writeLine("public " + valueClassname + " startWrite() {", depth, output);
+    writeLine("public " + valueClassname + " openWrite() {", depth, output);
     writeLine("  return new " + valueClassname + "(this);", depth, output);
     writeLine("}", depth, output);
-    */
-    return new gen.JMethod()
-        .setModifier(gen.Modifier.public)
-        .setType(valueClassIdentifier(schema))
-        .setName("startWrite")
-        .setBody(["return new " + valueClassIdentifier(schema) + "(null, this);"]);
 }
-function generate_root_buildValue(schema: schema.SchemaNode): gen.JMethod {
-    return new gen.JMethod()
-        .setModifier(gen.Modifier.public)
-        .setStatic(true)
-        .setType("_fluent_classes." + builderClassIdentifier(schema) + "0")
-        .setName("startWrite")
-        .setBody(["return new _fluent_classes.root$$Builder0(new _fluent_classes.root$());"]);
+function generate_root_buildValue(schema: schema.SchemaNode, depth: number, output: string[]) {
+    var valueClassname = builderClassIdentifier(schema) + "0";
+    writeLine("public static _fluent_classes." + valueClassname + " openWrite() {", depth, output);
+    writeLine("  return new _fluent_classes.root$$Builder0(new _fluent_classes.root$());", depth, output);
+    writeLine("}", depth, output);
 }
 
-function generate_root(schema: schema.SchemaNode): gen.JClass {
-    //writeLine("public class root {", depth, output);
-
-    var _class = new gen.JClass()
-        .setModifier(gen.Modifier.public)
-        .setName("root");
+function generate_root(schema: schema.SchemaNode, depth: number, output: string[]) {
+    writeLine("public class root {", depth, output);
 
     for (var child in schema.properties) {
         if (child.indexOf("$") == 0 || child.indexOf("~$") == 0) {
-            //generate_path_wild_function(child, schema.properties[child], depth + 1, output, true, "_fluent_classes.");
+            generate_path_wild_function(child, schema.properties[child], depth + 1, output, true, "_fluent_classes.");
         } else {
-            _class.addField(generate_path_field(child, schema.properties[child], true, "_fluent_classes."));
+            generate_path_field(child, schema.properties[child], depth + 1, output, true, "_fluent_classes.");
         }
     }
 
+
     //generate public classes inside the root scope, but within another static class so the IDE doesn't drown in option
-    _class.addClass(new gen.JClass()
-        .setModifier(gen.Modifier.public)
-        .setStatic(true)
-        .setName("_fluent_classes")
-        .addClass(generate_path_class(_class, schema))
-    );
+    writeLine("public static class _fluent_classes {", depth, output);
+        generate_path_class("root", schema, 2, output);
+    writeLine("}", depth, output);
 
+    writeLine(PREAMBLE, 0, output);
 
-    preamble_classes().map(_class.addClass.bind(_class));
-
-    _class.addMethod(generate_root_buildValue(schema));
-    //writeLine("}", depth, output);
-    return _class;
+    generate_root_buildValue(schema, depth + 1, output);
+    writeLine("}", depth, output);
 }
+function generate_path_class(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
+    var primitive: PlanElement = generateStepBuilder(name, schema, depth, output);
+    generateValue(name, schema, depth, output);
 
-
-function preamble_classes(): gen.JClass[] {
-    return [
-        new gen.JClass().setModifier(gen.Modifier.public)
-            .setStatic(true)
-            .setName("Val")
-            .addField(new gen.JField().setType("Path").setName("loc"))
-            //.addField(new gen.JField().setType("HashMap<String, Object>").setName("values").setInitializer("new HashMap<String, Object>()"))
-            .addField(new gen.JField().setType("Val").setName("parent"))
-            .addMethod(new gen.JMethod().setType("").setName("Val").addParam(["Val", "parent"]).addParam(["Path", "loc"])
-                .setBody(["this.loc = loc;", "this.parent = parent;"])),
-        new gen.JClass().setModifier(gen.Modifier.public)
-            .setStatic(true)
-            .setName("Path")
-            .addField(new gen.JField().setType("Firebase").setName("ref"))
-            .addMethod(new gen.JMethod().setType("").setName("Path").addParam(["Firebase", "ref"])
-                .setBody(["this.ref = ref;"]))
-            .addMethod(new gen.JMethod().setType("").setName("Path").addParam(["Path", "parent"]).addParam(["String", "segment"])
-                .setBody(["this.ref = parent.ref.child(segment);"]))
-    ];
-}
-function generate_path_class(parent: gen.JClass, schema: schema.SchemaNode): gen.JClass {
-    var _class = new gen.JClass()
-        .setModifier(gen.Modifier.public)
-        .setStatic(true)
-        .setName(pathClassIdentifier(schema))
-        .addExtends("Path")
-        .addMethod(generateRefConstructor(schema));
-
-    //generateStepBuilder();
-
-    if (schema.isLeaf()) {
-        generate_primitiveWrites(schema).map(_class.addMethod.bind(_class));
+    if (primitive) {
+        writeLine("public static class " + pathClassIdentifier(schema) + " {", depth, output);
     } else {
-        var plan = planSteps("test", schema, 0);
-
-        //for each step in the plan
-        //we generate an interface, which exposes only the methods to the next steps that are valid
-        
-
-        _class.addMethod(generate_startWriteMethod(schema));
-        _class.addClass(generateValueClass(schema));
-
+        writeLine("public static class " + pathClassIdentifier(schema) + " extends Ref<" + builderClassIdentifier(schema) + "0" + "> {", depth, output);
+        generateRefConstructor(name, schema, depth + 1, output);
     }
-
 
     //for each non-wildchild child we generate a field to an instantiated child path_class
     //for wildchilds we create a function that instantiates the correct child path class
@@ -220,31 +162,24 @@ function generate_path_class(parent: gen.JClass, schema: schema.SchemaNode): gen
     for (var child in schema.properties) {
         if (child.indexOf("$") == 0 || child.indexOf("~$") == 0) {
             wildchild_key = child;
-            //generate_path_wild_function(child, schema.properties[child], depth + 1, output);
+            generate_path_wild_function(child, schema.properties[child], depth + 1, output);
         } else {
-            _class.addField(generate_path_field(child, schema.properties[child]));
+            generate_path_field(child, schema.properties[child], depth + 1, output);
         }
     }
 
-    for (var child in schema.properties) {
-        _class.addClass(generate_path_class(_class, schema.properties[child]));
+    if (primitive == null) {
+        generate_buildValue(name, schema, depth + 1, output);
+
+    } else {
+        generate_primitiveWrite(primitive, output);
     }
 
-    return _class;
-}
+    writeLine("}", depth, output);
 
-function generateValueClass(schema: schema.SchemaNode): gen.JClass {
-    //todo this will be considerably more complicated
-    //var primitive: PlanElement = generateStepBuilder(name, schema, depth, output);
-
-    var _class = new gen.JClass()
-        .setModifier(gen.Modifier.public)
-        .setStatic(true)
-        .setName(valueClassIdentifier(schema))
-        .addExtends("Val")
-        .addMethod(generateValConstructor(schema));
-
-    return _class;
+    for (var child in schema.properties) {
+        generate_path_class(child, schema.properties[child], depth, output);
+    }
 }
 
 /**
@@ -261,7 +196,7 @@ function generateStepBuilder(name: string, schema: schema.SchemaNode, depth: num
     //wildchilds can be added multiple times by using a keyed subbuilder todo
     //the ordering is basically an inorder traversal of the schema node's properties
     var plan: PlanElement[] = [];
-    //planStepBuilderTop(name, schema, 0, plan);
+    planStepBuilderTop(name, schema, 0, plan);
 
     if (DEBUG) {
         for(var i =0; i < plan.length; i++) {
@@ -280,6 +215,15 @@ function generateStepBuilder(name: string, schema: schema.SchemaNode, depth: num
     if (plan.length == 1) return plan[0];
 }
 
+function generateValue(name: string, schema: schema.SchemaNode, depth: number, output: string[]) {
+    var classname = valueClassIdentifier(schema);
+    writeLine("public static class " + classname + " extends Val {", depth, output);
+    writeLine("  " + classname + "(SubBuilder prev) {", depth, output);
+    writeLine("    super(prev);", depth, output);
+    writeLine("  }", depth, output);
+    writeLine("}", depth, output);
+}
+
 class PlanElement {
     static FIRST = "first";
     static LAST  = "last ";
@@ -287,15 +231,7 @@ class PlanElement {
     static END   = "end  ";
     static PRIMITIVE   = "prim ";
     static SINGLE_PRIM = "singl";
-
-    constructor(public type: String,
-                public rootSchema: schema.SchemaNode,
-                public schema: schema.SchemaNode,
-                public depth: number,
-                public required: Boolean = true) {
-
-    }
-
+    constructor(public type: String, public rootSchema: schema.SchemaNode, public schema: schema.SchemaNode, public depth: number, public required: Boolean = true) {}
     toString() {
         return this.type + ": " + this.schema.key
     }
@@ -411,20 +347,20 @@ class PlanElement {
 }
 
 
-function generate_primitiveWrites(schema: schema.SchemaNode): gen.JMethod[] {
-    var types = schemaToJavaTypes(schema);
-    return types.map(function(type: string) {
-        return new gen.JMethod()
-            .setModifier(gen.Modifier.public)
-            .setType("void")
-            .setName("write")
-            .addParam([type, "value"]);
-    });
+function generate_primitiveWrite(primitive: PlanElement, output: string[]) {
+    var functionname = "write";
+    var types = schemaToJavaTypes(primitive.schema);
+    for (var t = 0; t < types.length; t++) {
+        var type: string = types[t];
+        writeLine("public void " + functionname + "(" + type + " val) {", 1, output);
+        //todo implementation
+        writeLine("}", 1, output);
+    }
+
 }
 
-function planSteps(name: string, rootSchema: schema.SchemaNode, depth: number): PlanElement[] {
-    var plan: PlanElement[] = [];
-    planStep(name, rootSchema, rootSchema, depth, plan);
+function planStepBuilderTop(name: string, rootSchema: schema.SchemaNode, depth: number, plan: PlanElement[]) {
+    planStepBuilder(name, rootSchema, rootSchema, depth, plan);
     if (plan[0].type == PlanElement.START){
         plan[0].type = PlanElement.FIRST;
         plan[plan.length - 1].type = PlanElement.LAST;
@@ -432,17 +368,16 @@ function planSteps(name: string, rootSchema: schema.SchemaNode, depth: number): 
         //not a complex object
         plan[0].type = PlanElement.SINGLE_PRIM;
     }
-    return plan;
 }
 
-function planStep(name: string, rootSchema: schema.SchemaNode, schema: schema.SchemaNode, depth: number, plan: PlanElement[]) {
+function planStepBuilder(name: string, rootSchema: schema.SchemaNode, schema: schema.SchemaNode, depth: number, plan: PlanElement[]) {
     var requiredArray: string[] = schema.parent == null ? [] : schema.parent.required.toJSON();
     var required: boolean = requiredArray.indexOf(name) >= 0;
 
     if (schema.type == "any" || schema.type == "object") {
         plan.push(new PlanElement(PlanElement.START, rootSchema, schema, depth, required));
         for (var child in schema.properties) {
-            planStep(child, rootSchema, schema.properties[child], depth + 1, plan);
+            planStepBuilder(child, rootSchema, schema.properties[child], depth + 1, plan);
         }
         plan.push(new PlanElement(PlanElement.END, rootSchema, schema, depth));
     } else if (schema.type == "string" || schema.type == "number") {

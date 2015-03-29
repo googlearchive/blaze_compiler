@@ -1,3 +1,28 @@
+
+private abstract static class Val {
+    Path loc;
+    Val parent;
+    protected HashMap<String, Object> values = new HashMap<>();
+
+    Val(Val parent, Path loc) {
+        this.loc = loc;
+        this.parent = parent;
+    }
+}
+
+public abstract static class Path {
+    Firebase ref;
+
+    Path(Firebase ref) {
+        this.ref = ref;
+    }
+
+    Path(Path parent, String segment) {
+        this.ref = parent.ref.child(segment);
+    }
+}
+
+/*
 public static abstract class Ref<BuilderIdentity> {
     Firebase ref;
     Ref(Firebase ref) {
@@ -41,4 +66,4 @@ public static abstract class SubBuilderLast<Value> extends SubBuilder{
     SubBuilderLast(SubBuilder parent, SubBuilder prev) {
         super(prev.ref, parent, prev.properties);
     }
-}
+}*/
