@@ -59,8 +59,8 @@ function seperator(output: string[]) {
 function pathClassIdentifier(schema: schema.SchemaNode): string {
     return "root$" + schema.getPath().join("$");
 }
-function builderClassIdentifier(schema: schema.SchemaNode): string {
-    return "root$" + schema.getPath().join("$") + "$Builder";
+function builderClassIdentifier(step: PlanElement): string {
+    return "root$" + step.schema.getPath().join("$") + "_" + step.type;
 }
 function valueClassIdentifier(schema: schema.SchemaNode): string {
     return "root$" + schema.getPath().join("$") + "$Value";
@@ -107,9 +107,10 @@ function generateRefConstructor(schema: schema.SchemaNode): gen.JMethod {
 function generateValConstructor(schema: schema.SchemaNode): gen.JMethod {
     //todo binding of variables
     return new gen.JMethod()
-        .setType("")
-        .setName(pathClassIdentifier(schema))
-        .setBody(["super(new Firebase(\"" + schema.getPath().join("/") + "\"));"]); //todo this is wrong
+        .setName(valueClassIdentifier(schema))
+        //.addParam([pathClassIdentifier(schema), "parent"])
+        .addParam(["Path", "parent"])
+        .setBody(["super(null, parent);"]); //todo this is wrong
 }
 function generate_startWriteMethod(schema: schema.SchemaNode): gen.JMethod {
     //todo
@@ -125,13 +126,13 @@ function generate_startWriteMethod(schema: schema.SchemaNode): gen.JMethod {
         .setModifier(gen.Modifier.public)
         .setType(valueClassIdentifier(schema))
         .setName("startWrite")
-        .setBody(["return new " + valueClassIdentifier(schema) + "(null, this);"]);
+        .setBody(["return new " + valueClassIdentifier(schema) + "(new " + pathClassIdentifier(schema) + "());"]);
 }
 function generate_root_buildValue(schema: schema.SchemaNode): gen.JMethod {
     return new gen.JMethod()
         .setModifier(gen.Modifier.public)
         .setStatic(true)
-        .setType("_fluent_classes." + builderClassIdentifier(schema) + "0")
+        //.setType("_fluent_classes." + builderClassIdentifier(schema) + "0")
         .setName("startWrite")
         .setBody(["return new _fluent_classes.root$$Builder0(new _fluent_classes.root$());"]);
 }
@@ -203,12 +204,15 @@ function generate_path_class(parent: gen.JClass, schema: schema.SchemaNode): gen
     } else {
         var plan = planSteps("test", schema, 0);
 
+        _class.addClass(generateValueClass(schema));
+
         //for each step in the plan
         //we generate an interface, which exposes only the methods to the next steps that are valid
-        
+        var interfaces = PlanElement.generatePlanInterfaces(plan);
+
+        interfaces.forEach(function(i) {_class.addClass(i);});
 
         _class.addMethod(generate_startWriteMethod(schema));
-        _class.addClass(generateValueClass(schema));
 
     }
 
@@ -300,8 +304,93 @@ class PlanElement {
         return this.type + ": " + this.schema.key
     }
 
+    static generatePlanInterfaces(plan: PlanElement[]): gen.JClass[] {
+        var _interfaces: gen.JClass[] = [];
+        for (var stepN=0; stepN < plan.length; stepN++) {
+            var step: PlanElement =  plan[stepN];
+
+            var _interface = new gen.JClass()
+                .setModifier(gen.Modifier.public)
+                .setInterface(true)
+                .setName(builderClassIdentifier(step));
+
+            step.generateTransitionsStubs(stepN, plan).forEach(function(s) {_interface.addMethod(s);});
+
+            _interfaces.push(_interface)
+        }
+        return _interfaces;
+    }
+
+    generateTransitionsStubs(index: number, plan: PlanElement[]): gen.JMethod[] {
+        var _stubs: gen.JMethod[] = [];
+
+        for (var i = index + 1; i < plan.length; i++) {
+            var futureStep: PlanElement = plan[i];
+
+            if (futureStep.type == PlanElement.PRIMITIVE) {
+                var functionname = camelConcatinate("set", futureStep.schema.key);
+                var returnType   = builderClassIdentifier(futureStep);
+                var types = schemaToJavaTypes(futureStep.schema);
+
+                for (var t = 0; t < types.length; t++) {
+                    var type: string = types[t];
+
+                    _stubs.push(new gen.JMethod()
+                        .setModifier(gen.Modifier.public)
+                        .setType(returnType)
+                        .setName(functionname)
+                        .addParam([type, "val"])
+                    );
+                }
+            }
+            if (futureStep.type == PlanElement.LAST) {
+                var returnType   = valueClassIdentifier(futureStep.rootSchema);
+                _stubs.push(new gen.JMethod()
+                    .setModifier(gen.Modifier.public)
+                    .setType(returnType)
+                    .setName("write")
+                );
+            }
+            if (futureStep.type == PlanElement.END) {
+                var returnType   = builderClassIdentifier(futureStep);
+                var functionname = camelConcatinate("close", futureStep.schema.key);
+                _stubs.push(new gen.JMethod()
+                    .setModifier(gen.Modifier.public)
+                    .setType(returnType)
+                    .setName(functionname)
+                );
+            }
+            if (futureStep.type == PlanElement.START && futureStep.schema.key.indexOf("$") != 0) {
+                var returnType   = builderClassIdentifier(futureStep);
+                var functionname = camelConcatinate("open", futureStep.schema.key);
+                _stubs.push(new gen.JMethod()
+                    .setModifier(gen.Modifier.public)
+                    .setType(returnType)
+                    .setName(functionname)
+                );
+            }
+
+            if (futureStep.required) break; //we quit if we have to step to the next one
+            if (futureStep.type == PlanElement.FIRST) break;  //we quit if we have to go up a level of context
+            if (futureStep.type == PlanElement.END) break;  //we quit if we have to go up a level of context
+            if (futureStep.type == PlanElement.LAST) break; //we quit if we have to go up a level of context
+
+            //if a non required new context is following, we can skip it by fast forwarding to after
+            if (futureStep.type == PlanElement.START) {
+                var requiredEnds = 1;
+                i++;
+                while (requiredEnds > 0 ) {
+                    if (plan[i].type == PlanElement.END) requiredEnds--;
+                    if (plan[i].type == PlanElement.START) requiredEnds++;
+                    i++;
+                }
+            }
+        }
+        return _stubs;
+    }
+
     generatePlanStep(index: number, plan: PlanElement[], output: string[]) {
-        var className = builderClassIdentifier(this.rootSchema) + index;
+        var className = builderClassIdentifier(this) + index;
         if (this.type == PlanElement.FIRST) {
             writeLine("public static class " + className + " extends SubBuilderIdentity {", 0, output);//constructor
             writeLine(className + "(Ref ref) {", 1, output);
@@ -366,7 +455,7 @@ class PlanElement {
 
             if (futurePlanElement.type == PlanElement.PRIMITIVE) {
                 var functionname = camelConcatinate("set", futurePlanElement.schema.key);
-                var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
+                var returnType   = builderClassIdentifier(futurePlanElement) + i;
                 var types = schemaToJavaTypes(futurePlanElement.schema);
 
                 for (var t = 0; t < types.length; t++) {
@@ -383,7 +472,7 @@ class PlanElement {
                 writeLine("}", 1, output);
             }
             if (futurePlanElement.type == PlanElement.END) {
-                var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
+                var returnType   = builderClassIdentifier(futurePlanElement) + i;
                 var functionname = camelConcatinate("close", futurePlanElement.schema.key);
                 writeLine("public " + returnType + " " + functionname + "() {", 1, output);
                 writeLine("  return new " + returnType + "(parent.parent, parent);", 1, output);
@@ -391,7 +480,7 @@ class PlanElement {
             }
             if (futurePlanElement.type == PlanElement.START && futurePlanElement.schema.key.indexOf("$") != 0) {
                 var functionname = camelConcatinate("open", futurePlanElement.schema.key);
-                var returnType   = builderClassIdentifier(futurePlanElement.rootSchema) + i;
+                var returnType   = builderClassIdentifier(futurePlanElement) + i;
                 writeLine("public " + returnType + " " + functionname + "() {", 1, output);
                 writeLine("  return new " + returnType + "(this);", 1, output);
                 writeLine("}", 1, output);

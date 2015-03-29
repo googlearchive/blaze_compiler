@@ -186,7 +186,7 @@ export class JMethod {
     _static: boolean = false;
     _name: string;
     _type: string;
-    _body: string[] = [];
+    _body: string[] = null;
     _params: [string, string][] = []; //array of [dec, name] pairs
 
     setModifier(_modifier: Modifier): JMethod {
@@ -217,7 +217,8 @@ export class JMethod {
     write(output: string[], indent: number) {
         writeLine(modifierString(this._modifier), output, indent);
         if (this._static) write("static ", output);
-        write(this._type + " ", output);
+        if (this._type)
+            write(this._type + " ", output);
         write(this._name + "(", output);
         var paramDecs: string[] = [];
         this._params.forEach(function(_param: [string, string]) {
@@ -225,10 +226,16 @@ export class JMethod {
         });
         write(paramDecs.join(", "), output);
 
-        write(") {\n", output);
-        this._body.forEach(function(_line: string) {
-            writeLine(_line, output, indent + 1);
-        });
-        writeLine("}", output, indent);
+        write(")", output);
+
+        if (this._body) {
+            write(" {", output);
+            this._body.forEach(function(_line: string) {
+                writeLine(_line, output, indent + 1);
+            });
+            writeLine("}", output, indent);
+        } else {
+            write(";", output);
+        }
     }
 }
