@@ -95,6 +95,14 @@ export class JClass {
         return this;
     }
 
+    containsMethod(name: string, params: [string, string][]): boolean {
+        var found = false;
+        this._methods.forEach(function(m) {
+            if (m._name == name && arrayOfArraysEqual(m._params, params)) found = true;
+        });
+        return found;
+    }
+
     write(output: string[], indent: number = 0) {
         writeLine(modifierString(this._modifier), output, indent);
 
@@ -114,6 +122,7 @@ export class JClass {
                 extendClauses.push(_extend);
             });
             write(extendClauses.join(", "), output);
+            write(" ", output);
         }
 
         if (this._implements.length) {
@@ -238,4 +247,32 @@ export class JMethod {
             write(";", output);
         }
     }
+}
+
+function arrayOfArraysEqual(a, b): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length != b.length) return false;
+
+  // If you don't care about the order of the elements inside
+  // the array, you should sort both arrays here.
+
+  for (var i = 0; i < a.length; ++i) {
+    if (!arraysEqual(a[i], b[i])) return false;
+  }
+  return true;
+}
+
+function arraysEqual(a, b): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length != b.length) return false;
+
+  // If you don't care about the order of the elements inside
+  // the array, you should sort both arrays here.
+
+  for (var i = 0; i < a.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
 }
