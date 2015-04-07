@@ -67,7 +67,7 @@ export function generateRules(model:blaze.Rules){
 /**
  * main model class for schema tree, all schema nodes are parsed into this format by annotate
  */
-export class SchemaNode{
+export class SchemaNode {
     static KEY_PATTERN:string = ".*"; //regex for patterns
 
     type: string;

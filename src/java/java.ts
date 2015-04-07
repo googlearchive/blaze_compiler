@@ -69,16 +69,17 @@ function subValueClassIdentifier(schema: schema.SchemaNode): string {
 }
 
 function camelConcatinate(a: string, b: string): string {
-
-    return a + b.charAt(0).toUpperCase() + b.slice(1);
+    if (b.charAt(0) == "$") {
+        return a + "$" + b.charAt(1).toUpperCase() + b.slice(2);
+    } else {
+        return a + b.charAt(0).toUpperCase() + b.slice(1);
+    }
 }
 function schemaToJavaTypes(schema: schema.SchemaNode): string[] {
     if (schema.type == "string") return ["String"];
     if (schema.type == "number") return ["Double", "Integer"];
 }
 function generate_path_field(name: string, schema: schema.SchemaNode, isStatic: boolean = false, class_prefix = ""): gen.JField {
-    //var modifier = isStatic?"static ": "";
-    //writeLine("public " + modifier + class_prefix + pathClassIdentifier(schema) + " " + name + " = new " + class_prefix + pathClassIdentifier(schema) + "();", depth, output);
     return new gen.JField()
         .setModifier(gen.Modifier.public)
         .setStatic(isStatic)
@@ -123,15 +124,6 @@ function generateSubValConstructor(schema: schema.SchemaNode): gen.JMethod {
         .setBody(["super(parent, path);"]); //todo this is wrong
 }
 function generate_startWriteMethod(schema: schema.SchemaNode): gen.JMethod {
-    //todo
-    //this should instanciate an Val object and return the correct interface to it
-
-    /*
-    var valueClassname = builderClassIdentifier(schema) + "0";
-    writeLine("public " + valueClassname + " startWrite() {", depth, output);
-    writeLine("  return new " + valueClassname + "(this);", depth, output);
-    writeLine("}", depth, output);
-    */
     return new gen.JMethod()
         .setModifier(gen.Modifier.public)
         .setType(valueClassIdentifier(schema))
@@ -149,8 +141,6 @@ function generate_root_buildValue(schema: schema.SchemaNode): gen.JMethod {
 }
 
 function generate_root(schema: schema.SchemaNode): gen.JClass {
-    //writeLine("public class root {", depth, output);
-
     var _class = new gen.JClass()
         .setModifier(gen.Modifier.public)
         .setName("root");
@@ -163,7 +153,7 @@ function generate_root(schema: schema.SchemaNode): gen.JClass {
         }
     }
 
-    //generate public classes inside the root scope, but within another static class so the IDE doesn't drown in option
+    //generate public classes inside the root scope, but within another static class so the IDE doesn't drown in options
     _class.addClass(new gen.JClass()
         .setModifier(gen.Modifier.public)
         .setStatic(true)
@@ -171,11 +161,10 @@ function generate_root(schema: schema.SchemaNode): gen.JClass {
         .addClass(generate_path_class(_class, schema))
     );
 
-
     preamble_classes().map(_class.addClass.bind(_class));
 
     _class.addMethod(generate_root_buildValue(schema));
-    //writeLine("}", depth, output);
+
     return _class;
 }
 
@@ -208,8 +197,6 @@ function generate_path_class(parent: gen.JClass, schema: schema.SchemaNode): gen
         .addExtends("Path")
         .addMethod(generateRefConstructor(schema));
 
-    //generateStepBuilder();
-
     if (schema.isLeaf()) {
         generate_primitiveWrites(schema).map(_class.addMethod.bind(_class));
     } else {
@@ -218,9 +205,7 @@ function generate_path_class(parent: gen.JClass, schema: schema.SchemaNode): gen
         PlanElement.generateStepInterfaces(plan).forEach(function(i){_class.addClass(i)});
         //this also contains the interfaces and implementations
         _class.addClass(generateValueClass(schema, plan));
-
         _class.addMethod(generate_startWriteMethod(schema));
-
     }
 
 
@@ -245,8 +230,6 @@ function generate_path_class(parent: gen.JClass, schema: schema.SchemaNode): gen
 }
 
 function generateValueClass(schema: schema.SchemaNode, plan: PlanElement[]): gen.JClass {
-    //todo this will be considerably more complicated
-    //var primitive: PlanElement = generateStepBuilder(name, schema, depth, output);
 
     var _class = new gen.JClass()
         .setModifier(gen.Modifier.public)
@@ -263,11 +246,7 @@ function generateValueClass(schema: schema.SchemaNode, plan: PlanElement[]): gen
         var step: PlanElement = plan[stepN];
         var parent: gen.JClass = stack[stack.length - 1];
 
-
-
-
-
-        if (step.type == PlanElement.START) {
+        if (step.type == PlanElement.START || step.type == PlanElement.START_WILD) {
             var _subvalueClass = new gen.JClass()
                 .setModifier(gen.Modifier.public)
                 .setStatic(true)
@@ -279,7 +258,7 @@ function generateValueClass(schema: schema.SchemaNode, plan: PlanElement[]): gen
             stack.push(_subvalueClass);
         }
 
-        if (step.type == PlanElement.END) {
+        if (step.type == PlanElement.END || step.type == PlanElement.END_WILD) {
             stack.pop();
         }
 
@@ -289,11 +268,7 @@ function generateValueClass(schema: schema.SchemaNode, plan: PlanElement[]): gen
             if (!parent.containsMethod(m._name, m._params)) parent.addMethod(m);
         });
 
-        //parent.addClass(PlanElement.generatePlanInterface(plan, stepN));
-        //parent.addImplements(parent._name + "." + builderClassIdentifier(step));
         parent.addImplements(builderClassIdentifier(step));
-
-
 
     }
 
@@ -371,7 +346,16 @@ class PlanElement {
                     .setName("write")
                 );
             }
-            if (futureStep.type == PlanElement.END) {
+            if (futureStep.type == PlanElement.START) {
+                var returnType   = builderClassIdentifier(futureStep);
+                var functionname = camelConcatinate("open", futureStep.schema.key);
+                _stubs.push(new gen.JMethod()
+                    .setModifier(gen.Modifier.public)
+                    .setType(returnType)
+                    .setName(functionname)
+                );
+            }
+            if (futureStep.type == PlanElement.END || futureStep.type == PlanElement.END_WILD) {
                 var returnType   = builderClassIdentifier(futureStep);
                 var functionname = camelConcatinate("close", futureStep.schema.key);
                 _stubs.push(new gen.JMethod()
@@ -380,13 +364,14 @@ class PlanElement {
                     .setName(functionname)
                 );
             }
-            if (futureStep.type == PlanElement.START && futureStep.schema.key.indexOf("$") != 0) {
+            if (futureStep.type == PlanElement.START_WILD) {
                 var returnType   = builderClassIdentifier(futureStep);
                 var functionname = camelConcatinate("open", futureStep.schema.key);
                 _stubs.push(new gen.JMethod()
                     .setModifier(gen.Modifier.public)
                     .setType(returnType)
                     .setName(functionname)
+                    .addParam(["String", "name"])
                 );
             }
 
@@ -406,18 +391,6 @@ class PlanElement {
             }
         }
         return _stubs;
-    }
-
-
-    generateValue(returnType: string, output: string[]) {
-        writeLine("public " + returnType + " value() {", 1, output);
-        writeLine("  return new " + returnType + "(this);", 1, output);
-        writeLine("}", 1, output);
-    }
-    generateSubValue(returnType: string, output: string[]) {
-        writeLine("public " + returnType + " write() {", 1, output);
-        writeLine("  return new " + returnType + "(this);", 1, output);
-        writeLine("}", 1, output);
     }
 
     generateTransitions(index: number, plan: PlanElement[]): gen.JMethod[] {
@@ -462,7 +435,7 @@ class PlanElement {
                     .setName(functionname)
                     .setBody(["return (" + returnType + ") this.parent;"]));
             }
-            if (futureStep.type == PlanElement.START && futureStep.schema.key.indexOf("$") != 0) {
+            if (futureStep.type == PlanElement.START) {
                 var functionname = camelConcatinate("open", futureStep.schema.key);
                 var returnType   = subValueClassIdentifier(futureStep.schema);
                 transitions.push(new gen.JMethod()
@@ -471,7 +444,16 @@ class PlanElement {
                     .setName(functionname)
                     .setBody(["return new " + returnType + "(this, loc);"]));
             }
-
+            if (futureStep.type == PlanElement.START_WILD) {
+                var functionname = camelConcatinate("open", futureStep.schema.key);
+                var returnType   = subValueClassIdentifier(futureStep.schema);
+                transitions.push(new gen.JMethod()
+                    .setModifier(gen.Modifier.public)
+                    .setType(returnType)
+                    .addParam(["String", "name"])
+                    .setName(functionname)
+                    .setBody(["return new " + returnType + "(this, loc);"]));
+            }
 
             if (futureStep.type == PlanElement.END) break;  //we quit if we have to go up a level of context
             if (futureStep.type == PlanElement.LAST) break; //we quit if we have to go up a level of context
