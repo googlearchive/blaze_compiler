@@ -1,0 +1,10 @@
+source:
+  functions:
+    - isEmail(emailp): root.users.private[auth.uid].email.val().replace('.','') == emailp
+  schema:
+    constraint: isEmail('yo')
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"((root.child('users').child('private').child(auth.uid).child('email').val().replace('.','')=='yo'))",".read":"false"}}
