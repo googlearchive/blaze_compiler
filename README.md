@@ -381,6 +381,9 @@ access:
 
 
 ##  Changelog
+- 10th April 2015:
+  - fixed erroneous substitution of parameters into member expressions
+
 - 12th Jan 2015:
   - improved messaging if blah.child('name') syntax is erroneously used
 

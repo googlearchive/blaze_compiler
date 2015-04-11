@@ -1,0 +1,13 @@
+source:
+  functions:
+    - f(a): data.a       #should be substituted
+    - g(a): newData [a]  #should not be substituted
+
+  schema:
+    constraint: f("g") + g("h")
+
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"((data.child('a')+newData.child('h')))",".read":"false"}}
