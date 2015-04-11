@@ -1,0 +1,11 @@
+source:
+  functions:
+    - isUser(uid): root.authUserIndex[auth.userid] === uid || isShopper()
+    - isShopper(): root.users[root.authUserIndex[auth.uid]].isShopper === true
+
+  schema: {}
+  access:
+    - location: /
+      write: isUser($userid)
+
+expected: {"rules":{".write":"(((root.child('authUserIndex').child(auth.userid).val()===$userid||root.child('users').child(root.child('authUserIndex').child(auth.$userid).val()).child('isShopper').val()===true)))",".read":"false"}}

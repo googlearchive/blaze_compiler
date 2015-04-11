@@ -204,12 +204,12 @@ export class Expression{
 
             if(node.type == "Identifier"){
                 //console.log("identifier: ", node.name);
-                /*
+
                 if(node.name == "data"){
                     node.expr_type = "rule"
                 }else if(node.name == "newData"){
                     node.expr_type = "rule"
-                }else*/ if(node.name == "next"){
+                }else if(node.name == "next"){
                     node.update("newData");
                     node.expr_type = "rule"
                 }else if(node.name == "prev"){
@@ -224,8 +224,10 @@ export class Expression{
                 }else if(symbols.functions[node.name]){
                     node.expr_type = "pred"
                 }else if(symbols.variables[node.name]){
+                    var label = node.name;
                     node.update(symbols.variables[node.name].source());
                     node.expr_type = symbols.variables[node.name].expr_type
+                    node.label = label;
                 }
 
             }else if(node.type == "Literal"){
@@ -239,9 +241,8 @@ export class Expression{
                 //console.log("ArrayExpression", node);
                 node.expr_type = "value";
 
-                //node.state = new C_VAL(node.value, mem);
             }else if(node.type == "MemberExpression"){
-                //console.log("MemberExpression:", node);
+                console.log("MemberExpression:", node);
 
                 //if the object is a type (rules, map or value) it unlocks different valid properties
 
@@ -287,7 +288,15 @@ export class Expression{
 
                         }else if(node.property.expr_type == 'value'){
                             //not recognised member, so it must be an implicit child relation (without quotes in child)
-                            node.update(node.object.source() + ".child(" + node.property.source() + ")");
+                            if (node.property.label && !isArraySyntaxMemberExpression(node)) {
+                                //data.a should stay as property.a, we don't want to use variable substitution in the property
+                                //so we use the orginal label
+                                node.update(node.object.source() + ".child('" + node.property.label + "')");
+                            } else {
+                                //data[a] should stay as property.a, we don;t want to use variable substitution in the property
+                                //so we use the orginal label
+                                node.update(node.object.source() + ".child(" + node.property.source() + ")");
+                            }
                             node.expr_type = "rule"
 
                         }else{
@@ -398,4 +407,12 @@ export class Expression{
 
         return globals.optimize ? optimizer.optimize(code): optimizer.simplify(code);
     }
+}
+
+/**
+ * figures out whether this is data.a or data[a] syntax
+ * @param node
+ */
+function isArraySyntaxMemberExpression (node): boolean {
+    return node.source().slice(node.object.source().length).trim().charAt(0) == '[';
 }
