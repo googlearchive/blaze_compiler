@@ -241,6 +241,10 @@ export class SchemaNode {
         return getWildchild(this.node).value;
     }
 
+    isWildchild(): boolean {
+        return this.key.indexOf("$") == 0 || this.key.indexOf("~$") == 0;
+    }
+
     getPath(): string[] {
         if (this.parent != null) {
             var parent_path = this.parent.getPath();
