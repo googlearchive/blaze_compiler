@@ -35,6 +35,7 @@ export function generate(model: rules.Rules, target_dir: string, debug: boolean)
     new gen.JFile()
         .setPackage("com.firebase.fluent")
         .addImport("com.firebase.client.Firebase")
+        .addImport("com.firebase.client.FirebaseError")
         .addImport("java.util.HashMap")
         .addClass(generate_root(model.schema.root))
         .write(output);
@@ -61,8 +62,21 @@ function pathClassIdentifier(schema: schema.SchemaNode): string {
 function stepInterfaceIdentifier(step: PlanElement): string {
     return "root$" + step.schema.getPath().join("$") + "_" + step.type;
 }
-function valueClassIdentifier(schema: schema.SchemaNode): string {
+function stepValueClassIdentifier(schema: schema.SchemaNode): string {
     return "root$" + schema.getPath().join("$") + "$Value";
+}
+function absoluteStepValueClassIdentifier(schema: schema.SchemaNode): string {
+    var classpath  = schema.getSchemaPath().map(function(schema) {
+        return pathClassIdentifier(schema)
+    });
+    classpath.push(stepValueClassIdentifier(schema));
+    return "_fluent_classes.root$." + classpath.join(".");
+}
+function valueClassIdentifier(schema: schema.SchemaNode): string {
+    return schema.getPath().join(".") + (schema.getPath().length > 0 ? ".":"") + "Value";
+}
+function valueListenerClassIdentifier(schema: schema.SchemaNode): string {
+    return schema.getPath().join(".") + (schema.getPath().length > 0 ? ".":"") + "ValueListener";
 }
 function subValueClassIdentifier(schema: schema.SchemaNode): string {
     return "root$" + schema.getPath().join("$") + "$SubValue";
@@ -128,7 +142,7 @@ function generatePathConstructor(schema: schema.SchemaNode): gen.JMethod {
 function generateValConstructor(schema: schema.SchemaNode): gen.JMethod {
     //todo binding of variables
     return new gen.JMethod()
-        .setName(valueClassIdentifier(schema))
+        .setName(stepValueClassIdentifier(schema))
         //.addParam([pathClassIdentifier(schema), "parent"])
         .addParam(["Path", "parent"])
         .setBody(["super(null, parent);"]); //todo this is wrong
@@ -155,7 +169,7 @@ function generateBeginWriteMethod(schema: schema.SchemaNode, plan: PlanElement[]
         .setModifier(gen.Modifier.public)
         .setType(stepInterfaceIdentifier(plan[0]))
         .setName("beginWrite")
-        .setBody(["return new " + valueClassIdentifier(schema) + "(this);"]);
+        .setBody(["return new " + stepValueClassIdentifier(schema) + "(this);"]);
 }
 function generate_root_buildValue(schema: schema.SchemaNode): gen.JMethod {
     return new gen.JMethod()
@@ -192,6 +206,10 @@ function generate_root(schema: schema.SchemaNode): gen.JClass {
 
     _class.addMethod(generate_root_buildValue(schema));
 
+    _class.addClass(generateListenValue(schema));
+    _class.addClass(generateListener(schema));
+    addAPIClasses(_class, schema);
+
     return _class;
 }
 
@@ -208,7 +226,7 @@ function preamble_classes(): gen.JClass[] {
                 .setBody(["this.loc = loc;", "this.parent = parent;"])),
         new gen.JClass().setModifier(gen.Modifier.public)
             .setStatic(true)
-            .setName("Path")
+            .setName("Path<V>")
             .addField(new gen.JField().setType("Firebase").setName("ref"))
             .addField(new gen.JField().setType("HashMap<String, Object>").setName("bindings").setInitializer("new HashMap<String, Object>()"))
             .addMethod(new gen.JMethod().setType("").setName("Path").addParam(["Firebase", "ref"])
@@ -226,8 +244,100 @@ function preamble_classes(): gen.JClass[] {
                     "this.bindings.put(symbol, segment);",
                     "this.ref = parent.ref.child(segment);",
                     "this.bindings.putAll(parent.bindings);"]))
+        /*
+            .addMethod(new gen.JMethod().setModifier(gen.Modifier.public)
+                .setType("ValueListener<V>")
+                .setName("addValueListener")
+                .addParam(["ValueListener<V>", "listener"])
+                .setBody([
+                    "ValueListenerAdapter<V> adapter = new ValueListenerAdapter<V>(listener);",
+                    "this.ref.addValueListener(adapter);",
+                    "return listener;"])),
+        new gen.JClass().setModifier(gen.Modifier.public)
+            .setStatic(true)
+            .setName("ValueListenerAdapter<V>")
+            .addImplements("com.firebase.client.ValueListener")
+            .addField(new gen.JField().setModifier(gen.Modifier.private).setFinal(true).setType("ValueListener<V>").setName("delegate"))
+            .addMethod(new gen.JMethod().setType("").setName("ValueListenerAdapter").addParam(["ValueListener<V>", "listener"])
+                .setBody(["this.delegate = listener;"]))
+            .addMethod(new gen.JMethod().setModifier(gen.Modifier.public).setType("void").setName("onDataChange").addParam(["com.firebase.client.DataSnapshot", "dataSnapshot"])
+                .setBody(["delegate.onDataChange(new DataSnapshot<V>(dataSnapshot));"]))
+            .addMethod(new gen.JMethod().setModifier(gen.Modifier.public).setType("void").setName("onCancelled").addParam(["FirebaseError", "firebaseError"])
+                .setBody(["delegate.onCancelled(firebaseError);"])),
+        new gen.JClass().setModifier(gen.Modifier.public)
+            .setStatic(true)
+            .setInterface(true)
+            .setName("ValueListener<V>")
+            .addMethod(new gen.JMethod().setType("void").setName("onDataChange").addParam(["V", "value"]))
+            .addMethod(new gen.JMethod().setType("void").setName("onCancelled").addParam(["FirebaseError", "firebaseError"]))
+
+        new gen.JClass().setModifier(gen.Modifier.public)
+            .setStatic(true)
+            .setName("DataSnapshot<V>")
+            .addField(new gen.JField().setModifier(gen.Modifier.private).setFinal(true).setType("com.firebase.client.DataSnapshot").setName("delegate"))
+            .addMethod(new gen.JMethod().setType("").setName("DataSnapshot").addParam(["com.firebase.client.DataSnapshot", "source"])
+                .setBody(["this.delegate = source;"]))*/
+
     ];
 }
+
+function addAPIClasses(parent: gen.JClass, schema: schema.SchemaNode) {
+    for (var name in schema.properties) {
+        var subschema = schema.properties[name];
+
+
+        var _class: gen.JClass = new gen.JClass().setModifier(gen.Modifier.public)
+            .setStatic(true)
+            .setName(name)
+            .addClass(generateListener(subschema))
+            _class.addClass(generateListenValue(subschema));
+        addAPIClasses(_class, subschema);
+        parent.addClass(_class);
+    }
+}
+
+function generateListenValue(schema: schema.SchemaNode): gen.JClass {
+    var _class: gen.JClass = new gen.JClass()
+        .setModifier(gen.Modifier.public)
+        .setStatic(true)
+        .setAbstract(true)
+        .setName("Value")
+    ;
+
+    if (schema.isLeaf()) {
+
+    } else {
+        _class.addExtends(absoluteStepValueClassIdentifier(schema))
+            .addMethod(new gen.JMethod()
+                .setName("Value")
+                .addParam(["Path", "parent"])
+                .setBody(["super(parent);"]))
+    }
+    return _class;
+
+}
+
+function generateListener(schema: schema.SchemaNode): gen.JClass {
+    var _class: gen.JClass = new gen.JClass().setModifier(gen.Modifier.public)
+        .setStatic(true)
+        .setAbstract(true)
+        .setName("ValueListener")
+        .addMethod(new gen.JMethod()
+            .setModifier(gen.Modifier.public)
+            .setAbstract(true)
+            .setType("void")
+            .setName("onDataChange")
+            .addParam(["Value", "value"]))
+        .addMethod(new gen.JMethod()
+            .setModifier(gen.Modifier.public)
+            .setAbstract(true)
+            .setType("void")
+            .setName("onCancelled")
+            .addParam(["FirebaseError", "firebaseError"]))
+    ;
+    return _class;
+}
+
 function generate_path_class(parent: gen.JClass, schema: schema.SchemaNode): gen.JClass {
     var _class = new gen.JClass()
         .setModifier(gen.Modifier.public)
@@ -246,6 +356,8 @@ function generate_path_class(parent: gen.JClass, schema: schema.SchemaNode): gen
         _class.addClass(generateValueClass(schema, plan));
         _class.addMethod(generateBeginWriteMethod(schema, plan));
     }
+
+    _class.addMethod(generateAddValueListener(schema));
 
 
     //for each non-wildchild child we generate a field to an instantiated child path_class
@@ -268,12 +380,20 @@ function generate_path_class(parent: gen.JClass, schema: schema.SchemaNode): gen
     return _class;
 }
 
+
+function generateAddValueListener(schema: schema.SchemaNode): gen.JMethod {
+    return new gen.JMethod().setModifier(gen.Modifier.public)
+        .setType(valueClassIdentifier(schema))
+        .setName("addValueListener")
+        .addParam([valueListenerClassIdentifier(schema), "listener"])
+        .setBody(["return null; //todo"]);
+}
 function generateValueClass(schema: schema.SchemaNode, plan: PlanElement[]): gen.JClass {
 
     var _class = new gen.JClass()
         .setModifier(gen.Modifier.public)
         .setStatic(true)
-        .setName(valueClassIdentifier(schema))
+        .setName(stepValueClassIdentifier(schema))
         .addExtends("Val")
         .addMethod(generateValConstructor(schema));
 
@@ -503,7 +623,7 @@ class PlanElement {
                 }
             }
             if (futureStep.type == PlanElement.LAST) {
-                var returnType   = valueClassIdentifier(futureStep.rootSchema);
+                var returnType   = stepValueClassIdentifier(futureStep.rootSchema);
                 transitions.push(new gen.JMethod()
                     .setModifier(gen.Modifier.public)
                     .setType("void")

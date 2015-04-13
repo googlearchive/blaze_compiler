@@ -50,6 +50,7 @@ export class JFile {
 export class JClass {
     _modifier: Modifier = Modifier.none;
     _static: boolean = false;
+    _abstract: boolean = false;
     _name: string;
     _extends: string[] = [];
     _implements: string[] = [];
@@ -64,6 +65,10 @@ export class JClass {
     }
     setStatic(_static: boolean): JClass {
         this._static = _static;
+        return this;
+    }
+    setAbstract(_abstract: boolean): JClass {
+        this._abstract = _abstract;
         return this;
     }
     setName(_name: string): JClass {
@@ -107,6 +112,7 @@ export class JClass {
         writeLine(modifierString(this._modifier), output, indent);
 
         if (this._static) write("static ", output);
+        if (this._abstract) write("abstract ", output);
 
         if (this._isInterface) {
             write("interface ", output);
@@ -155,6 +161,7 @@ export class JClass {
 export class JField {
     _modifier: Modifier = Modifier.none;
     _static: boolean = false;
+    _final: boolean = false;
     _name: string;
     _type: string;
     _initializer: string;
@@ -165,6 +172,10 @@ export class JField {
     }
     setStatic(_static: boolean): JField {
         this._static = _static;
+        return this;
+    }
+    setFinal(_final: boolean): JField {
+        this._final = _final;
         return this;
     }
     setName(_name: string): JField {
@@ -183,6 +194,7 @@ export class JField {
     write(output: string[], indent: number) {
         writeLine(modifierString(this._modifier), output, indent);
         if (this._static) write("static ", output);
+        if (this._final) write("final ", output);
         write(this._type + " ", output);
         write(this._name + " ", output);
         if (this._initializer) write(" = " + this._initializer, output);
@@ -193,6 +205,7 @@ export class JField {
 export class JMethod {
     _modifier: Modifier = Modifier.none;
     _static: boolean = false;
+    _abstract: boolean = false;
     _name: string;
     _type: string;
     _body: string[] = null;
@@ -204,6 +217,10 @@ export class JMethod {
     }
     setStatic(_static: boolean): JMethod {
         this._static = _static;
+        return this;
+    }
+    setAbstract(_abstract: boolean): JMethod {
+        this._abstract = _abstract;
         return this;
     }
     setName(_name: string): JMethod {
@@ -226,6 +243,7 @@ export class JMethod {
     write(output: string[], indent: number) {
         writeLine(modifierString(this._modifier), output, indent);
         if (this._static) write("static ", output);
+        if (this._abstract) write("abstract ", output);
         if (this._type)
             write(this._type + " ", output);
         write(this._name + "(", output);

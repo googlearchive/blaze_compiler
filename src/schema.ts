@@ -254,6 +254,22 @@ export class SchemaNode {
             return [];
         }
     }
+    getSchemaPath(): SchemaNode[] {
+        if (this.parent != null) {
+            var parent_path = this.parent.getSchemaPath();
+            parent_path.push(this);
+            return parent_path;
+        } else {
+            return [];
+        }
+    }
+    getSchemaAncestors(): SchemaNode[] {
+        if (this.parent != null) {
+            return this.parent.getSchemaPath();
+        } else {
+            return [];
+        }
+    }
 }
 
 export class MetaSchema{
