@@ -242,7 +242,7 @@ export class Expression{
                 node.expr_type = "value";
 
             }else if(node.type == "MemberExpression"){
-                console.log("MemberExpression:", node);
+                //console.log("MemberExpression:", node);
 
                 //if the object is a type (rules, map or value) it unlocks different valid properties
 
