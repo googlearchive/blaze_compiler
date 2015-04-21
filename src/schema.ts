@@ -281,7 +281,12 @@ function annotate_schema(node: Json.JValue, parent: Json.JValue, key: string, ap
     if (node.has("$ref")) {
         //we should replace this node with its definition
         node = fetchRef(node.getOrThrow("$ref", "").coerceString().value, model);
-        parent.asObject().getOrThrow("properties", "no properties defined above reference").asObject().put(new Json.JString(key, -1, -1), node)
+
+        if (key.indexOf("$") == 0 || key.indexOf("~$") == 0) {
+            parent.asObject().put(new Json.JString(key, -1, -1), node)
+        } else {
+            parent.asObject().getOrThrow("properties", "no properties defined above reference with key:" + key).asObject().put(new Json.JString(key, -1, -1), node)
+        }
     }
 
     var annotation = new SchemaNode(node);
@@ -304,7 +309,7 @@ function annotate_schema(node: Json.JValue, parent: Json.JValue, key: string, ap
 
         annotation.properties[wildname] = annotate_schema(
             node.getOrThrow(wildname, "cant find wildchild"),
-            node, key, api, model);
+            node, wildname, api, model);
         //we also convert them into a pattern properties and add it to the JSON schema node so examples can pass
         var patternProperties = new Json.JObject();
 

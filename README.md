@@ -381,6 +381,9 @@ access:
 
 
 ##  Changelog
+- 21th April 2015:
+  - $ref not importing into (non)example schema fragments properly
+
 - 10th April 2015:
   - fixed erroneous substitution of parameters into member expressions
 
