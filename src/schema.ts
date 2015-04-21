@@ -277,10 +277,11 @@ export class MetaSchema{
 }
 
 
-function annotate_schema(node: Json.JValue, parent: any, key: string, api: SchemaAPI, model: blaze.Rules):SchemaNode {
+function annotate_schema(node: Json.JValue, parent: Json.JValue, key: string, api: SchemaAPI, model: blaze.Rules): SchemaNode {
     if (node.has("$ref")) {
         //we should replace this node with its definition
         node = fetchRef(node.getOrThrow("$ref", "").coerceString().value, model);
+        parent.asObject().getOrThrow("properties", "no properties defined above reference").asObject().put(new Json.JString(key, -1, -1), node)
     }
 
     var annotation = new SchemaNode(node);
@@ -289,7 +290,7 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
     if (node.has("properties")) {
         node.getOrThrow("properties", "").asObject().forEach(
             function(name: Json.JString, child: Json.JValue){
-                annotation.properties[name.value] = annotate_schema(child, node, key, api, model);
+                annotation.properties[name.value] = annotate_schema(child, node, name.getString(), api, model);
             });
     }
 
@@ -315,7 +316,7 @@ function annotate_schema(node: Json.JValue, parent: any, key: string, api: Schem
             patternProperties);
 
         patternProperties.put(
-            new Json.JString(SchemaNode.KEY_PATTERN,0,0),
+            new Json.JString(SchemaNode.KEY_PATTERN, 0,0),
             node.getOrThrow(wildname, "cant find wildchild"));
     } else {
         //console.log("no wildchild")

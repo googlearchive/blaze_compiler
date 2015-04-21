@@ -1,0 +1,43 @@
+source:
+  schema:
+      definitions:
+          user:
+              type: object
+              additionalProperties: false
+              properties:
+                  first_name: {type: string}
+
+      type: object
+      properties:
+          users:
+              type: object
+              additionalProperties: false
+              $userid:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                      profile: {$ref: "#/definitions/user" }
+                  examples:
+                    - {profile: {first_name: "Sally"}}
+                  nonexamples:
+                    - {profile: {first_name: "Sally", bonus_data: "some"}}
+
+              examples:
+                  - {"123": {"profile": {first_name: "Sally"}}}
+
+          profile: {$ref: "#/definitions/user" }
+
+      examples:
+        - {profile: {first_name: "Sally"}}
+      nonexamples:
+        - {profile: {first_name: "Sally", bonus_data: "some"}}
+
+
+
+  access:
+      -   location:   "/"
+          read:       true
+          write:      false
+
+
+expected: {"rules":{".write":"((((false))))",".read":"true","users":{".write":"((false))",".read":"true","$userid":{".write":"(false)",".read":"true","profile":{".write":"(false)",".read":"true","first_name":{".write":"(false)",".read":"true"},"$other":{".validate":"false"}},"$other":{".validate":"false"}},"$other":{".validate":"false"}},"profile":{".write":"(false)",".read":"true","first_name":{".write":"(false)",".read":"true"},"$other":{".validate":"false"}}}}

@@ -1,0 +1,26 @@
+source:
+  schema:
+    examples:
+      - externalUsers : { "facebook:10152415019676650" : 7, "facebook:10152713523692632" : 8 }
+      - usersToMerge: {{"werwer": 8}, {"xcvxcv": 9}, {"rtyrty": 1} }
+      - externalUsers:
+        facebook:10152415019676650 : {7}
+        facebook:10152713523692632 : {8}
+      - externalUsers:
+        facebook:10152415019676650 :
+          7
+        facebook:10152713523692632 :
+          8
+      - usersToMerge:
+        werwer: 8
+        xcvxcv: 9
+        rtyrty: 1
+      - {{externalUsers : { "facebook:10152415019676650" : 7, "facebook:10152713523692632" : 8 }},
+        {usersToMerge: { {"werwer": 8}, {"xcvxcv": 9}, {"rtyrty": 1} }}}
+
+
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"(true)",".read":"false"}}

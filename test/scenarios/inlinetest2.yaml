@@ -1,0 +1,33 @@
+source:
+  schema:
+      definitions:
+          user:
+              type: object
+              additionalProperties: false
+              properties:
+                name: {type: string}
+          user_with_bonus:
+              type: object
+              additionalProperties: false
+              properties:
+                name: {type: string}
+                bonus: {type: string}
+
+      type: object
+      properties:
+          profile: {$ref: "#/definitions/user" }
+
+      $wild: {$ref: "#/definitions/user_with_bonus" }
+
+      examples:
+          - {profile: {name: "sally"}}
+          - {"wild1": {name: "joe", bonus: "some"}}
+      nonexamples:
+          - {profile: {name: "joe", bonus: "some"}}
+          - {"wild1": {name: "joe", bonus: "some", bonus_bonus: "blah"}}
+
+  access:
+      -   location:   "/"
+          write:      true
+
+expected: {"rules":{".write":"(false)",".read":"false","profile":{".write":"(((!newData.parent().exists()||!(((newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean()))))&&(!newData.exists()||!(((newData.isString()||newData.isNumber()||newData.isBoolean()))))&&(!newData.child('name').exists()||newData.child('name').isString())))",".read":"false","name":{".write":"(((!newData.parent().parent().exists()||!(((newData.parent().parent().isString()||newData.parent().parent().isNumber()||newData.parent().parent().isBoolean()))))&&(!newData.parent().exists()||!(((newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean()))))&&(!newData.exists()||newData.isString())))",".read":"false"},"$other":{".validate":"false"}},"$wild":{".write":"(((!newData.parent().exists()||!(((newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean()))))&&(!newData.exists()||!(((newData.isString()||newData.isNumber()||newData.isBoolean()))))&&(!newData.child('name').exists()||newData.child('name').isString())&&(!newData.child('bonus').exists()||newData.child('bonus').isString())))",".read":"false","name":{".write":"(((!newData.parent().parent().exists()||!(((newData.parent().parent().isString()||newData.parent().parent().isNumber()||newData.parent().parent().isBoolean()))))&&(!newData.parent().exists()||!(((newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean()))))&&(!newData.exists()||newData.isString())))",".read":"false"},"bonus":{".write":"(((!newData.parent().parent().exists()||!(((newData.parent().parent().isString()||newData.parent().parent().isNumber()||newData.parent().parent().isBoolean()))))&&(!newData.parent().exists()||!(((newData.parent().isString()||newData.parent().isNumber()||newData.parent().isBoolean()))))&&(!newData.exists()||newData.isString())))",".read":"false"},"$other":{".validate":"false"}}}}
