@@ -1,6 +1,6 @@
 source:
   schema:
-    constraint: next.matches(/abs/)
+    constraint: next.val().matches(/abs/)
   access:
     - location: /
       write: true
