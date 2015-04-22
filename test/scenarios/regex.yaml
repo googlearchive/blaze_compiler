@@ -1,0 +1,8 @@
+source:
+  schema:
+    constraint: next.matches(/abs/)
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"((newData.val().matches(/abs/)))",".read":"false"}}

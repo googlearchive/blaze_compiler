@@ -379,7 +379,22 @@ export class Expression{
                     if (node.callee.type == 'MemberExpression' && node.callee.property.type == 'Identifier' && node.callee.property.name == 'child') {
                         throw error.message("parent.child(<name>) syntax is not supported in Blaze, use parent.<name> or parent[<name>] instead").source(self.source).on(new Error());
                     } else {
-                        throw error.message("Bug: 4 Unexpected situation in type system on '" + node.callee.expr_type + "'").source(self.source).on(new Error());
+
+                        var uncoerced = [
+                            'contains',
+                            'toLowerCase',
+                            'replace',
+                            'toUpperCase',
+                            'beginsWith',
+                            'endsWith',
+                            'matches'
+                        ];
+                        if (node.callee.property != null && uncoerced.indexOf(node.callee.property.name) >=0 ) {
+                            throw error.message("Unexpected situation in type system on '" + node.source() + "', (you probably forgot to use .val() before using an inbuilt method)").source(self.source).on(new Error());
+                        } else {
+                            throw error.message("Bug: 4 Unexpected situation in type system on '" + node.callee.expr_type + "'").source(self.source).on(new Error());
+                        }
+
                     }
                 }
             }else if(node.type == "BinaryExpression" || node.type == "BooleanExpression" || node.type == "LogicalExpression"){
