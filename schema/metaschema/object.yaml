@@ -3,7 +3,7 @@ validator: {$ref: "http://firebase.com/schema/types/object#"}
 compile:
   console.log("compile object");
 
-  api.addConstraint("!next.exists() || !(next.isString()||next.isNumber()||next.isBoolean())");
+  api.addConstraint("!next.exists() || next.hasChildren()");
 
   var required_constraint = "next == null || (true";
   if (api.getField("required") != null) {

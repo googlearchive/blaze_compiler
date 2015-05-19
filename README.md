@@ -381,6 +381,8 @@ access:
 
 
 ##  Changelog
+- 22nd April 2015:
+  - Special cased forgetting to .val() before using an inbuilt string method with an error message
 - 21th April 2015:
   - $ref not importing into (non)example schema fragments properly
 

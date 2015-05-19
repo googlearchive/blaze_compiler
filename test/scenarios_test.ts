@@ -11,12 +11,12 @@ import globals    = require('../src/globals');
 import tv4 = require("tv4");
 
 function run() {
+    globals.debug = true;
     //called if this file is run, used to enable runtime debugging
-    console.log("working?", checkScenario("./test/scenarios/inlinetest.yaml"))
+    //console.log("working?", checkScenario("./test/scenarios/function8.yaml"))
 }
 
 var checkScenario = function(path: string): boolean {
-    globals.debug = true;
     var scenario: Json.JValue = blaze.load_yaml(path);
     var source   = scenario.getOrThrow("source", "scenario has no 'source' attached " + path);
     var expected = scenario.getOrThrow("expected", "scenario has no 'expected' outcome " + path);
@@ -29,14 +29,16 @@ var checkScenario = function(path: string): boolean {
 };
 
 export function testFiles(test: nodeunit.Test) {
-
+    globals.debug = false;
     //load all anti-cases
     var files = fs.readdirSync("test/scenarios");
 
     for (var i in files){
         if (!files.hasOwnProperty(i)) continue;
-        var path:string = "test/scenarios/"+files[i];
 
+        var path: string = "test/scenarios/" + files[i];
+
+        console.log("checking", path);
         test.ok(checkScenario(path), "error on file " + path);
     }
 
