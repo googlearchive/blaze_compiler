@@ -17,7 +17,7 @@ export function optimize(javascript_str: string): string {
         current_length = javascript_str.length;
         var current = javascript_str;
         //optimize stages
-        javascript_str = simplify(clauseRepetitionElimination(childParentAnnihilation(pruneBooleanLiterals(javascript_str))));
+        javascript_str = simplify(parentIsObjectCheckRemoval(clauseRepetitionElimination(childParentAnnihilation(pruneBooleanLiterals(javascript_str)))));
     }
 
     return current;
@@ -209,7 +209,7 @@ AST expansion looks like:-
 }
 */
     var simplify_fn = function(node){
-        //detec tthe above situation and rewrite
+        //detect the above situation and rewrite
         if (node.type == 'MemberExpression' &&
             node.object.type == 'CallExpression' &&
             node.object.arguments.length == 0 &&
@@ -227,6 +227,26 @@ AST expansion looks like:-
     };
 
     return falafel(javascript_str.toString(), {}, simplify_fn).toString();
+}
+var parent_pattern = /^!newData(\.parent\(\))+\.exists\(\)\|\|newData(\.parent\(\))+\.hasChildren\(\)$/;
+export function parentIsObjectCheckRemoval(javascript_str: string) {
+    //if on the top level && we are checking to see if our parent is an object or null, we are doing a redundant check because
+    //we can only write either null, a primitive or an object at newData location
+    //therefore our parent  will flip only to null, or an object, thus we don't need to check for this pattern
+
+    //((!newData.parent().parent().parent().parent().parent().exists()||newData.parent().parent().parent().parent().parent().hasChildren())
+    var simplify_fn = function(node){
+        //detect the above situation and rewrite
+        if (node.type == 'LogicalExpression' && node.operator == '||') {
+            var match = parent_pattern.exec(node.source());
+            if (match != null && match[1] == match[2]) { //check the number of ".parent()" match between exists and hasChildren
+                node.update("true")
+            }
+        }
+    };
+
+    return falafel(javascript_str.toString(), {}, simplify_fn).toString();
+
 }
 
 

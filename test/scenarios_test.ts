@@ -13,7 +13,7 @@ import tv4 = require("tv4");
 function run() {
     globals.debug = true;
     //called if this file is run, used to enable runtime debugging
-    //console.log("working?", checkScenario("./test/scenarios/function8.yaml"))
+    console.log("working?", checkScenario("./test/scenarios/parent3.yaml"))
 }
 
 var checkScenario = function(path: string): boolean {

@@ -12,4 +12,4 @@ source:
     - location: $projectId/
       write: isLoggedIn()
 
-expected: {"rules":{".write":"false",".read":"false","$projectId":{".write":"(false)",".validate":"(false)",".read":"false","$permissionId":{".write":"(((!newData.parent().exists()||newData.parent().hasChildren())&&(!newData.exists()||newData.hasChildren())&&auth.id!==null))",".read":"false"}}}}
+expected: {"rules":{".write":"false",".read":"false","$projectId":{".write":"(false)",".validate":"(false)",".read":"false","$permissionId":{".write":"((((!newData.exists()||newData.hasChildren())&&auth.id!==null)))",".read":"false"}}}}

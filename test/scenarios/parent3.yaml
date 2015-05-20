@@ -1,0 +1,14 @@
+source:
+  schema:
+    type: object
+    properties:
+      child:
+        type: object
+        properties:
+          grandchild:
+            type: object
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"((((!newData.exists()||newData.hasChildren())&&(!newData.child('child').exists()||newData.child('child').hasChildren())&&(!newData.child('child').child('grandchild').exists()||newData.child('child').child('grandchild').hasChildren()))))",".read":"false","child":{".write":"(((((!newData.exists()||newData.hasChildren())&&(!newData.child('grandchild').exists()||newData.child('grandchild').hasChildren())))))",".read":"false","grandchild":{".write":"(((((!newData.exists()||newData.hasChildren())))))",".read":"false"}}}}
