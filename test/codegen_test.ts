@@ -6,6 +6,7 @@ import firebase_io = require('./firebase_io');
 import compiler = require('../src/compiler');
 import async = require('async');
 
+
 export function testString(test:nodeunit.Test):void{
     async.series([
         firebase_io.assertSetValidationRules.bind(null, compiler.compile("test/cases/string.yaml", true).code, test),
@@ -264,5 +265,28 @@ export function testNestedWildchilds(test:nodeunit.Test):void{
 
         //authenticated have greater permissions (can't do at the moment)
         //test_utils.assert_can_write.bind(null, "auth", "/nested/a", null, test),
+    ], test.done.bind(null));
+}
+
+export function testWilderChildMixedAccess(test:nodeunit.Test):void{
+    async.series([
+        firebase_io.assertSetValidationRules.bind(null, compiler.compile("test/cases/wilderchildHierarchicalAccess.yaml", true).code, test),
+
+        test_utils.assert_admin_can_write.bind(null, "/",{}, test),
+
+        //root can write anywhere
+        test_utils.assert_can_write.bind(null, "root","/",       "payload", test),
+        test_utils.assert_can_write.bind(null, "root","/a",     "payload", test),
+        test_utils.assert_can_write.bind(null, "root","/a/a",   "payload", test),
+
+        //child can write first two level
+        test_utils.assert_cant_write.bind(null, "child","/",       "payload", test),
+        test_utils.assert_can_write.bind(null, "child","/a",     "payload", test),
+        test_utils.assert_can_write.bind(null,  "child","/a/a",   "payload", test),
+
+        //grandchild can write only last level
+        test_utils.assert_cant_write.bind(null, "grandchild","/",      "payload", test),
+        test_utils.assert_cant_write.bind(null, "grandchild","/a",     "payload", test),
+        test_utils.assert_can_write.bind(null, "grandchild","/a/a",   "payload", test),
     ], test.done.bind(null));
 }

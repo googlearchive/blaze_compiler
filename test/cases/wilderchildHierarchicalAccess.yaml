@@ -1,0 +1,14 @@
+schema:
+  ~$children:
+    ~$grandchildren: {}
+
+access:
+  - location: "/"
+    write: auth.username == "root"
+
+  - location: "/$children"
+    write: auth.username == "child"
+
+  - location: "/$children/$grandchildren"
+    write: auth.username == "grandchild"
+
