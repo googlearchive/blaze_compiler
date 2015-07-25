@@ -1,6 +1,6 @@
 # Blaze Security Compiler for Firebase
 
-The blaze compiler simplifies building security rules for Firebase. It drastically reduces the amount of copy and pasting involved. Blaze compiler security rules are shorter, and the syntax is less fussy.
+The blaze compiler simplifies building security rules for your Firebase database. It drastically reduces the amount of copy and pasting involved. Blaze compiler security rules are shorter, and the syntax is less fussy.
 
 
 ##  Getting started
@@ -14,7 +14,7 @@ create a rules.yaml containing the following code
 ```YAML
 functions:
   - isLoggedIn(): auth.uid !== null
-  
+
 schema: {}
 
 access:
@@ -96,7 +96,7 @@ The schema section describes the layout of the data tree.
 
 #### Types
 
-A Firebase schema node is either a leaf type (*string*, *number*, *boolean*) or an *object* which contains more child schema nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
+A Firebase database schema node is either a leaf type (*string*, *number*, *boolean*) or an *object* which contains more child schema nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
 
 ```YAML
 schema:
@@ -108,9 +108,9 @@ schema:
     anything_child: {}
 ```
 
-In the above example you could set `{string_child: "blah"}` at the root of the Firebase but not `{string_child: true}`
+In the above example you could set `{string_child: "blah"}` at the root of your database but not `{string_child: true}`
 
-You can leave a schema unspecified with {} or with type: "any". 
+You can leave a schema unspecified with {} or with type: "any".
 
 #### required
 
@@ -169,7 +169,7 @@ schema:
   minimum:  0
   maximum: 10
   exclusiveMaximum: true
-  
+
   examples:
     - 0
     - 9.9
@@ -227,7 +227,7 @@ schema:
         constraint: (!prev.exists())
 ```
 
-You can be sure all constraints above and below evaluate to true for a write to be allowed. The only quirk is related to wildchilds. You can't write anything above a wildchild that includes the wildchild as a descendant. They do inherit their parents constraints though, as do their siblings, so the use of wildchilds **never** makes the Firebase less constrained accidentally.
+You can be sure all constraints above and below evaluate to true for a write to be allowed. The only quirk is related to wildchilds. You can't write anything above a wildchild that includes the wildchild as a descendant. They do inherit their parents constraints though, as do their siblings, so the use of wildchilds **never** makes the database less constrained accidentally.
 
 #### Model reuse
 
@@ -405,29 +405,29 @@ access:
 
 - 4th November 2014:
   - bugfix: functions in ACL resolved properly
-  
+
 - 3rd November 2014:
   - bugfix: wilderchild matching fix in ACL
-  
+
 - 1st November 2014:
   - bugfix: wilderchild overwriting parent constraints bug fixed
   - bugfix: access control constraints localised properly
   - bugfix: regex detection firing erroneously on strings starting with '/' fixed
-  
+
 - 20th October 2014:
   - optimizations added to reduce code bloat
   - sensitization bug regarding regexes fixed
-  
+
 - 28th August 2014:ß
   - range constraints for number type added
-  
+
 - 26th August 2014:
   - wilderchilds introduced, ~$ allows nullable wildchilds whose parents can be written to.
   - sanitized expressions bug fix
 
 - 18th August 2014:
   - predicates renamed to functions
-  
+
 - 14th July 2014:
   - improved error reporting
   - updated installation
@@ -438,4 +438,3 @@ access:
 - 30th June 2014:
   - removed trailing /* from access location syntax
   - allowed untyped schema if type is not specified
-  
