@@ -1,0 +1,8 @@
+source:
+  schema:
+    required: ["name"]
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"(((newData.val()==null||newData.child('name').exists())))",".read":"false"}}

@@ -17,6 +17,12 @@ properties:
 
   additionalProperties: {type: boolean}
 
+  required:
+    type: array
+    items: { type: string }
+    minItems: 1
+    uniqueItems: true
+
   indexOn:
     anyOf:
       - {type: array}

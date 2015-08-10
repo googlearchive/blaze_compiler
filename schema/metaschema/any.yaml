@@ -3,3 +3,12 @@ validator: {$ref: "http://firebase.com/schema/types/any#"}
 compile:
   console.log("compile any");
 
+  var required_constraint = "next == null || (true";
+  if (api.getField("required") != null) {
+    for (var idx in api.getField("required")){
+      var required_property = api.getField("required")[idx];
+      required_constraint = required_constraint + "&&next['"+required_property+"'].exists()"
+    }
+  }
+  api.addConstraint(required_constraint + ")");
+
