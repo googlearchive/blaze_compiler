@@ -10,12 +10,10 @@ properties:
   examples:
     type: array
     minItems: 1
-    uniqueItems: true
 
   nonexamples:
     type: array
     minItems: 1
-    uniqueItems: true
 
   additionalProperties: {type: boolean}
 

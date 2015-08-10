@@ -1,0 +1,19 @@
+source:
+  schema:
+    type: object
+    properties:
+      users:
+        type: object
+        $user_uid:
+          type: object
+          required: [name, email]
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+
+          examples:
+            - {name: "My Name", email: "myemail@example.com"}
+            - {name: "My Name", email: "myemail@example.com"}
+expected: {"rules":{".write":"false",".read":"false","users":{".write":"false",".read":"false","$user_uid":{".write":"false",".read":"false","name":{".write":"false",".read":"false"},"email":{".write":"false",".read":"false"}}}}}

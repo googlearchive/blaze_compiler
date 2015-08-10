@@ -13,19 +13,28 @@ import tv4 = require("tv4");
 function run() {
     globals.debug = true;
     //called if this file is run, used to enable runtime debugging
-    console.log("working?", checkScenario("./test/scenarios/parent3.yaml"))
+    console.log("working?", checkScenario("./test/scenarios/repeatExample.yaml"))
 }
 
 var checkScenario = function(path: string): boolean {
     var scenario: Json.JValue = blaze.load_yaml(path);
     var source   = scenario.getOrThrow("source", "scenario has no 'source' attached " + path);
-    var expected = scenario.getOrThrow("expected", "scenario has no 'expected' outcome " + path);
-    var result = compiler.compileJSON(source);
-    var expectedNormalised = JSON.stringify((expected.toJSON()));
-    var resultNormalised = JSON.stringify(JSON.parse(result.code));
-    console.log("expectedNormalised", expectedNormalised);
-    console.log("resultNormalised  ", resultNormalised);
-    return  expectedNormalised == resultNormalised;
+
+    if (scenario.has("expectedError")) {
+        var expectedError = scenario.getOrThrow("expectedError", "scenario has no 'expected' outcome " + path);
+        var result = compiler.compileJSON(source);
+
+        return false; //todo we need to grab stderr
+    } else {
+        var expected = scenario.getOrThrow("expected", "scenario has no 'expected' outcome " + path);
+        var result = compiler.compileJSON(source);
+        var expectedNormalised = JSON.stringify((expected.toJSON()));
+        var resultNormalised = JSON.stringify(JSON.parse(result.code));
+        console.log("expectedNormalised", expectedNormalised);
+        console.log("resultNormalised  ", resultNormalised);
+        return  expectedNormalised == resultNormalised;
+    }
+
 };
 
 export function testFiles(test: nodeunit.Test) {

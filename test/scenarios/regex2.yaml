@@ -1,0 +1,8 @@
+source:
+  schema:
+    constraint: (newData.isString() && newData.val().matches(/^\+(?:[0-9] ?){6,14}[0-9]$/))
+  access:
+    - location: /
+      write: true
+
+expected: {"rules":{".write":"(((newData.isString()&&newData.val().matches(/^\\+(?:[0-9] ?){6,14}[0-9]$/))))",".read":"false"}}

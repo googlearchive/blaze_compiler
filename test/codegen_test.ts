@@ -268,6 +268,7 @@ export function testNestedWildchilds(test:nodeunit.Test):void{
     ], test.done.bind(null));
 }
 
+/*TODO
 export function testWilderChildMixedAccess(test:nodeunit.Test):void{
     async.series([
         firebase_io.assertSetValidationRules.bind(null, compiler.compile("test/cases/wilderchildHierarchicalAccess.yaml", true).code, test),
@@ -289,4 +290,4 @@ export function testWilderChildMixedAccess(test:nodeunit.Test):void{
         test_utils.assert_cant_write.bind(null, "grandchild","/a",     "payload", test),
         test_utils.assert_can_write.bind(null, "grandchild","/a/a",   "payload", test),
     ], test.done.bind(null));
-}
+}*/
