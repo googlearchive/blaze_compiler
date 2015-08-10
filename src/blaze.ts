@@ -74,9 +74,11 @@ export class SchemaRoot{
     constructor(json: Json.JValue){
         this.json = json;
     }
-    static parse(json: Json.JValue): SchemaRoot{
-        var schema = new SchemaRoot(json);
-        return schema
+    static parse(json: Json.JValue): SchemaRoot {
+        if (json == null) {
+            json = new Json.JObject()
+        }
+        return new SchemaRoot(json);
     }
 }
 
@@ -183,7 +185,7 @@ export class Rules{
     static parse(json: Json.JObject):Rules{
         var rules = new Rules();
         rules.functions = expression.Functions.parse(json.getOrNull("functions"));
-        rules.schema     = SchemaRoot.parse(json.getOrThrow("schema", "no schema defined"));
+        rules.schema     = SchemaRoot.parse(json.getOrNull("schema"));
         rules.access     = Access.parse(json.getOrWarn("access", "no access list defined, this Firebase will be inactive"));
         return rules
     }

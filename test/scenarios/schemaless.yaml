@@ -1,0 +1,10 @@
+source:
+  access:
+    - location: /
+      write: true
+    - location: /foo
+      read: true
+    - location: /bar
+      write: true
+
+expected: {"rules":{".write":"((newData.val().matches(/abs/)))",".read":"false"}}
