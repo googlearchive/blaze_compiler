@@ -1,6 +1,6 @@
 {
   "name": "blaze_compiler",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "Transpiles extendable, schema orientated definitions into Firebase security rules",
   "author": "Tom Larkworthy",
   "license": "private",
@@ -21,7 +21,7 @@
     "source-processor": "0.0.6",
     "tv4": "1.1.12",
     "falafel": "0.3.1",
-    "source-map-support": "0.2.7"
+    "source-map-support": "0.3.2"
   },
   "devDependencies": {
     "async": "0.7.0",

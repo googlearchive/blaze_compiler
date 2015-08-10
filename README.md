@@ -383,6 +383,7 @@ access:
 ##  Changelog
 - 10th Aug 2015:
   - Allowed repeat examples and non-example, as the error message can be unclearly attached to something unrelated (see repeatExample.yaml)
+  - upgrade source-map-repository so blaze_compiler continues to fix issue with io.js
 
 - 19th May 2015:
   - Improved optimization use a less verbose object detection notation and spurious parent is an object checks
