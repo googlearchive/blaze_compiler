@@ -23,6 +23,9 @@ export function compileJSON(json: Json.JValue): blaze.Rules {
         //convert users rule file into a model
         var model: blaze.Rules = blaze.Rules.parse(json.asObject());
 
+
+        model.inflateSchema();
+
         //1st pass of compiler,
         //metaschema generate constraints for schema
         schema.annotate(model);

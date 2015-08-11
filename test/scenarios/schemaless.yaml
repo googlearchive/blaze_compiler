@@ -1,10 +1,16 @@
 source:
   access:
     - location: /
-      write: true
+      write: data == 'root'
     - location: /foo
-      read: true
+      read: data == 'foo'
     - location: /bar
-      write: true
+      write: next == 'bar'
+    - location: /~$any
+      write: $any == "wilderchild"
+    - location: /~$any1/~$any2
+      write: $any2 == "nested wilderchild"
+    - location: /baz/$any
+      write: $any == "wildchild"
 
-expected: {"rules":{".write":"((newData.val().matches(/abs/)))",".read":"false"}}
+expected: {"rules":{".write":"((false))",".read":"false","foo":{".write":"((data.val()=='root'))",".read":"((data.val()=='foo'))"},"bar":{".write":"(((data.val()=='root'||newData.val()=='bar')))",".read":"(false)"},"baz":{".write":"(false)",".read":"false","$any":{".write":"(((data.val()=='root'||$any=='wildchild')))",".read":"(false)"}},"$any":{".write":"(((data.val()=='root'||$any=='wilderchild')))",".validate":"(((data.val()=='root'||$any=='wilderchild')))",".read":"(false)","$any2":{".write":"(((data.val()=='root'||$any=='wilderchild'||$any2=='nested wilderchild')))",".validate":"(((data.val()=='root'||$any=='wilderchild'||$any2=='nested wilderchild')))",".read":"((false))"}}}}

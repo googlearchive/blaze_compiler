@@ -128,9 +128,19 @@ export class AccessEntry{
         return true;
     }
 
+    isChildOf(location: string[]): boolean{
+        if (this.location.length <= location.length) return false;
+        for(var idx in location){
+            if (!this.matchSegment(this.location[idx], location[idx])) return false
+        }
+        return true;
+    }
+
     matchSegment(rule_segment: string, path_segment): boolean{
         if (rule_segment.indexOf("~$") == 0) rule_segment = rule_segment.substr(1);
         if (path_segment.indexOf("~$") == 0) path_segment = path_segment.substr(1);
+        if (rule_segment.indexOf("$") == 0 && path_segment.indexOf("$") == 0) return true;
+
         return rule_segment == path_segment
     }
 
@@ -173,6 +183,15 @@ export class Access {
         });
         return access
     }
+
+    static getChildren(self: Access, path: string[]): AccessEntry[] {
+        var children: AccessEntry[] = [];
+        for (var i=0; self[i] != undefined; i++) {
+            var rule: AccessEntry = self[i];
+            if (rule.isChildOf(path)) children.push(rule)
+        }
+        return children;
+    }
 }
 
 export class Rules{
@@ -188,5 +207,49 @@ export class Rules{
         rules.schema     = SchemaRoot.parse(json.getOrNull("schema"));
         rules.access     = Access.parse(json.getOrWarn("access", "no access list defined, this Firebase will be inactive"));
         return rules
+    }
+
+    inflateSchema():void {
+        this.inflateSchemaRecursive(this.schema.json.asObject(), [])
+    }
+
+    inflateSchemaRecursive(json: Json.JObject, path: string[]): void {
+        console.log("path", path);
+        var children = Access.getChildren(this.access, path);
+
+        children.map(function(child: AccessEntry) {
+            var childSegment = child.location[path.length];
+
+            var schemaChild = null;
+            if (childSegment.indexOf("~$") == 0 || childSegment.indexOf("$") == 0) {
+                //the child is a wildchild
+                var wildKey = schema.getWildchild(json);
+                if (wildKey == null){
+                    schemaChild = new Json.JObject();
+                    json.put(new Json.JString(childSegment, -1,-1), schemaChild);
+                } else {
+                    schemaChild = json.getOrThrow(wildKey, "error");
+                }
+            } else {
+                //the child is a fixed child, should be declared in properties
+
+                //lazy create proprties if necissary
+                var properties = json.getOrNull("properties");
+                if (properties == null) {
+                    properties = new Json.JObject();
+                    json.put(new Json.JString("properties", -1,-1), properties)
+                }
+
+                //lazy add child if necessary
+                schemaChild = properties.asObject().getOrNull(childSegment);
+                if (schemaChild == null){
+                    schemaChild = new Json.JObject();
+                    properties.asObject().put(new Json.JString(childSegment, -1,-1), schemaChild);
+                }
+            }
+
+            this.inflateSchemaRecursive(schemaChild, child.location.slice(0, path.length + 1));
+        }, this)
+
     }
 }

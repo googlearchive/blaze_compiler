@@ -557,7 +557,7 @@ export class SchemaAPI{
     }
 }
 
-function getWildchild(node: Json.JValue): Json.JString{
+export function getWildchild(node: Json.JValue): Json.JString{
     var wildchild: Json.JString = null;
     node.asObject().forEach(
         function(keyword: Json.JString, child: Json.JValue){
