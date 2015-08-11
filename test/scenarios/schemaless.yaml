@@ -13,4 +13,5 @@ source:
     - location: /baz/$any
       write: $any == "wildchild"
 
+#I am not 100% that this is the right generated code
 expected: {"rules":{".write":"false",".read":"false","foo":{".write":"((data.val()=='root'))",".read":"((data.val()=='foo'))"},"bar":{".write":"(((data.val()=='root'||newData.val()=='bar')))",".read":"false"},"baz":{".write":"false",".read":"false","$any":{".write":"(((data.val()=='root'||$any=='wildchild')))",".read":"false"}},"$any":{".write":"(((data.val()=='root'||$any=='wilderchild')))",".validate":"(((data.val()=='root'||$any=='wilderchild')))",".read":"false","$any2":{".write":"(((data.val()=='root'||$any=='wilderchild'||$any2=='nested wilderchild')))",".validate":"(((data.val()=='root'||$any=='wilderchild'||$any2=='nested wilderchild')))",".read":"false"}}}}
