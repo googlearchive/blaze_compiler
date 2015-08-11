@@ -9,17 +9,4 @@ source:
       read: true
       write: true
 
-expected:
-  "rules": {
-    ".write": "(false)",
-    ".read": "true",
-    "$wildchild": {
-      ".write": "(false)",
-      ".read": "true",
-      "$wilderchild": {
-        ".write": "(false)",
-        ".validate": "(false)",
-        ".read": "true"
-      }
-    }
-  }
+expected: {"rules":{".write":"false",".read":"true","$wildchild":{".write":"false",".read":"true","$wilderchild":{".write":"false",".validate":"false",".read":"true"}}}}

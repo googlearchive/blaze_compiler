@@ -19,8 +19,19 @@ export function optimize(javascript_str: string): string {
         //optimize stages
         javascript_str = simplify(parentIsObjectCheckRemoval(clauseRepetitionElimination(childParentAnnihilation(pruneBooleanLiterals(javascript_str)))));
     }
-
     return current;
+}
+
+/**
+ * optimizes and removes outer paranthesis, only safe for use in end user expressions, like .read or .write, where the parenthesis
+ * cannot be doing anything useful.
+ * @param javascript_str
+ */
+export function optimizeAndTrim(javascript_str: string): string {
+    var optimized = optimize(javascript_str);
+    optimized = optimized.replace(/^\(+true\)+$/, "true");
+    optimized = optimized.replace(/^\(+false\)+$/,"false");
+    return optimized;
 }
 
 

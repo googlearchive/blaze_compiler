@@ -13,7 +13,7 @@ import tv4 = require("tv4");
 function run() {
     globals.debug = true;
     //called if this file is run, used to enable runtime debugging
-    console.log("working?", checkScenario("./test/scenarios/schemaless.yaml"))
+    console.log("working?", checkScenario("./test/scenarios/function1.yaml"))
 }
 
 var checkScenario = function(path: string): boolean {
@@ -50,7 +50,6 @@ export function testFiles(test: nodeunit.Test) {
         console.log("checking", path);
         test.ok(checkScenario(path), "error on file " + path);
     }
-
     test.done();
 }
 

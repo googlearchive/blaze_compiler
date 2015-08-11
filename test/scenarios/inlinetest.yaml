@@ -40,4 +40,4 @@ source:
           write:      false
 
 
-expected: {"rules":{".write":"((((false))))",".read":"true","users":{".write":"((false))",".read":"true","$userid":{".write":"(false)",".read":"true","profile":{".write":"(false)",".read":"true","first_name":{".write":"(false)",".read":"true"},"$other":{".validate":"false"}},"$other":{".validate":"false"}},"$other":{".validate":"false"}},"profile":{".write":"(false)",".read":"true","first_name":{".write":"(false)",".read":"true"},"$other":{".validate":"false"}}}}
+expected: {"rules":{".write":"false",".read":"true","users":{".write":"false",".read":"true","$userid":{".write":"false",".read":"true","profile":{".write":"false",".read":"true","first_name":{".write":"false",".read":"true"},"$other":{".validate":"false"}},"$other":{".validate":"false"}},"$other":{".validate":"false"}},"profile":{".write":"false",".read":"true","first_name":{".write":"false",".read":"true"},"$other":{".validate":"false"}}}}

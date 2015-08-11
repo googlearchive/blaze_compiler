@@ -16,7 +16,6 @@ source:
     - location: /
       write: true
 
-expected: {"rules":{".write":"((((!newData.child('title').exists()||newData.child('title').isString())&&(!newData.child('timestamp').exists()||newData.child('timestamp').isNumber())&&(newData.child('timestamp').val()==null||newData.child('timestamp').val()>=0))))",".read":"false","title":{".write":"(((!newData.exists()||newData.isString())))",".read":"false"},"timestamp":{".write":"((((!newData.exists()||newData.isNumber())&&(newData.val()==null||newData.val()>=0))))",".read":"false"}}}
-
+expected: {"rules":{".write":"((((!newData.child('title').exists()||newData.child('title').isString())&&(!newData.child('timestamp').exists()||newData.child('timestamp').isNumber())&&(newData.child('timestamp').val()==null||newData.child('timestamp').val()>=0))))",".read":"false","title":{".write":"(((!newData.exists()||newData.isString())))",".read":"false"},"timestamp":{".write":"(((!newData.exists()||newData.isNumber())&&(newData.val()==null||newData.val()>=0)))",".read":"false"}}}
 
 

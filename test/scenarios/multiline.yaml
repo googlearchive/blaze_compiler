@@ -23,4 +23,4 @@ source:
     - location: /
       write: true
 
-expected: {"rules":{".write":"(true)",".read":"false"}}
+expected: {"rules":{".write":"true",".read":"false"}}

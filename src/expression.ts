@@ -420,7 +420,7 @@ export class Expression{
 
         var code: string = falafel(this.raw, {}, falafel_visitor).toString();
 
-        return globals.optimize ? optimizer.optimize(code): optimizer.simplify(code);
+        return globals.optimize ? optimizer.optimizeAndTrim(code): optimizer.simplify(code);
     }
 }
 
