@@ -228,7 +228,7 @@ export class Rules{
                     schemaChild = new Json.JObject();
                     json.put(new Json.JString(childSegment, -1,-1), schemaChild);
                 } else {
-                    schemaChild = json.getOrThrow(wildKey, "error");
+                    schemaChild = json.getOrThrow(wildKey.getString(), "error");
                 }
             } else {
                 //the child is a fixed child, should be declared in properties
