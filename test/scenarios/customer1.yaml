@@ -1,0 +1,22 @@
+source:
+  schema:
+    type: object
+    additionalProperties: false
+    properties:
+      test:
+        type: object
+        $parentId:
+          type: object
+          ~$childId:
+            type: object
+            properties:
+              timestamp: {type: number}
+
+  access:
+    - location: /test/$parentId
+      read:     auth.uid != null
+      write:    auth.uid != null && prev.exists() == false
+
+    - location: /test/$parentId/$childId
+      write:    auth.uid != null && (prev.timestamp.exists() == false || next.timestamp >= prev.timestamp)
+expected: {"rules":{".write":"false",".read":"false","test":{".write":"false",".read":"false","$parentId":{".write":"((((!newData.exists()||newData.hasChildren())&&auth.uid!=null&&data.exists()==false)))",".read":"(auth.uid!=null)","$childId":{".write":"((((!newData.exists()||newData.hasChildren())&&(!newData.child('timestamp').exists()||newData.child('timestamp').isNumber())&&(auth.uid!=null&&data.parent().exists()==false||auth.uid!=null&&(data.child('timestamp').exists()==false||newData.child('timestamp').val()>=data.child('timestamp').val())))))",".validate":"((((!newData.exists()||newData.hasChildren())&&(!newData.child('timestamp').exists()||newData.child('timestamp').isNumber())&&(auth.uid!=null&&data.parent().exists()==false||auth.uid!=null&&(data.child('timestamp').exists()==false||newData.child('timestamp').val()>=data.child('timestamp').val())))))",".read":"((auth.uid!=null))","timestamp":{".write":"((((!newData.exists()||newData.isNumber())&&(auth.uid!=null&&data.parent().parent().exists()==false||auth.uid!=null&&(data.parent().child('timestamp').exists()==false||newData.parent().child('timestamp').val()>=data.parent().child('timestamp').val())))))",".read":"((auth.uid!=null))"}}}},"$other":{".validate":"false"}}}

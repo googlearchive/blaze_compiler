@@ -1,0 +1,10 @@
+#checks that the .next pointer is rewriten when an ACL entry is applied to a child record
+source:
+  access:
+    - location: /
+      write: (next.exists())
+
+    - location: /child
+      write: (!next.exists())
+
+expected: {"rules":{".write":"(((newData.exists())))",".read":"false","child":{".write":"(((newData.parent().exists()||!newData.exists())))",".read":"false"}}}

@@ -295,6 +295,10 @@ function annotate_schema(node: Json.JValue, parent: Json.JValue, key: string, ap
     if (node.has("properties")) {
         node.getOrThrow("properties", "").asObject().forEach(
             function(name: Json.JString, child: Json.JValue){
+                if (name.value.indexOf("$") == 0 || name.value.indexOf("~$") == 0) throw error.message(
+                    "properties cannot start with $ or ~$, you probably want a wild(er)child which is not declared in the properties section"
+                ).source(name).on(new Error());
+
                 annotation.properties[name.value] = annotate_schema(child, node, name.getString(), api, model);
             });
     }

@@ -381,6 +381,9 @@ access:
 
 
 ##  Changelog
+- 20th Aug 2015:
+  - tailored error message when a wild(er)child is used in a properties section
+
 - 10th Aug 2015:
   - Allowed repeat examples and non-example, as the error message can be unclearly attached to something unrelated (see repeatExample.yaml)
   - upgrade source-map-repository so blaze_compiler continues to fix issue with io.js
