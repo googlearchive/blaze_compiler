@@ -92,11 +92,14 @@ next.counter == prev.counter + 1
 
 ## Schema
 
-The schema section describes the layout of the data tree.
+The schema section describes the layout of the data tree. It is strongly suggested you use schema to describe the layout of your Firebase,
+however it is possible to describe just the end points with access controls. A compiler warning is emitted if you give access
+to a path that is not described by the data schema.
 
 #### Types
 
-A Firebase database schema node is either a leaf type (*string*, *number*, *boolean*) or an *object* which contains more child schema nodes. The type is specified with "type". Children of objects are specified as a map under "properties"
+A Firebase database schema node is either a leaf type (*string*, *number*, *boolean*) or an *object* which contains more child schema nodes.
+The type is specified with "type". Children of objects are specified as a map under "properties"
 
 ```YAML
 schema:
@@ -381,6 +384,12 @@ access:
 
 
 ##  Changelog
+- 25th Sep 2015:
+  - schema padding emits a warning when applied to help visibility
+  - performance schema padding efficiency greatly improved
+  - performance of optimization routines improved
+
+
 - 20th Aug 2015:
   - tailored error message when a wild(er)child is used in a properties section
 

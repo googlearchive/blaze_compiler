@@ -128,6 +128,7 @@ export class AccessEntry{
         return true;
     }
 
+    // todo hot method
     isChildOf(location: string[]): boolean{
         if (this.location.length <= location.length) return false;
         for(var idx in location){
@@ -184,9 +185,10 @@ export class Access {
         return access
     }
 
+    // todo hot method
     static getChildren(self: Access, path: string[]): AccessEntry[] {
         var children: AccessEntry[] = [];
-        for (var i=0; self[i] != undefined; i++) {
+        for (var i = 0; self[i] != undefined; i++) {
             var rule: AccessEntry = self[i];
             if (rule.isChildOf(path)) children.push(rule)
         }
@@ -209,12 +211,20 @@ export class Rules{
         return rules
     }
 
+    /**
+     * adds dummy schema
+     */
     inflateSchema():void {
-        this.inflateSchemaRecursive(this.schema.json.asObject(), [])
+        this.inflateSchemaRecursive(this.schema.json.asObject(), [], {})
     }
 
-    inflateSchemaRecursive(json: Json.JObject, path: string[]): void {
-        console.log("path", path);
+    inflateSchemaRecursive(json: Json.JObject, path: string[], memoization: {[path: string]: boolean}): void {
+
+        if (memoization[path.join("/")]) return; //we processed this before
+        else {
+            memoization[path.join("/")] = true; // indicate this has been done
+        }
+        // console.log("inflateSchemaRecursive", path);
         var children = Access.getChildren(this.access, path);
 
         children.map(function(child: AccessEntry) {
@@ -226,6 +236,7 @@ export class Rules{
                 var wildKey = schema.getWildchild(json);
                 if (wildKey == null){
                     schemaChild = new Json.JObject();
+                    console.error("WARNING: " + child.location.join("/") + " in access rule but not in a schema");
                     json.put(new Json.JString(childSegment, -1,-1), schemaChild);
                 } else {
                     schemaChild = json.getOrThrow(wildKey.getString(), "error");
@@ -233,7 +244,7 @@ export class Rules{
             } else {
                 //the child is a fixed child, should be declared in properties
 
-                //lazy create proprties if necissary
+                //lazy create properties if necessary
                 var properties = json.getOrNull("properties");
                 if (properties == null) {
                     properties = new Json.JObject();
@@ -243,12 +254,13 @@ export class Rules{
                 //lazy add child if necessary
                 schemaChild = properties.asObject().getOrNull(childSegment);
                 if (schemaChild == null){
+                    console.error("WARNING: " + child.location.join("/") + " in access rule but not in a schema");
                     schemaChild = new Json.JObject();
                     properties.asObject().put(new Json.JString(childSegment, -1,-1), schemaChild);
                 }
             }
 
-            this.inflateSchemaRecursive(schemaChild, child.location.slice(0, path.length + 1));
+            this.inflateSchemaRecursive(schemaChild, child.location.slice(0, path.length + 1), memoization);
         }, this)
 
     }

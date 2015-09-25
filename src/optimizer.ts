@@ -35,10 +35,13 @@ export function optimizeAndTrim(javascript_str: string): string {
 }
 
 
+var simplifyMemory: {[js: string]: string} = {};
 /**
  * rewrites the javascript to remove redundant parenthesis and white space
  */
-export function simplify(javascript_str: string):string{
+export function simplify(javascript_str: string):string {
+    if (simplifyMemory[javascript_str]) return simplifyMemory[javascript_str];
+
     var simplify_fn = function(node){
         node.precedence = 1000; //default precedence for all nodes other than operator nodes, e.g. terminals
         if(node.type == "BinaryExpression" || node.type == "BooleanExpression" || node.type == "LogicalExpression"){
@@ -63,14 +66,17 @@ export function simplify(javascript_str: string):string{
         }
     };
 
-    return falafel(javascript_str.toString(), {}, simplify_fn).toString();
+    var result = falafel(javascript_str.toString(), {}, simplify_fn).toString();
+    simplifyMemory[javascript_str] = result;
+    return result;
 }
 
-
+var pruneBooleanLiteralsMemory: {[js: string]: string} = {};
 /**
  * rewrites the javascript to remove pointless boolean literals like true && X
  */
-export function pruneBooleanLiterals(javascript_str: string): string{
+export function pruneBooleanLiterals(javascript_str: string): string {
+    if (pruneBooleanLiteralsMemory[javascript_str]) return pruneBooleanLiteralsMemory[javascript_str];
     var simplify_fn = function(node){
         if (node.type == "UnaryExpression") {
             //!true => false
@@ -106,16 +112,21 @@ export function pruneBooleanLiterals(javascript_str: string): string{
         }
     };
 
-    return falafel(javascript_str.toString(), {}, simplify_fn).toString();
+    var result = falafel(javascript_str.toString(), {}, simplify_fn).toString();
+    pruneBooleanLiteralsMemory[javascript_str] = result;
+    return result;
 }
 
 
+var clauseRepetitionEliminationMemory: {[js: string]: string} = {};
 /**
  * remove repeated clauses in && and || groups
  * note the order of lazy evaluation means the first occurrences ordering must be preserved!
  * a && b && c && c && b => a && b && c
  */
-export function clauseRepetitionElimination(javascript_str: string): string{
+export function clauseRepetitionElimination(javascript_str: string): string {
+    if (clauseRepetitionEliminationMemory[javascript_str]) return clauseRepetitionEliminationMemory[javascript_str];
+
     var simplify_fn = function(node){
         if(node.type == "LogicalExpression") {
             if (node.parent.type == "LogicalExpression" && node.parent.operator == node.operator) {
@@ -152,13 +163,18 @@ export function clauseRepetitionElimination(javascript_str: string): string{
         }
     };
 
-    return falafel(javascript_str.toString(), {}, simplify_fn).toString();
+    var result =  falafel(javascript_str.toString(), {}, simplify_fn).toString();
+    clauseRepetitionEliminationMemory[javascript_str] = result;
+    return result;
 }
+
+var childParentAnnihilationMemory: {[js: string]: string} = {};
 
 /**
  * blah.child(XXX).parent().blah() => blah.blah() (if we don't include any other implementations of child)
  */
 export function childParentAnnihilation(javascript_str: string): string {
+    if (childParentAnnihilationMemory[javascript_str]) return childParentAnnihilationMemory[javascript_str];
 
 /*
 data.child('x').parent().val()
@@ -237,10 +253,17 @@ AST expansion looks like:-
         }
     };
 
-    return falafel(javascript_str.toString(), {}, simplify_fn).toString();
+    var result = falafel(javascript_str.toString(), {}, simplify_fn).toString();
+    childParentAnnihilationMemory[javascript_str] = result;
+    return result;
 }
+
+var parentIsObjectCheckRemovalMemory: {[js: string]: string} = {};
+
 var parent_pattern = /^!newData(\.parent\(\))+\.exists\(\)\|\|newData(\.parent\(\))+\.hasChildren\(\)$/;
 export function parentIsObjectCheckRemoval(javascript_str: string) {
+    if (parentIsObjectCheckRemovalMemory[javascript_str]) return parentIsObjectCheckRemovalMemory[javascript_str];
+
     //if on the top level && we are checking to see if our parent is an object or null, we are doing a redundant check because
     //we can only write either null, a primitive or an object at newData location
     //therefore our parent  will flip only to null, or an object, thus we don't need to check for this pattern
@@ -256,8 +279,9 @@ export function parentIsObjectCheckRemoval(javascript_str: string) {
         }
     };
 
-    return falafel(javascript_str.toString(), {}, simplify_fn).toString();
-
+    var result = falafel(javascript_str.toString(), {}, simplify_fn).toString();
+    parentIsObjectCheckRemovalMemory[javascript_str] = result;
+    return result;
 }
 
 
