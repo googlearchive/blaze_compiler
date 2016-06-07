@@ -1,3 +1,5 @@
+# DEPRECATED - NO LONGER MAINTAINED
+
 # Blaze Security Compiler for Firebase
 
 The blaze compiler simplifies building security rules for your Firebase database. It drastically reduces the amount of copy and pasting involved. Blaze compiler security rules are shorter, and the syntax is less fussy.
