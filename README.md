@@ -1,5 +1,7 @@
 # DEPRECATED - NO LONGER MAINTAINED
 
+If you're still interested in using a [Firebase Database Security Rules](https://firebase.google.com/docs/database/security/) compiler, check out the experimental [Bolt](https://github.com/firebase/bolt) compiler.
+
 # Blaze Security Compiler for Firebase
 
 The blaze compiler simplifies building security rules for your Firebase database. It drastically reduces the amount of copy and pasting involved. Blaze compiler security rules are shorter, and the syntax is less fussy.
