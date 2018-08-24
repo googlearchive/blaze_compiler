@@ -2,6 +2,7 @@
 This repository has been archived and is no longer maintained.
 
 ![status: inactive](https://img.shields.io/badge/status-inactive-red.svg)
+
 # DEPRECATED - NO LONGER MAINTAINED
 
 If you're still interested in using a [Firebase Database Security Rules](https://firebase.google.com/docs/database/security/) compiler, check out the experimental [Bolt](https://github.com/firebase/bolt) compiler.
